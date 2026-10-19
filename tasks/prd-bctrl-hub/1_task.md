@@ -27,7 +27,7 @@ Criar o esqueleto do Bctrl Hub: projeto Next.js 16 com identidade visual Bctrl, 
 - [x] 1.2 Criar `src/styles/tokens.css` com as cores Bctrl e configurar fontes no `src/app/layout.tsx`; tema escuro padrão com alternância para claro
 - [x] 1.3 Inicializar shadcn/ui e adicionar as primitivas: Button, Input, Sheet, Dialog, Tabs, Checkbox, Sonner
 - [x] 1.4 Copiar `assets/brand/*.svg` para `public/brand/`; gerar favicon e ícones a partir de `bctrl-hub-symbol-dark.svg`
-- [ ] 1.5 Criar o projeto Supabase via MCP (região `sa-east-1`), desativar signup e pedir ao dono para criar seu usuário no painel — projeto `ubnyhgpvytnxechyioez` criado (us-east-2); **pendente**: desligar signup no painel e criar o usuário do dono
+- [x] 1.5 Criar o projeto Supabase via MCP (região `sa-east-1`), desativar signup e pedir ao dono para criar seu usuário no painel — projeto `ubnyhgpvytnxechyioez` (us-east-2); signup desligado via `supabase config push`; usuário do dono criado e login validado em produção
 - [x] 1.6 Criar `src/lib/supabase/{client,server,proxy}.ts` e `src/proxy.ts` conforme a techspec (padrão oficial com `getClaims()`)
 - [x] 1.7 Tela `/login` (e-mail + senha) com mensagem de erro clara; botão "Sair"
 - [x] 1.8 Shell: `BottomNav` (Hoje, Treino, Comida, Hábitos, Tarefas) no celular e `SideNav` a partir de 1024 px; páginas vazias para cada rota da techspec
