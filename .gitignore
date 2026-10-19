@@ -1,0 +1,51 @@
+# ── Dados pessoais / conteúdo licenciado (NUNCA versionar: repo público) ──
+tasks/prd-bctrl-hub/anexo-dados-iniciais.md
+supabase/seed.sql
+supabase/seed*.sql
+*.pdf
+Captura de tela*.png
+screenshots/
+
+# ── Chaves e segredos (APIs: Supabase, Vercel, Context7…) ──
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.mcp.json
+.claude/settings.local.json
+
+# ── Vercel / Supabase local ──
+.vercel/
+supabase/.temp/
+supabase/.branches/
+supabase/.env
+
+# ── Node / Next.js ──
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── Testes ──
+coverage/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# ── SO / editor ──
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
