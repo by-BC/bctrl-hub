@@ -22,13 +22,13 @@ Telas para ver e gerenciar as rotinas de treino (estilo Hevy *routines*) e a bib
 
 ## Subtarefas
 
-- [ ] 3.1 Configurar `QueryProvider` (TanStack Query) no layout, se ainda não existir
-- [ ] 3.2 Hooks `useRoutines`, `useRoutine(id)`, `useExercises` e mutações (criar, editar, reordenar, arquivar) em `src/features/routines`
-- [ ] 3.3 Tela `/treino`: cards de rotina com nº de exercícios e séries; botão "Nova rotina"
-- [ ] 3.4 Editor de rotina com reordenação, séries (stepper), descanso (padrão 120 s) e observações
-- [ ] 3.5 Seletor de exercício (busca + "criar novo") reutilizável, que também será usado na sessão (4.0)
-- [ ] 3.6 Arquivar ou excluir rotina com confirmação (Dialog do shadcn, não `window.confirm`)
-- [ ] 3.7 Escrever e rodar os testes da tarefa
+- [x] 3.1 Configurar `QueryProvider` (TanStack Query) no layout, se ainda não existir
+- [x] 3.2 Hooks `useRoutines`, `useRoutine(id)`, `useExercises` e mutações (criar, editar, reordenar, arquivar) em `src/features/routines`
+- [x] 3.3 Tela `/treino`: cards de rotina com nº de exercícios e séries; botão "Nova rotina"
+- [x] 3.4 Editor de rotina com reordenação, séries (stepper), descanso (padrão 120 s) e observações
+- [x] 3.5 Seletor de exercício (busca + "criar novo") reutilizável, que também será usado na sessão (4.0)
+- [x] 3.6 Arquivar ou excluir rotina com confirmação (Dialog do shadcn, não `window.confirm`)
+- [x] 3.7 Escrever e rodar os testes da tarefa
 
 ## Detalhes de Implementação
 
@@ -44,8 +44,8 @@ Ver techspec: **Visão Geral dos Componentes**, feature `routines`; tabelas `rou
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: função de reordenação (recalcula `position` sem buracos); validação Zod do formulário de rotina (séries ≥ 1, descanso entre 15 e 600 s)
-- [ ] Testes de integração: Playwright cria rotina, adiciona 2 exercícios, reordena, recarrega e confere a ordem; arquivar remove da lista ativa; editar observação técnica persiste
+- [x] Testes de unidade: função de reordenação (recalcula `position` sem buracos); validação Zod do formulário de rotina (séries ≥ 1, descanso entre 15 e 600 s)
+- [x] Testes de integração: Playwright cria rotina, adiciona 2 exercícios, reordena, recarrega e confere a ordem; arquivar remove da lista ativa; editar observação técnica persiste
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 

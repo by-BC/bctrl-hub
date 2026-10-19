@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
-import { ComingSoon, PageHeader } from "@/components/shell/page-header";
+import { Suspense } from "react";
+import { EditorSkeleton, RoutineEditor } from "@/features/routines/components/routine-editor";
 
 export const metadata: Metadata = { title: "Rotina" };
 
-export default function TreinoRotinasIdPage() {
+// Sem generateStaticParams, o id só existe na requisição: fica atrás do Suspense
+// e o resto do shell é pré-renderizado.
+export default function RotinaPage({ params }: PageProps<"/treino/rotinas/[id]">) {
   return (
-    <>
-      <PageHeader title="Rotina" eyebrow="Treino" />
-      <ComingSoon task="3.0">Editor da rotina: exercícios, séries, descanso e observações técnicas.</ComingSoon>
-    </>
+    <Suspense fallback={<EditorSkeleton />}>
+      <EditorFromParams params={params} />
+    </Suspense>
   );
+}
+
+async function EditorFromParams({ params }: Pick<PageProps<"/treino/rotinas/[id]">, "params">) {
+  const { id } = await params;
+  return <RoutineEditor id={id} />;
 }

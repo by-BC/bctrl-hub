@@ -10,8 +10,8 @@ export async function login(page: Page, email = TEST_USER.email, password = TEST
   await page.getByRole("button", { name: "Entrar" }).click();
 }
 
-export async function loginAndWaitForHome(page: Page) {
-  await login(page);
+export async function loginAndWaitForHome(page: Page, email = TEST_USER.email, password = TEST_USER.password) {
+  await login(page, email, password);
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("heading", { level: 1, name: "Hoje" })).toBeVisible();
 }

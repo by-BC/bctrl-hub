@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
-import { ComingSoon, PageHeader } from "@/components/shell/page-header";
+import { PageHeader } from "@/components/shell/page-header";
+import { RoutineList } from "@/features/routines/components/routine-list";
 
 export const metadata: Metadata = { title: "Treino" };
 
+// Dados lidos no cliente (TanStack Query + RLS): o shell continua estático.
 export default function TreinoPage() {
   return (
     <>
       <PageHeader title="Treino" eyebrow="Treino" />
-      <ComingSoon task="3.0">Suas rotinas Upper/Lower e o próximo treino da sequência.</ComingSoon>
+      <RoutineList />
     </>
   );
 }

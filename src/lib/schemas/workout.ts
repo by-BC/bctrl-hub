@@ -18,7 +18,7 @@ export const workoutSetSchema = z.object({
 
 export const workoutExerciseSchema = z.object({
   id: z.uuid().optional(),
-  exercise_id: z.uuid(),
+  exercise_id: z.guid(), // ids do seed vêm de md5: formato de uuid sem versão RFC
   notes: z.string().nullish(),
   sets: z.array(workoutSetSchema).min(1, "O exercício precisa de ao menos uma série."),
 });
@@ -26,7 +26,7 @@ export const workoutExerciseSchema = z.object({
 export const finishWorkoutSchema = z
   .object({
     id: z.uuid(),
-    routine_id: z.uuid().nullable(),
+    routine_id: z.guid().nullable(),
     started_at: z.iso.datetime({ offset: true }),
     finished_at: z.iso.datetime({ offset: true }),
     day: z.iso.date(), // dia em America/Sao_Paulo, calculado no cliente

@@ -73,6 +73,14 @@ describe("finishWorkoutSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("aceita rotina e exercício com ids do seed (md5, sem versão RFC)", () => {
+    const seedId = "0cc175b9-c0f1-b6a8-31c3-99e269772661";
+    const p = valid();
+    p.routine_id = seedId;
+    p.exercises[0].exercise_id = seedId;
+    expect(finishWorkoutSchema.safeParse(p).success).toBe(true);
+  });
+
   it("rejeita ids e datas malformados", () => {
     expect(finishWorkoutSchema.safeParse({ ...valid(), id: "abc" }).success).toBe(false);
     expect(finishWorkoutSchema.safeParse({ ...valid(), day: "13/10/2026" }).success).toBe(false);
