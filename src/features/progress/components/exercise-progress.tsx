@@ -4,6 +4,7 @@ import { ChevronRight, Dumbbell, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { z } from "zod";
+import { NumUnit } from "@/components/num-unit";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -109,16 +110,18 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
 
 function BestsGrid({ bests }: { bests: ExerciseBests }) {
   const items = [
-    { label: "Melhor carga", value: kg(bests.maxWeight) },
-    { label: "1RM estimado", value: kg(bests.maxE1rm) },
-    { label: "Melhor série (volume)", value: kg(bests.maxSetVolume) },
+    { label: "Melhor carga", value: bests.maxWeight },
+    { label: "1RM estimado", value: bests.maxE1rm },
+    { label: "Melhor série (volume)", value: bests.maxSetVolume },
   ];
   return (
     <dl className="grid grid-cols-3 gap-2" aria-label="Recordes de todos os tempos" data-testid="exercise-bests">
       {items.map((item) => (
         <div key={item.label} className="rounded-xl border bg-card p-3">
           <dt className="text-xs text-muted-foreground">{item.label}</dt>
-          <dd className="num mt-1 text-base font-semibold sm:text-lg">{item.value}</dd>
+          <dd className="mt-1 text-base font-semibold sm:text-lg">
+            <NumUnit value={formatKg(item.value)} unit="kg" />
+          </dd>
         </div>
       ))}
     </dl>

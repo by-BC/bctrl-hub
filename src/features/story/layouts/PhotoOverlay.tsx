@@ -2,7 +2,8 @@ import { ImagePlus } from "lucide-react";
 import { BrandSymbol, BrandWordmark } from "@/components/brand/brand-symbol";
 import { HEX_SEGMENT_POINTS } from "@/lib/domain/hex";
 import { formatInt } from "@/lib/format";
-import { STORY_PR_LABELS, durationShort, prValueText, storyDate } from "../format";
+import { NumUnit } from "@/components/num-unit";
+import { STORY_PR_LABELS, durationShort, prValue, storyDate } from "../format";
 import type { StoryLayoutProps, StoryPhoto } from "../types";
 
 /**
@@ -61,7 +62,7 @@ export function PhotoOverlay({ data, photo }: StoryLayoutProps) {
               </span>
               <span className="min-w-0 truncate">
                 {topPr.exercise} · {STORY_PR_LABELS[topPr.kind]}{" "}
-                <span className="num font-semibold">{prValueText(topPr.kind, topPr.value)}</span>
+                <NumUnit className="font-semibold" value={prValue(topPr.kind, topPr.value)} unit="kg" />
               </span>
             </p>
           )}

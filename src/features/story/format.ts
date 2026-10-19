@@ -32,8 +32,11 @@ export function storyDate(day: string): StoryDate {
 
 export const STORY_PR_LABELS: Record<PrKind, string> = { weight: "Carga", volume: "Volume", e1rm: "1RM est." };
 
+/** Número do recorde (a unidade é sempre kg): "72,5", "1.000", "96,7". */
+export const prValue = (kind: PrKind, value: number) => (kind === "volume" ? formatInt(value) : formatKg(value));
+
 /** Valor do recorde com unidade: "72,5 kg", "1.000 kg", "96,7 kg". */
-export const prValueText = (kind: PrKind, value: number) => `${kind === "volume" ? formatInt(value) : formatKg(value)} kg`;
+export const prValueText = (kind: PrKind, value: number) => `${prValue(kind, value)} kg`;
 
 /** "70 × 8" (carga × reps); sem carga, só as reps: "12 reps". */
 export const setText = (kg: number, reps: number) => (kg > 0 ? `${formatKg(kg)} × ${reps}` : `${reps} reps`);

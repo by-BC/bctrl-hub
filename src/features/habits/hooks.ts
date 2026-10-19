@@ -6,16 +6,12 @@ import { DataError } from "@/features/routines/api";
 import { weekKeys } from "@/features/week/api";
 import { STREAK_MAX_WEEKS } from "@/lib/domain/habits";
 import { addWeeks, weekDays } from "@/lib/domain/week";
+import { WRITES } from "@/lib/query/mutation-defaults";
 import {
-  deleteHabit,
-  deleteHabitLogs,
   fetchHabitLogs,
   fetchHabits,
   fetchTrainedDays,
   habitKeys,
-  updateHabit,
-  upsertHabit,
-  upsertHabitLog,
   type Habit,
   type HabitInsert,
   type HabitLog,
@@ -59,14 +55,13 @@ const HABIT_LOG_MUTATION_KEY = ["habit-logs"] as const;
  * em ordem) e, quando a última gravação termina, revalida os registros e o resumo da semana.
  */
 function useHabitLogMutation<V extends { week: string }>(
-  mutationFn: (v: V) => Promise<void>,
+  write: { mutationKey: readonly [string, string]; mutationFn: (v: V) => Promise<void> },
   apply: (logs: HabitLog[], v: V) => HabitLog[],
 ) {
   const qc = useQueryClient();
   return useMutation({
-    mutationKey: HABIT_LOG_MUTATION_KEY,
+    ...write,
     scope: { id: "habit-logs" },
-    mutationFn,
     onMutate: async (vars: V) => {
       const { from, to } = logRange(vars.week);
       const key = habitKeys.logs(from, to);
@@ -93,7 +88,7 @@ function useHabitLogMutation<V extends { week: string }>(
 /** Grava um registro (id gerado no cliente). `week` = semana em tela, para o otimismo. */
 export function useLogHabit() {
   return useHabitLogMutation(
-    ({ log }: { week: string; log: HabitLogInsert }) => upsertHabitLog(log),
+    WRITES.logHabit,
     (logs, { log }) => [
       ...logs.filter((l) => l.id !== log.id),
       { ...log, created_at: new Date().toISOString() },
@@ -104,7 +99,7 @@ export function useLogHabit() {
 /** Desfaz registros (por id). */
 export function useUndoHabitLog() {
   return useHabitLogMutation(
-    ({ ids }: { week: string; ids: string[] }) => deleteHabitLogs(ids),
+    WRITES.undoHabitLog,
     (logs, { ids }) => logs.filter((l) => !ids.includes(l.id)),
   );
 }
@@ -140,7 +135,6 @@ function setHabits(qc: QueryClient, fn: (habits: Habit[]) => Habit[]) {
 /** Mesmo padrão das rotinas: otimismo, desfaz no erro, revalida ao fim da fila. */
 function habitMutationOptions(qc: QueryClient) {
   return {
-    mutationKey: HABIT_MUTATION_KEY,
     scope: { id: "habits" },
     onError: (error: unknown, _vars: unknown, snap: HabitsSnapshot | undefined) => {
       if (snap?.habits) qc.setQueryData(habitKeys.list(), snap.habits);
@@ -161,8 +155,8 @@ export function useCreateHabit() {
   const qc = useQueryClient();
   return useMutation({
     ...habitMutationOptions(qc),
-    mutationFn: (row: HabitInsert) => upsertHabit(row),
-    onMutate: async (row) => {
+    ...WRITES.createHabit,
+    onMutate: async (row: HabitInsert) => {
       const snap = await snapshotHabits(qc);
       const optimistic: Habit = {
         ...row,
@@ -181,8 +175,8 @@ export function useUpdateHabit() {
   const qc = useQueryClient();
   return useMutation({
     ...habitMutationOptions(qc),
-    mutationFn: ({ id, patch }: { id: string; patch: HabitPatch }) => updateHabit(id, patch),
-    onMutate: async ({ id, patch }) => {
+    ...WRITES.updateHabit,
+    onMutate: async ({ id, patch }: { id: string; patch: HabitPatch }) => {
       const snap = await snapshotHabits(qc);
       setHabits(qc, (habits) => habits.map((h) => (h.id === id ? { ...h, ...patch } : h)));
       return snap;
@@ -194,7 +188,7 @@ export function useDeleteHabit() {
   const qc = useQueryClient();
   return useMutation({
     ...habitMutationOptions(qc),
-    mutationFn: (id: string) => deleteHabit(id),
+    ...WRITES.deleteHabit,
     onMutate: async (id) => {
       const snap = await snapshotHabits(qc);
       setHabits(qc, (habits) => habits.filter((h) => h.id !== id));

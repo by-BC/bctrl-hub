@@ -13,6 +13,13 @@ function admin() {
   return createClient(url, secretKey, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
+/** Linhas do usuário numa tabela (leitura direta no banco, para conferir gravações). */
+export async function countRows(user: DisposableUser, table: string) {
+  const { count, error } = await admin().from(table).select("*", { count: "exact", head: true }).eq("user_id", user.id);
+  if (error) throw new Error(`count ${table}: ${error.message}`);
+  return count ?? 0;
+}
+
 export async function createDisposableUser(label: string): Promise<DisposableUser> {
   const email = `${label}-${crypto.randomUUID()}@bctrl.test`;
   const password = `senha-${crypto.randomUUID()}`;

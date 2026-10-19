@@ -77,6 +77,16 @@ test.describe("rotinas e exercícios", () => {
     await page.reload();
     await expect(itemNames(page)).toHaveText(["Supino E2E", "Remada E2E"]);
 
+    // Remover não pede confirmação: o toast oferece desfazer, que devolve o item na posição.
+    await page.getByRole("button", { name: "Remover Supino E2E da rotina" }).click();
+    await expect(itemNames(page)).toHaveText(["Remada E2E"]);
+    await page.getByRole("button", { name: "Desfazer" }).click();
+    await expect(itemNames(page)).toHaveText(["Supino E2E", "Remada E2E"]);
+    await expect(async () => {
+      await page.reload();
+      await expect(itemNames(page)).toHaveText(["Supino E2E", "Remada E2E"], { timeout: 2_000 });
+    }).toPass();
+
     // A lista mostra a rotina com os totais
     await page.getByRole("link", { name: "Treino", exact: true }).first().click();
     await expect(routineCard(page, "Upper E2E")).toContainText("2 exercícios · 6 séries");

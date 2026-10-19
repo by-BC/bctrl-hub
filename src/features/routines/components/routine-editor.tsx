@@ -26,6 +26,7 @@ import {
   ROUTINE_MUTATION_KEY,
   useAddRoutineExercise,
   useRemoveRoutineExercise,
+  useRestoreRoutineExercise,
   useReorderRoutineExercises,
   useRoutine,
   useRoutines,
@@ -76,9 +77,11 @@ export function RoutineEditor({ id }: { id: string }) {
 }
 
 function Editor({ routine }: { routine: RoutineDetail }) {
-  const updateRoutine = useUpdateRoutine(routine.id);
+  const updateRoutine = useUpdateRoutine();
   const addExercise = useAddRoutineExercise(routine.id);
   const reorderItems = useReorderRoutineExercises(routine.id);
+  const removeItem = useRemoveRoutineExercise(routine.id);
+  const restoreItem = useRestoreRoutineExercise(routine.id);
   const setArchived = useSetRoutineArchived();
   const { data: allRoutines = [] } = useRoutines();
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -96,11 +99,20 @@ function Editor({ routine }: { routine: RoutineDetail }) {
     });
     if (!parsed.success) return firstError(parsed.error);
     const clean = Object.fromEntries(Object.keys(patch).map((k) => [k, parsed.data[k as keyof typeof patch]]));
-    updateRoutine.mutate(clean);
+    updateRoutine.mutate({ id: routine.id, patch: clean });
     return null;
   };
 
   const move = (after: RoutineItem[]) => reorderItems.mutate({ before: items, after });
+
+  // Remover não pede confirmação: o toast oferece desfazer (mesmo id, mesma posição).
+  const remove = (item: RoutineItem) => {
+    const before = items;
+    removeItem.mutate({ id: item.id, before });
+    toast(`${item.exercise.name} removido da rotina.`, {
+      action: { label: "Desfazer", onClick: () => restoreItem.mutate({ item, before }) },
+    });
+  };
 
   return (
     <>
@@ -206,6 +218,7 @@ function Editor({ routine }: { routine: RoutineDetail }) {
                   handle={handle}
                   isDragging={isDragging}
                   onMove={(dir) => move(moveById(items, item.id, dir))}
+                  onRemove={() => remove(item)}
                 />
               )}
             />
@@ -237,6 +250,7 @@ function RoutineItemCard({
   handle,
   isDragging,
   onMove,
+  onRemove,
 }: {
   item: RoutineItem;
   index: number;
@@ -245,9 +259,9 @@ function RoutineItemCard({
   handle: DragHandleProps;
   isDragging: boolean;
   onMove: (direction: -1 | 1) => void;
+  onRemove: () => void;
 }) {
   const update = useUpdateRoutineExercise(routine.id);
-  const remove = useRemoveRoutineExercise(routine.id);
   const name = item.exercise.name;
 
   const save = (patch: Partial<Pick<RoutineItem, "sets" | "rest_sec" | "notes">>) => {
@@ -327,10 +341,7 @@ function RoutineItemCard({
           variant="ghost"
           className="h-11 text-sm text-destructive hover:text-destructive"
           aria-label={`Remover ${name} da rotina`}
-          onClick={() => {
-            remove.mutate({ id: item.id, before: routine.routine_exercises });
-            toast(`${name} removido da rotina.`);
-          }}
+          onClick={onRemove}
         >
           <Trash2 aria-hidden />
           Remover

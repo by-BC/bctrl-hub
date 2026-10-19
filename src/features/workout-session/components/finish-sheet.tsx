@@ -3,6 +3,7 @@
 import { Flag, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { NumUnit } from "@/components/num-unit";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -108,7 +109,7 @@ export function FinishSheet({ workout, open, onOpenChange, onFinished }: FinishS
 export function SummaryGrid({ summary }: { summary: SessionSummary }) {
   const items = [
     { label: "Duração", value: formatDuration(summary.durationMin) },
-    { label: "Volume", value: `${formatKg(summary.volumeKg)} kg` },
+    { label: "Volume", value: <NumUnit value={formatKg(summary.volumeKg)} unit="kg" /> },
     { label: "Séries", value: String(summary.sets) },
     { label: "PRs", value: String(summary.prs) },
   ];

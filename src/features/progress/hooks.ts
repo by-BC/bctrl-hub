@@ -11,15 +11,14 @@ import {
   toSessionSeries,
   type Range,
 } from "@/lib/domain/stats";
+import { WRITES } from "@/lib/query/mutation-defaults";
 import {
-  deleteBodyWeight,
   fetchBodyWeights,
   fetchExercise,
   fetchExerciseHistory,
   fetchExerciseStats,
   fetchProgressOverview,
   progressKeys,
-  upsertBodyWeight,
   type BodyWeight,
 } from "./api";
 import { useToday } from "./use-today";
@@ -76,13 +75,15 @@ function sortByDay(list: BodyWeight[]) {
 }
 
 /** Gravações de peso: otimistas, em fila única e revalidadas quando a última termina. */
-function useBodyWeightMutation<V>(mutationFn: (v: V) => Promise<void>, apply: (list: BodyWeight[], v: V) => BodyWeight[]) {
+function useBodyWeightMutation<V>(
+  write: { mutationKey: readonly [string, string]; mutationFn: (v: V) => Promise<void> },
+  apply: (list: BodyWeight[], v: V) => BodyWeight[],
+) {
   const qc = useQueryClient();
   const key = progressKeys.bodyWeights();
   return useMutation({
-    mutationKey: BODY_WEIGHT_MUTATION_KEY,
+    ...write,
     scope: { id: "body-weights" },
-    mutationFn,
     onMutate: async (vars: V) => {
       await qc.cancelQueries({ queryKey: key });
       const previous = qc.getQueryData<BodyWeight[]>(key);
@@ -104,14 +105,14 @@ function useBodyWeightMutation<V>(mutationFn: (v: V) => Promise<void>, apply: (l
 /** Registra o peso do dia; se já houver um no mesmo dia, substitui. */
 export function useUpsertBodyWeight() {
   return useBodyWeightMutation(
-    (entry: BodyWeight) => upsertBodyWeight(entry),
+    WRITES.upsertBodyWeight,
     (list, entry) => [...list.filter((w) => w.day !== entry.day), entry],
   );
 }
 
 export function useDeleteBodyWeight() {
   return useBodyWeightMutation(
-    (day: string) => deleteBodyWeight(day),
+    WRITES.deleteBodyWeight,
     (list, day) => list.filter((w) => w.day !== day),
   );
 }

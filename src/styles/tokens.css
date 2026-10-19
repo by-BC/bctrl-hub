@@ -47,6 +47,10 @@
   --highlight: var(--brand-orange);
   --highlight-foreground: var(--brand-ink);
   --highlight-text: var(--orange-text-on-paper);
+  /* Superfície laranja com texto pequeno em grafite (timer de descanso): o laranja da marca
+     dá 4.2:1 com o grafite (só texto grande/negrito); este tom mais claro dá 5.7:1. Igual
+     nos dois temas. */
+  --highlight-surface: var(--orange-text-on-ink);
 
   --chart-1: var(--brand-blue);
   --chart-2: var(--brand-orange);
@@ -80,7 +84,7 @@
   --muted-foreground: #a9abb2;
   --accent: #32353c;
   --accent-foreground: var(--brand-paper);
-  --destructive: #f0705f;
+  --destructive: #f4806f; /* 4.8:1 também sobre o --muted (hover de botão fantasma) */
   --border: #3a3d45;
   --input: #3a3d45;
   --ring: #6f8cff;

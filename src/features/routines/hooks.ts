@@ -2,18 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  changedPositions,
-  findDuplicateExercise,
-  nextPosition,
-  removeById,
-} from "@/lib/domain/routines";
+import { findDuplicateExercise, nextPosition, removeById } from "@/lib/domain/routines";
 import { REST_DEFAULT } from "@/lib/schemas/routine";
+import { WRITES, type RoutineItemPatch, type RoutinePatch } from "@/lib/query/mutation-defaults";
 import { progressKeys } from "@/features/progress/api";
 import {
   DataError,
-  deleteRoutine,
-  deleteRoutineExercise,
   duplicateExerciseMessage,
   exerciseKeys,
   fetchExercises,
@@ -21,19 +15,9 @@ import {
   fetchRoutineWorkoutCount,
   fetchRoutines,
   routineKeys,
-  saveRoutineExercisePositions,
-  saveRoutinePositions,
-  stripExercise,
-  updateExercise,
-  updateRoutine,
-  updateRoutineExercise,
-  upsertExercise,
-  upsertRoutine,
-  upsertRoutineExercise,
   type Exercise,
   type ExerciseSummary,
   type RoutineDetail,
-  type RoutineExercise,
   type RoutineItem,
   type RoutineListItem,
 } from "./api";
@@ -64,7 +48,7 @@ export function useRoutineWorkoutCount(id: string, enabled: boolean) {
 
 /** Todas as mutações de rotina usam esta chave (para o indicador "Salvando…"). */
 export const ROUTINE_MUTATION_KEY = ["routines"] as const;
-const EXERCISE_MUTATION_KEY = ["exercises"] as const;
+// Cada gravação tem chave própria (`WRITES`, fila offline), prefixada pela do grupo.
 
 type Snapshot = { list?: RoutineListItem[]; detail?: RoutineDetail | null; detailId?: string };
 
@@ -113,7 +97,6 @@ function errorMessage(error: unknown) {
  */
 function routineMutationOptions(qc: QueryClient) {
   return {
-    mutationKey: ROUTINE_MUTATION_KEY,
     scope: { id: "routines" },
     onError: (error: unknown, _vars: unknown, snap: Snapshot | undefined) => {
       restore(qc, snap);
@@ -133,8 +116,7 @@ export function useCreateRoutine() {
   const qc = useQueryClient();
   return useMutation({
     ...routineMutationOptions(qc),
-    mutationFn: (row: { id: string; name: string; position: number }) =>
-      upsertRoutine({ ...row, rest_sec: REST_DEFAULT }),
+    ...WRITES.createRoutine,
     onMutate: async (row) => {
       const snap = await snapshot(qc);
       const optimistic: RoutineListItem = {
@@ -153,14 +135,12 @@ export function useCreateRoutine() {
   });
 }
 
-type RoutinePatch = Partial<Pick<RoutineDetail, "name" | "notes" | "rest_sec">>;
-
-export function useUpdateRoutine(id: string) {
+export function useUpdateRoutine() {
   const qc = useQueryClient();
   return useMutation({
     ...routineMutationOptions(qc),
-    mutationFn: (patch: RoutinePatch) => updateRoutine(id, patch),
-    onMutate: async (patch) => {
+    ...WRITES.updateRoutine,
+    onMutate: async ({ id, patch }: { id: string; patch: RoutinePatch }) => {
       const snap = await snapshot(qc, id);
       setDetail(qc, id, (r) => ({ ...r, ...patch }));
       setList(qc, (list) => list.map((r) => (r.id === id ? { ...r, ...patch } : r)));
@@ -174,8 +154,7 @@ export function useReorderRoutines() {
   const qc = useQueryClient();
   return useMutation({
     ...routineMutationOptions(qc),
-    mutationFn: ({ before, after }: { before: RoutineListItem[]; after: RoutineListItem[] }) =>
-      saveRoutinePositions(changedPositions(before, after)),
+    ...WRITES.reorderRoutines,
     onMutate: async ({ after }) => {
       const snap = await snapshot(qc);
       const positions = new Map(after.map((r) => [r.id, r.position]));
@@ -193,11 +172,7 @@ export function useSetRoutineArchived() {
   const qc = useQueryClient();
   return useMutation({
     ...routineMutationOptions(qc),
-    mutationFn: ({ id, archived, position }: { id: string; archived: boolean; position?: number }) =>
-      updateRoutine(id, {
-        archived_at: archived ? new Date().toISOString() : null,
-        ...(position !== undefined && { position }),
-      }),
+    ...WRITES.setRoutineArchived,
     onMutate: async ({ id, archived, position }) => {
       const snap = await snapshot(qc, id);
       const archived_at = archived ? new Date().toISOString() : null;
@@ -213,7 +188,7 @@ export function useDeleteRoutine() {
   const qc = useQueryClient();
   return useMutation({
     ...routineMutationOptions(qc),
-    mutationFn: (id: string) => deleteRoutine(id),
+    ...WRITES.deleteRoutine,
     onMutate: async (id) => {
       const snap = await snapshot(qc);
       setList(qc, (list) => list.filter((r) => r.id !== id));
@@ -229,7 +204,7 @@ export function useAddRoutineExercise(routineId: string) {
   const qc = useQueryClient();
   return useMutation({
     ...routineMutationOptions(qc),
-    mutationFn: (item: RoutineItem) => upsertRoutineExercise(stripRow(item)),
+    ...WRITES.addRoutineExercise,
     onMutate: async (item) => {
       const snap = await snapshot(qc, routineId);
       setDetail(qc, routineId, (r) => {
@@ -258,14 +233,12 @@ export function newRoutineItem(routine: RoutineDetail, exercise: ExerciseSummary
   };
 }
 
-type RoutineItemPatch = Partial<Pick<RoutineExercise, "sets" | "rest_sec" | "notes">>;
-
 export function useUpdateRoutineExercise(routineId: string) {
   const qc = useQueryClient();
   return useMutation({
     ...routineMutationOptions(qc),
-    mutationFn: ({ id, patch }: { id: string; patch: RoutineItemPatch }) => updateRoutineExercise(id, patch),
-    onMutate: async ({ id, patch }) => {
+    ...WRITES.updateRoutineExercise,
+    onMutate: async ({ id, patch }: { id: string; patch: RoutineItemPatch }) => {
       const snap = await snapshot(qc, routineId);
       setDetail(qc, routineId, (r) => {
         const items = r.routine_exercises.map((i) => (i.id === id ? { ...i, ...patch } : i));
@@ -281,8 +254,7 @@ export function useReorderRoutineExercises(routineId: string) {
   const qc = useQueryClient();
   return useMutation({
     ...routineMutationOptions(qc),
-    mutationFn: ({ before, after }: { before: RoutineItem[]; after: RoutineItem[] }) =>
-      saveRoutineExercisePositions(changedPositions(before, after).map(stripRow)),
+    ...WRITES.reorderRoutineExercises,
     onMutate: async ({ after }) => {
       const snap = await snapshot(qc, routineId);
       setDetail(qc, routineId, (r) => ({ ...r, routine_exercises: after }));
@@ -295,12 +267,7 @@ export function useRemoveRoutineExercise(routineId: string) {
   const qc = useQueryClient();
   return useMutation({
     ...routineMutationOptions(qc),
-    mutationFn: async ({ id, before }: { id: string; before: RoutineItem[] }) => {
-      await deleteRoutineExercise(id);
-      // Fecha o buraco deixado na ordem.
-      const after = removeById(before, id);
-      await saveRoutineExercisePositions(changedPositions(before, after).map(stripRow));
-    },
+    ...WRITES.removeRoutineExercise,
     onMutate: async ({ id, before }) => {
       const snap = await snapshot(qc, routineId);
       const after = removeById(before, id);
@@ -311,17 +278,25 @@ export function useRemoveRoutineExercise(routineId: string) {
   });
 }
 
-function stripRow(item: RoutineItem): RoutineExercise {
-  const { user_id, ...row } = stripExercise(item);
-  // Item criado otimisticamente antes de a rotina chegar do banco: deixa o default (auth.uid()).
-  return (user_id ? { ...row, user_id } : row) as RoutineExercise;
+/** Desfazer a remoção: devolve o item (mesmo id) e a ordem de antes. */
+export function useRestoreRoutineExercise(routineId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    ...routineMutationOptions(qc),
+    ...WRITES.restoreRoutineExercise,
+    onMutate: async ({ before }) => {
+      const snap = await snapshot(qc, routineId);
+      setDetail(qc, routineId, (r) => ({ ...r, routine_exercises: before }));
+      syncListItems(qc, routineId, before);
+      return snap;
+    },
+  });
 }
 
 // ── Biblioteca de exercícios ──────────────────────────────────────────────
 
 function exerciseMutationOptions(qc: QueryClient) {
   return {
-    mutationKey: EXERCISE_MUTATION_KEY,
     scope: { id: "exercises" },
     onError: (_error: unknown, _vars: unknown, snap: { previous?: Exercise[] } | undefined) => {
       if (snap?.previous) qc.setQueryData(exerciseKeys.all, snap.previous);
@@ -348,10 +323,7 @@ export function useCreateExercise() {
   const qc = useQueryClient();
   return useMutation({
     ...exerciseMutationOptions(qc),
-    mutationFn: async (row: Pick<Exercise, "id" | "name" | "muscle_group">) => {
-      await upsertExercise(row);
-      return row;
-    },
+    ...WRITES.createExercise,
     onMutate: async (row) => {
       assertUniqueName(qc, row.name);
       await qc.cancelQueries({ queryKey: exerciseKeys.all });
@@ -367,8 +339,7 @@ export function useUpdateExercise() {
   const qc = useQueryClient();
   return useMutation({
     ...exerciseMutationOptions(qc),
-    mutationFn: ({ id, name, muscle_group }: Pick<Exercise, "id" | "name" | "muscle_group">) =>
-      updateExercise(id, { name, muscle_group }),
+    ...WRITES.updateExercise,
     onMutate: async ({ id, name, muscle_group }) => {
       assertUniqueName(qc, name, id);
       await qc.cancelQueries({ queryKey: exerciseKeys.all });

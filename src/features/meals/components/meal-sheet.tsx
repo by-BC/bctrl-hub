@@ -28,7 +28,7 @@ type MealSheetProps = {
 };
 
 /**
- * Opções da refeição: tocar em "Comi esta" marca como feita (2º toque) e fecha.
+ * Opções da refeição: tocar em "Comi a Opção N" marca como feita (2º toque) e fecha.
  * Também registra "fora do plano" com nota e desmarca.
  */
 export function MealSheet({ day, meal, log, onOpenChange }: MealSheetProps) {
@@ -148,7 +148,7 @@ function OptionCard({
         onClick={onChoose}
       >
         <Check aria-hidden />
-        {selected ? "Escolhida" : "Comi esta"}
+        {selected ? `${label} escolhida` : `Comi a ${label}`}
       </Button>
     </article>
   );

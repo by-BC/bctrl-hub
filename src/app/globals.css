@@ -17,6 +17,7 @@
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
   --color-highlight-text: var(--highlight-text);
+  --color-highlight-surface: var(--highlight-surface);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

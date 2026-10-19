@@ -1,15 +1,18 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
+import { clearQueryCache } from "@/components/providers/query-provider";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
 export function LogoutButton({ withLabel = false }: { withLabel?: boolean }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const queryClient = useQueryClient();
 
   function handleLogout() {
     startTransition(async () => {
@@ -18,6 +21,7 @@ export function LogoutButton({ withLabel = false }: { withLabel?: boolean }) {
         toast.error("Não foi possível sair. Tente de novo.");
         return;
       }
+      clearQueryCache(queryClient);
       router.replace("/login");
       router.refresh();
     });

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandSymbol, BrandWordmark } from "@/components/brand/brand-symbol";
 import { LogoutButton } from "./logout-button";
+import { SyncStatus } from "./sync-status";
 import { ThemeToggle } from "./theme-toggle";
 
 export function MobileHeader() {
@@ -14,6 +15,9 @@ export function MobileHeader() {
         <ThemeToggle />
         <LogoutButton />
       </div>
+      {/* Flutua logo abaixo do cabeçalho (sem espaço sobrando no topo do celular) e não
+          bloqueia toques no conteúdo. */}
+      <SyncStatus className="pointer-events-none absolute top-full left-1/2 mt-2 -translate-x-1/2 drop-shadow-sm" />
     </header>
   );
 }

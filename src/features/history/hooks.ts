@@ -6,12 +6,11 @@ import { DataError, routineKeys } from "@/features/routines/api";
 import { progressKeys } from "@/features/progress/api";
 import { workoutKeys } from "@/features/workout-session/api";
 import { weekKeys } from "@/features/week/api";
+import { WRITES } from "@/lib/query/mutation-defaults";
 import {
-  deleteWorkout,
   fetchHistory,
   fetchWorkoutDetail,
   historyKeys,
-  updateWorkoutSet,
   type HistoryDetail,
   type HistoryListItem,
 } from "./api";
@@ -43,7 +42,6 @@ async function snapshot(qc: QueryClient, id: string): Promise<Snapshot> {
  */
 function historyMutationOptions(qc: QueryClient) {
   return {
-    mutationKey: HISTORY_MUTATION_KEY,
     scope: { id: "history" },
     onError: (error: unknown, _vars: unknown, snap: Snapshot | undefined) => {
       if (snap?.list) qc.setQueryData(historyKeys.list(), snap.list);
@@ -66,13 +64,11 @@ function historyMutationOptions(qc: QueryClient) {
   };
 }
 
-type SetPatch = { weight_kg: number; reps: number };
-
 export function useUpdateWorkoutSet(workoutId: string) {
   const qc = useQueryClient();
   return useMutation({
     ...historyMutationOptions(qc),
-    mutationFn: ({ id, patch }: { id: string; patch: SetPatch }) => updateWorkoutSet(id, patch),
+    ...WRITES.updateWorkoutSet,
     onMutate: async ({ id, patch }) => {
       const snap = await snapshot(qc, workoutId);
       qc.setQueryData<HistoryDetail | null>(historyKeys.detail(workoutId), (old) =>
@@ -95,7 +91,7 @@ export function useDeleteWorkout() {
   const qc = useQueryClient();
   return useMutation({
     ...historyMutationOptions(qc),
-    mutationFn: (id: string) => deleteWorkout(id),
+    ...WRITES.deleteWorkout,
     onMutate: async (id) => {
       const snap = await snapshot(qc, id);
       qc.setQueryData<HistoryListItem[]>(historyKeys.list(), (old) => old?.filter((w) => w.id !== id));

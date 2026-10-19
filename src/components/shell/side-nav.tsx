@@ -7,6 +7,7 @@ import { BrandSymbol, BrandWordmark } from "@/components/brand/brand-symbol";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "./logout-button";
 import { NAV_ITEMS, isActivePath } from "./nav-items";
+import { SyncStatus } from "./sync-status";
 import { ThemeToggle } from "./theme-toggle";
 
 export function SideNav() {
@@ -20,6 +21,8 @@ export function SideNav() {
       <Suspense fallback={<SideNavLinks pathname={null} />}>
         <ActiveSideNavLinks />
       </Suspense>
+
+      <SyncStatus className="px-3 pb-3" />
 
       <div className="flex items-center justify-between border-t px-3 py-3">
         <ThemeToggle />

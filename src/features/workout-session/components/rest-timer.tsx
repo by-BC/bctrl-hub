@@ -36,7 +36,7 @@ export function RestTimer() {
     <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 px-3 pb-2 lg:inset-x-auto lg:right-10 lg:bottom-6 lg:w-[24rem] lg:px-0 lg:pb-0">
       <section
         aria-label="Descanso"
-        className="mx-auto max-w-lg overflow-hidden rounded-2xl bg-highlight text-highlight-foreground shadow-lg"
+        className="mx-auto max-w-lg overflow-hidden rounded-2xl bg-highlight-surface text-highlight-foreground shadow-lg"
       >
         <div className="flex items-center gap-2 p-2 pl-4">
           <Timer aria-hidden className="size-5 shrink-0" />
@@ -73,7 +73,7 @@ function TimerButton({ label, onClick, children }: { label: string; onClick: () 
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="num flex h-11 min-w-11 items-center justify-center rounded-xl bg-highlight-foreground/10 px-2.5 text-base font-semibold outline-none hover:bg-highlight-foreground/20 focus-visible:ring-[3px] focus-visible:ring-highlight-foreground/60"
+      className="num flex h-11 min-w-11 items-center justify-center rounded-xl bg-highlight-foreground/10 px-2.5 text-base font-semibold outline-none hover:bg-highlight-foreground/15 focus-visible:ring-[3px] focus-visible:ring-highlight-foreground/60"
     >
       {children}
     </button>

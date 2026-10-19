@@ -3,6 +3,7 @@
 import { Plus, Scale, Trash2 } from "lucide-react";
 import { useId, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
+import { NumUnit } from "@/components/num-unit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -160,11 +161,15 @@ function BodyWeightTrend() {
       <dl className="grid grid-cols-2 gap-2" aria-label="Peso atual">
         <div className="rounded-xl border bg-card p-3">
           <dt className="text-xs text-muted-foreground">Último registro · {formatShortDay(latest.day)}</dt>
-          <dd className="num mt-1 text-lg font-semibold">{kg(latest.value)}</dd>
+          <dd className="mt-1 text-lg font-semibold">
+            <NumUnit value={formatKg(latest.value)} unit="kg" />
+          </dd>
         </div>
         <div className="rounded-xl border bg-card p-3">
           <dt className="text-xs text-muted-foreground">Média de 7 dias</dt>
-          <dd className="num mt-1 text-lg font-semibold">{kg(latest.average)}</dd>
+          <dd className="mt-1 text-lg font-semibold">
+            <NumUnit value={formatKg(latest.average)} unit="kg" />
+          </dd>
         </div>
       </dl>
       <Segmented

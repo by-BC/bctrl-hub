@@ -346,7 +346,7 @@ function HabitCard({
         {habit.kind === "check" ? (
           <>
             <QuickCheck habit={habit} logs={logs} week={week} today={today} />
-            <Button variant="outline" className="h-11" onClick={onLog} aria-label={`Registros de ${habit.name}`}>
+            <Button variant="outline" className="h-11" onClick={onLog} aria-label={`Outro dia: registros de ${habit.name}`}>
               <CalendarPlus aria-hidden />
               Outro dia
             </Button>

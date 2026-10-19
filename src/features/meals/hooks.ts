@@ -8,20 +8,12 @@ import { useWorkoutHydrated } from "@/features/workout-session/hooks";
 import { useActiveWorkout } from "@/features/workout-session/store";
 import { weekKeys } from "@/features/week/api";
 import { adherence, hasWorkoutOn, visibleMeals } from "@/lib/domain/meals";
+import { WRITES } from "@/lib/query/mutation-defaults";
 import {
-  deleteMeal,
-  deleteMealLog,
-  deleteMealOption,
   fetchHasFinishedWorkout,
   fetchMealLogs,
   fetchMealPlan,
   mealKeys,
-  saveMealPositions,
-  updateMeal,
-  updateMealOption,
-  upsertMeal,
-  upsertMealLog,
-  upsertMealOption,
   workoutDayKey,
   type Meal,
   type MealInsert,
@@ -102,14 +94,13 @@ const MEAL_LOG_MUTATION_KEY = ["meal-logs"] as const;
  * ordem) e, quando a última gravação termina, revalida o dia e o resumo da semana.
  */
 function useMealLogMutation<V extends { day: string }>(
-  mutationFn: (v: V) => Promise<void>,
+  write: { mutationKey: readonly [string, string]; mutationFn: (v: V) => Promise<void> },
   apply: (logs: MealLog[], v: V) => MealLog[],
 ) {
   const qc = useQueryClient();
   return useMutation({
-    mutationKey: MEAL_LOG_MUTATION_KEY,
+    ...write,
     scope: { id: "meal-logs" },
-    mutationFn,
     onMutate: async (vars: V) => {
       const key = mealKeys.logs(vars.day);
       await qc.cancelQueries({ queryKey: key });
@@ -135,14 +126,14 @@ function useMealLogMutation<V extends { day: string }>(
 /** Marca a refeição (opção escolhida ou fora do plano); trocar de opção substitui o registro. */
 export function useLogMeal() {
   return useMealLogMutation(
-    (log: MealLog) => upsertMealLog(log),
+    WRITES.logMeal,
     (logs, log) => [...logs.filter((l) => l.meal_id !== log.meal_id), log],
   );
 }
 
 export function useUnlogMeal() {
   return useMealLogMutation(
-    (v: { day: string; meal_id: string }) => deleteMealLog(v),
+    WRITES.unlogMeal,
     (logs, v) => logs.filter((l) => l.meal_id !== v.meal_id),
   );
 }
@@ -184,7 +175,6 @@ function setOptions(qc: QueryClient, mealId: string, fn: (options: MealOption[])
  */
 function planMutationOptions(qc: QueryClient) {
   return {
-    mutationKey: MEAL_PLAN_MUTATION_KEY,
     scope: { id: "meal-plan" },
     onError: (error: unknown, _vars: unknown, snap: PlanSnapshot | undefined) => {
       if (snap?.plan) qc.setQueryData(mealKeys.plan(), snap.plan);
@@ -205,8 +195,8 @@ export function useCreateMeal() {
   const qc = useQueryClient();
   return useMutation({
     ...planMutationOptions(qc),
-    mutationFn: (row: MealInsert) => upsertMeal(row),
-    onMutate: async (row) => {
+    ...WRITES.createMeal,
+    onMutate: async (row: MealInsert) => {
       const snap = await snapshotPlan(qc);
       const optimistic: Meal = { ...row, user_id: "", created_at: new Date().toISOString(), meal_options: [] };
       setPlan(qc, (plan) => [...plan, optimistic]);
@@ -219,8 +209,8 @@ export function useUpdateMeal() {
   const qc = useQueryClient();
   return useMutation({
     ...planMutationOptions(qc),
-    mutationFn: ({ id, patch }: { id: string; patch: MealPatch }) => updateMeal(id, patch),
-    onMutate: async ({ id, patch }) => {
+    ...WRITES.updateMeal,
+    onMutate: async ({ id, patch }: { id: string; patch: MealPatch }) => {
       const snap = await snapshotPlan(qc);
       setPlan(qc, (plan) => plan.map((m) => (m.id === id ? { ...m, ...patch } : m)));
       return snap;
@@ -232,8 +222,8 @@ export function useReorderMeals() {
   const qc = useQueryClient();
   return useMutation({
     ...planMutationOptions(qc),
-    mutationFn: (changed: Pick<Meal, "id" | "position">[]) => saveMealPositions(changed),
-    onMutate: async (changed) => {
+    ...WRITES.reorderMeals,
+    onMutate: async (changed: Pick<Meal, "id" | "position">[]) => {
       const snap = await snapshotPlan(qc);
       const positions = new Map(changed.map((m) => [m.id, m.position]));
       setPlan(qc, (plan) =>
@@ -250,8 +240,8 @@ export function useDeleteMeal() {
   const qc = useQueryClient();
   return useMutation({
     ...planMutationOptions(qc),
-    mutationFn: (id: string) => deleteMeal(id),
-    onMutate: async (id) => {
+    ...WRITES.deleteMeal,
+    onMutate: async (id: string) => {
       const snap = await snapshotPlan(qc);
       setPlan(qc, (plan) => plan.filter((m) => m.id !== id));
       return snap;
@@ -263,8 +253,8 @@ export function useCreateMealOption() {
   const qc = useQueryClient();
   return useMutation({
     ...planMutationOptions(qc),
-    mutationFn: (row: MealOptionInsert) => upsertMealOption(row),
-    onMutate: async (row) => {
+    ...WRITES.createMealOption,
+    onMutate: async (row: MealOptionInsert) => {
       const snap = await snapshotPlan(qc);
       setOptions(qc, row.meal_id, (options) => [
         ...options,
@@ -279,8 +269,8 @@ export function useUpdateMealOption() {
   const qc = useQueryClient();
   return useMutation({
     ...planMutationOptions(qc),
-    mutationFn: ({ id, patch }: { id: string; mealId: string; patch: MealOptionPatch }) => updateMealOption(id, patch),
-    onMutate: async ({ id, mealId, patch }) => {
+    ...WRITES.updateMealOption,
+    onMutate: async ({ id, mealId, patch }: { id: string; mealId: string; patch: MealOptionPatch }) => {
       const snap = await snapshotPlan(qc);
       setOptions(qc, mealId, (options) => options.map((o) => (o.id === id ? { ...o, ...patch } : o)));
       return snap;
@@ -292,8 +282,8 @@ export function useDeleteMealOption() {
   const qc = useQueryClient();
   return useMutation({
     ...planMutationOptions(qc),
-    mutationFn: ({ id }: { id: string; mealId: string }) => deleteMealOption(id),
-    onMutate: async ({ id, mealId }) => {
+    ...WRITES.deleteMealOption,
+    onMutate: async ({ id, mealId }: { id: string; mealId: string }) => {
       const snap = await snapshotPlan(qc);
       setOptions(qc, mealId, (options) => options.filter((o) => o.id !== id));
       return snap;

@@ -17,8 +17,9 @@ import { cn } from "@/lib/utils";
 
 /**
  * Hex Week: o símbolo do Bctrl Hub (mesma geometria de `BrandSymbol`) como anel de
- * progresso. Cada segmento tem um trilho discreto (a mesma cor, bem transparente) e o
- * preenchimento proporcional. Escala com o `className` (painel, story, ícone).
+ * progresso. Cada segmento tem um trilho discreto e o preenchimento proporcional.
+ * O trilho é o mesmo nos 3 segmentos (texto bem transparente): com a cor de cada um, o
+ * vazio do neutro (claro sobre o grafite) parecia mais cheio que o azul de verdade. Escala com o `className` (painel, story, ícone).
  *
  * Cores por token: azul = `--chart-1` (o azul da marca no claro, um passo mais claro no
  * escuro, legível sobre o fundo), laranja = `--chart-2`, neutro e núcleo = `currentColor`.
@@ -41,7 +42,8 @@ export const HEX_COLORS: Record<HexSegmentKey, string> = {
   habits: "currentColor",
 };
 
-const TRACK_OPACITY = 0.18;
+/** Trilho (parte vazia): igual para todos os segmentos, para o vazio nunca parecer preenchido. */
+export const HEX_TRACK = { color: "currentColor", opacity: 0.12 } as const;
 
 /** "Treinos: 2/4, 50% da meta". */
 export const segmentLabel = (s: HexSegment) => `${s.label}: ${s.value}, ${toPct(s.progress)}% da meta`;
@@ -109,7 +111,12 @@ export function HexProgress({ segments, title = "Progresso da semana", animate =
               data-segment={key}
               data-progress={fill.progress.toFixed(2)}
             >
-              <polyline points={HEX_SEGMENT_POINTS[key]} stroke={HEX_COLORS[key]} strokeOpacity={TRACK_OPACITY} />
+              <polyline
+                points={HEX_SEGMENT_POINTS[key]}
+                stroke={HEX_TRACK.color}
+                strokeOpacity={HEX_TRACK.opacity}
+                data-track
+              />
               <polyline
                 points={HEX_SEGMENT_POINTS[key]}
                 stroke={HEX_COLORS[key]}

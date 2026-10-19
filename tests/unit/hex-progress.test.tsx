@@ -46,6 +46,20 @@ describe("HexProgress", () => {
     for (const img of imgs) expect(img.querySelectorAll("polyline")).toHaveLength(2);
   });
 
+  it("o trilho vazio é igual nos 3 segmentos (o neutro não parece mais cheio que o azul)", () => {
+    mockReducedMotion(true);
+    const empty: HexSegments = {
+      workouts: { ...segments.workouts, progress: 0 },
+      meals: { ...segments.meals, progress: 0 },
+      habits: { ...segments.habits, progress: 0 },
+    };
+    render(<HexProgress segments={empty} />);
+    const tracks = screen.getAllByRole("img").map((img) => img.querySelector("[data-track]")!);
+    const looks = tracks.map((t) => `${t.getAttribute("stroke")}|${t.getAttribute("stroke-opacity")}`);
+    expect(new Set(looks).size).toBe(1);
+    expect(Number(tracks[0].getAttribute("stroke-opacity"))).toBeLessThanOrEqual(0.15);
+  });
+
   it("anima o preenchimento quando o movimento é permitido", () => {
     mockReducedMotion(false);
     render(<HexProgress segments={segments} />);
