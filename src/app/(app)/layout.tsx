@@ -1,6 +1,7 @@
 import { BottomNav } from "@/components/shell/bottom-nav";
 import { MobileHeader } from "@/components/shell/mobile-header";
 import { SideNav } from "@/components/shell/side-nav";
+import { WorkoutSessionProvider } from "@/features/workout-session/workout-session-provider";
 
 // O acesso já é garantido pelo proxy (src/proxy.ts). Este layout não lê a
 // sessão: com Cache Components, o shell continua estático e instantâneo.
@@ -18,6 +19,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <BottomNav />
+      {/* Lê a sessão de treino do aparelho e reenvia treino finalizado sem rede. */}
+      <WorkoutSessionProvider />
     </div>
   );
 }

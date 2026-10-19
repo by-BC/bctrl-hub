@@ -5,7 +5,7 @@
 - [x] 1.0 Fundação: app, login, navegação e deploy (Complexidade: MEDIUM)
 - [x] 2.0 Banco de dados: esquema, RLS, views, RPCs e seed (Complexidade: HIGH)
 - [x] 3.0 Rotinas e exercícios (Complexidade: MEDIUM)
-- [ ] 4.0 Sessão de treino e histórico (Complexidade: HIGH)
+- [x] 4.0 Sessão de treino e histórico (Complexidade: HIGH)
 - [ ] 5.0 Evolução e peso corporal (Complexidade: MEDIUM)
 - [ ] 6.0 Plano alimentar e refeições (Complexidade: MEDIUM)
 - [ ] 7.0 Hábitos e tarefas (Complexidade: MEDIUM)

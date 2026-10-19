@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { ComingSoon, PageHeader } from "@/components/shell/page-header";
+import { SessionView } from "@/features/workout-session/components/session-view";
 
 export const metadata: Metadata = { title: "Sessão" };
 
+// A sessão vive no aparelho (localStorage): tudo é lido no cliente, o shell continua estático.
 export default function TreinoSessaoPage() {
-  return (
-    <>
-      <PageHeader title="Sessão" eyebrow="Treino" />
-      <ComingSoon task="4.0">Registro ao vivo: carga anterior, timer de descanso e recordes.</ComingSoon>
-    </>
-  );
+  return <SessionView />;
 }

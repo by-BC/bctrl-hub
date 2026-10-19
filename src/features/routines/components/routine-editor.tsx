@@ -8,6 +8,7 @@ import { z } from "zod";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StartRoutineButton } from "@/features/workout-session/components/start-workout-card";
 import { formatRest, moveById, nextPosition, reorder, routineTotals } from "@/lib/domain/routines";
 import {
   firstError,
@@ -129,6 +130,12 @@ function Editor({ routine }: { routine: RoutineDetail }) {
             <RotateCcw aria-hidden />
             Restaurar
           </Button>
+        </div>
+      )}
+
+      {!archived && items.length > 0 && (
+        <div className="mb-6">
+          <StartRoutineButton routineId={routine.id} />
         </div>
       )}
 

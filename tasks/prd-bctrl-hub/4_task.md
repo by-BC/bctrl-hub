@@ -27,17 +27,17 @@ O núcleo do app: registrar o treino na academia no estilo Hevy. A sessão ativa
 
 ## Subtarefas
 
-- [ ] 4.1 (RED) Testes de `e1rm`, `detectPrs` e `nextRoutineId` cobrindo os casos extremos da techspec
-- [ ] 4.2 (GREEN/REFACTOR) Implementar `src/lib/domain/workout.ts`
-- [ ] 4.3 (RED) Testes do store: reidratação, `completeSet` inicia o timer, `addSet`/`addExercise` não alteram a rotina-base, geração de payload válido para `finishWorkoutSchema`
-- [ ] 4.4 (GREEN/REFACTOR) Implementar `useActiveWorkout` com `persist`
-- [ ] 4.5 Tela `/treino/sessao`: lista de exercícios com observações técnicas recolhíveis, `SetRow` (anterior · kg · reps · ✓), adicionar série e exercício
-- [ ] 4.6 `RestTimer` fixo na parte de baixo da tela, em IBM Plex Mono e laranja, com +15/−15/pular
-- [ ] 4.7 Selo de PR na série (ícone + texto, não só cor)
-- [ ] 4.8 `FinishSheet` com resumo e o fluxo de `pendingSync` com retry e toast
-- [ ] 4.9 Retomar a sessão: ao abrir o app com sessão ativa, mostrar "Continuar treino"
-- [ ] 4.10 Histórico `/treino/historico` e detalhe `/treino/historico/[id]` com edição e exclusão
-- [ ] 4.11 Escrever e rodar os testes de integração e E2E
+- [x] 4.1 (RED) Testes de `e1rm`, `detectPrs` e `nextRoutineId` cobrindo os casos extremos da techspec
+- [x] 4.2 (GREEN/REFACTOR) Implementar `src/lib/domain/workout.ts`
+- [x] 4.3 (RED) Testes do store: reidratação, `completeSet` inicia o timer, `addSet`/`addExercise` não alteram a rotina-base, geração de payload válido para `finishWorkoutSchema`
+- [x] 4.4 (GREEN/REFACTOR) Implementar `useActiveWorkout` com `persist`
+- [x] 4.5 Tela `/treino/sessao`: lista de exercícios com observações técnicas recolhíveis, `SetRow` (anterior · kg · reps · ✓), adicionar série e exercício
+- [x] 4.6 `RestTimer` fixo na parte de baixo da tela, em IBM Plex Mono e laranja, com +15/−15/pular
+- [x] 4.7 Selo de PR na série (ícone + texto, não só cor)
+- [x] 4.8 `FinishSheet` com resumo e o fluxo de `pendingSync` com retry e toast
+- [x] 4.9 Retomar a sessão: ao abrir o app com sessão ativa, mostrar "Continuar treino"
+- [x] 4.10 Histórico `/treino/historico` e detalhe `/treino/historico/[id]` com edição e exclusão
+- [x] 4.11 Escrever e rodar os testes de integração e E2E
 
 ## Detalhes de Implementação
 
@@ -53,8 +53,8 @@ Ver techspec: **Interfaces Principais** (`workout.ts` e `store.ts`), **Pontos de
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `workout.ts` (primeiro registro, empate, PR só de volume, reps nulas, volta de L2 para U1, rotina arquivada ignorada); store da sessão (persistência, timer por `endsAt`, payload)
-- [ ] Testes de integração: `finish_workout` com payload gerado pelo store grava a estrutura completa; views retornam anterior e bests corretos após 2 sessões; Playwright cobre o treino completo com reload no meio e o treino finalizado offline (`context.setOffline`)
+- [x] Testes de unidade: `workout.ts` (primeiro registro, empate, PR só de volume, reps nulas, volta de L2 para U1, rotina arquivada ignorada); store da sessão (persistência, timer por `endsAt`, payload)
+- [x] Testes de integração: `finish_workout` com payload gerado pelo store grava a estrutura completa; views retornam anterior e bests corretos após 2 sessões; Playwright cobre o treino completo com reload no meio e o treino finalizado offline (`context.setOffline`)
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 
