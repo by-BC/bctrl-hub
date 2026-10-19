@@ -152,3 +152,17 @@ export async function seedMealPlan(user: DisposableUser): Promise<MealPlanIds> {
   ]);
   return meals;
 }
+
+export type SystemHabitIds = { cardio: string; abs: string; supplements: string };
+
+/** Os hábitos do sistema, iguais aos do seed (o "Treino" vem dos workouts). */
+export async function seedSystemHabits(user: DisposableUser): Promise<SystemHabitIds> {
+  const id = () => crypto.randomUUID();
+  const ids: SystemHabitIds = { cardio: id(), abs: id(), supplements: id() };
+  await inserter(user)("habits", [
+    { id: ids.cardio, name: "Cardio", kind: "cardio", period: "week", target: 150, unit: "min", system_key: "cardio" },
+    { id: ids.abs, name: "Abdominal", kind: "check", period: "week", target: 3, unit: null, system_key: "abs" },
+    { id: ids.supplements, name: "Desjejum/Suplementos", kind: "check", period: "day", target: 1, unit: null, system_key: "supplements" },
+  ]);
+  return ids;
+}

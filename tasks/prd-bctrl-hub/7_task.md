@@ -22,13 +22,13 @@ Hábitos recorrentes com metas diárias ou semanais (cardio, abdominal, suplemen
 
 ## Subtarefas
 
-- [ ] 7.1 Implementar `src/lib/domain/week.ts` (`weekStart`, `dayKey`, `weekDays`) com testes da virada de domingo para segunda às 23h30 em UTC−3
-- [ ] 7.2 Funções `habitProgress(habit, logs, week)` e `streak(habit, logsByWeek)`
-- [ ] 7.3 Hooks e mutações de hábitos e logs (`useHabits`, `useHabitLogs(week)`, `logHabit`, `undoHabitLog`)
-- [ ] 7.4 Tela `/habitos`: cards com barra de progresso semanal, botão de check rápido, sheet de cardio (tipo, min, km, kcal), streak
-- [ ] 7.5 Criar e editar hábito customizado (nome, tipo, período, meta, unidade); arquivar e excluir
-- [ ] 7.6 Tela `/tarefas` com criação rápida, conclusão, exclusão e seção "Concluídas" recolhida
-- [ ] 7.7 Escrever e rodar os testes da tarefa
+- [x] 7.1 Implementar `src/lib/domain/week.ts` (`weekStart`, `dayKey`, `weekDays`) com testes da virada de domingo para segunda às 23h30 em UTC−3
+- [x] 7.2 Funções `habitProgress(habit, logs, week)` e `streak(habit, logsByWeek)`
+- [x] 7.3 Hooks e mutações de hábitos e logs (`useHabits`, `useHabitLogs(week)`, `logHabit`, `undoHabitLog`)
+- [x] 7.4 Tela `/habitos`: cards com barra de progresso semanal, botão de check rápido, sheet de cardio (tipo, min, km, kcal), streak
+- [x] 7.5 Criar e editar hábito customizado (nome, tipo, período, meta, unidade); arquivar e excluir
+- [x] 7.6 Tela `/tarefas` com criação rápida, conclusão, exclusão e seção "Concluídas" recolhida
+- [x] 7.7 Escrever e rodar os testes da tarefa
 
 ## Detalhes de Implementação
 
@@ -44,8 +44,8 @@ Ver techspec: tabelas `habits`, `habit_logs` e `tasks` em **Modelos de Dados**; 
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `week.ts` (virada de semana, fuso); `habitProgress` para check, quantity e cardio; `streak` com semana falhada no meio
-- [ ] Testes de integração: totais de cardio (min, km, kcal) na semana a partir de logs semeados; Playwright registra cardio de 30 min/4 km/250 kcal e vê a barra subir; cria um hábito customizado e marca; cria, conclui e exclui uma tarefa
+- [x] Testes de unidade: `week.ts` (virada de semana, fuso); `habitProgress` para check, quantity e cardio; `streak` com semana falhada no meio
+- [x] Testes de integração: totais de cardio (min, km, kcal) na semana a partir de logs semeados; Playwright registra cardio de 30 min/4 km/250 kcal e vê a barra subir; cria um hábito customizado e marca; cria, conclui e exclui uma tarefa
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 

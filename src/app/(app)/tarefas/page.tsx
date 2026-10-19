@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { ComingSoon, PageHeader } from "@/components/shell/page-header";
+import { TaskList } from "@/features/tasks/components/task-list";
 
 export const metadata: Metadata = { title: "Tarefas" };
 
+// Dados lidos no cliente (TanStack Query + RLS): o shell continua estático.
 export default function TarefasPage() {
-  return (
-    <>
-      <PageHeader title="Tarefas" eyebrow="To-do" />
-      <ComingSoon task="7.0">Lista simples de tarefas.</ComingSoon>
-    </>
-  );
+  return <TaskList />;
 }
