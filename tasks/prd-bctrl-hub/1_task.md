@@ -23,19 +23,19 @@ Criar o esqueleto do Bctrl Hub: projeto Next.js 16 com identidade visual Bctrl, 
 
 ## Subtarefas
 
-- [ ] 1.1 Criar o app com `create-next-app` (TypeScript, App Router, Tailwind, ESLint, `src/`, alias `@/*`) na raiz do repositório
-- [ ] 1.2 Criar `src/styles/tokens.css` com as cores Bctrl e configurar fontes no `src/app/layout.tsx`; tema escuro padrão com alternância para claro
-- [ ] 1.3 Inicializar shadcn/ui e adicionar as primitivas: Button, Input, Sheet, Dialog, Tabs, Checkbox, Sonner
-- [ ] 1.4 Copiar `assets/brand/*.svg` para `public/brand/`; gerar favicon e ícones a partir de `bctrl-hub-symbol-dark.svg`
-- [ ] 1.5 Criar o projeto Supabase via MCP (região `sa-east-1`), desativar signup e pedir ao dono para criar seu usuário no painel
-- [ ] 1.6 Criar `src/lib/supabase/{client,server,proxy}.ts` e `src/proxy.ts` conforme a techspec (padrão oficial com `getClaims()`)
-- [ ] 1.7 Tela `/login` (e-mail + senha) com mensagem de erro clara; botão "Sair"
-- [ ] 1.8 Shell: `BottomNav` (Hoje, Treino, Comida, Hábitos, Tarefas) no celular e `SideNav` a partir de 1024 px; páginas vazias para cada rota da techspec
-- [ ] 1.9 Configurar Vitest (unidade), Playwright (E2E, viewports iPhone 14 e desktop 1440) e Supabase CLI local (`supabase init`)
-- [ ] 1.10 Prova de conceito: página `/dev/story-poc` que exporta um PNG 1080×1920 com `html-to-image` usando as fontes da marca; testar no iPhone real e registrar o resultado no `CLAUDE.md`
-- [ ] 1.11 Criar o `CLAUDE.md` com os padrões da seção "Conformidade com Padrões" da techspec
-- [ ] 1.12 Criar o projeto na Vercel via MCP ligado a `by-BC/bctrl-hub`, configurar as variáveis e validar o deploy de produção
-- [ ] 1.13 Escrever e rodar os testes da tarefa
+- [x] 1.1 Criar o app com `create-next-app` (TypeScript, App Router, Tailwind, ESLint, `src/`, alias `@/*`) na raiz do repositório
+- [x] 1.2 Criar `src/styles/tokens.css` com as cores Bctrl e configurar fontes no `src/app/layout.tsx`; tema escuro padrão com alternância para claro
+- [x] 1.3 Inicializar shadcn/ui e adicionar as primitivas: Button, Input, Sheet, Dialog, Tabs, Checkbox, Sonner
+- [x] 1.4 Copiar `assets/brand/*.svg` para `public/brand/`; gerar favicon e ícones a partir de `bctrl-hub-symbol-dark.svg`
+- [ ] 1.5 Criar o projeto Supabase via MCP (região `sa-east-1`), desativar signup e pedir ao dono para criar seu usuário no painel — **pendente**: conector Supabase ainda não enxerga a org "bctrl"
+- [x] 1.6 Criar `src/lib/supabase/{client,server,proxy}.ts` e `src/proxy.ts` conforme a techspec (padrão oficial com `getClaims()`)
+- [x] 1.7 Tela `/login` (e-mail + senha) com mensagem de erro clara; botão "Sair"
+- [x] 1.8 Shell: `BottomNav` (Hoje, Treino, Comida, Hábitos, Tarefas) no celular e `SideNav` a partir de 1024 px; páginas vazias para cada rota da techspec
+- [x] 1.9 Configurar Vitest (unidade), Playwright (E2E, viewports iPhone 14 e desktop 1440) e Supabase CLI local (`supabase init`)
+- [ ] 1.10 Prova de conceito: página `/dev/story-poc` que exporta um PNG 1080×1920 com `html-to-image` usando as fontes da marca; testar no iPhone real e registrar o resultado no `CLAUDE.md` — POC pronta e validada no Chromium; **pendente**: teste no iPhone real
+- [x] 1.11 Criar o `CLAUDE.md` com os padrões da seção "Conformidade com Padrões" da techspec
+- [ ] 1.12 Criar o projeto na Vercel via MCP ligado a `by-BC/bctrl-hub`, configurar as variáveis e validar o deploy de produção — **pendente**: conector Vercel autorizado só no time "analisecontabilidade"
+- [x] 1.13 Escrever e rodar os testes da tarefa
 
 ## Detalhes de Implementação
 
@@ -53,8 +53,8 @@ Ver techspec: **Visão Geral dos Componentes** (Infra/config e Shell de UI), **P
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: helper de tema (alternância e persistência); componente `BottomNav` destaca a rota ativa
-- [ ] Testes de integração: Playwright com rota protegida sem sessão → `/login`; login com credenciais de teste do Supabase local → Hoje; logout → `/login`
+- [x] Testes de unidade: helper de tema (alternância e persistência); componente `BottomNav` destaca a rota ativa
+- [x] Testes de integração: Playwright com rota protegida sem sessão → `/login`; login com credenciais de teste do Supabase local → Hoje; logout → `/login`
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 
