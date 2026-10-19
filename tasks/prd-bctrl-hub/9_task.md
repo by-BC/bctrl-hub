@@ -39,7 +39,7 @@ A vitrine da marca: a partir de um treino finalizado, gerar uma imagem 1080×192
 - [x] 9.7 Layout Hex Week
 - [x] 9.8 Layout Blueprint
 - [x] 9.9 Layout Foto + overlay com captura (`<input type="file" accept="image/*" capture>`) e ajuste de enquadramento
-- [ ] 9.10 Testar em iPhone e Android reais e anotar as limitações no `CLAUDE.md` — **pendente**: teste do dono em aparelho real (iPhone: 4 layouts, menu nativo, Instagram)
+- [x] 9.10 Testar em iPhone e Android reais e anotar as limitações no `CLAUDE.md` — validado pelo dono no iPhone em 2026-10-19: menu nativo com Instagram e PNG correto
 - [x] 9.11 Escrever e rodar os testes de integração e E2E
 
 ## Detalhes de Implementação

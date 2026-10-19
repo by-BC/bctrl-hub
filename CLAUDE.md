@@ -49,4 +49,4 @@ App pessoal (usuário único) de treino, alimentação, hábitos e tarefas. Docs
 - **Compartilhar**: `navigator.share({ files })` quando `canShare` aceita arquivos; senão download. Cancelar o menu (AbortError) não é erro; outra recusa cai no download.
 - **Dentro do quadro**: cores pelas classes `.story-ink` / `.story-paper` / `.story-blue` (`tokens.css`), fixas e independentes do tema do app. Nada essencial nos 250 px do topo e da base (guias tracejadas aparecem só em `next dev` e ficam fora do PNG). Evitar CSS `filter` (blur, drop-shadow) no quadro: falha no Safari dentro do `foreignObject`; usar gradiente ou `box-shadow`. Em SVG, cor por atributo `fill="currentColor"` (a classe `fill-current` saiu preta na captura).
 - **Foto**: lida no aparelho (`loadPhoto` → dataURL reduzido), nunca enviada; o E2E confere que nenhuma requisição leva a imagem.
-- **Pendente (9.10)**: testar o Story Studio completo (4 layouts, menu nativo, Instagram) em iPhone e Android reais e anotar as limitações aqui.
+- **Validado no iPhone real (9.10, 2026-10-19)**: os 4 layouts, o menu nativo de compartilhar com a opção Instagram e o PNG saíram corretos. Android ainda não testado.
