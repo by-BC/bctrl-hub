@@ -23,14 +23,16 @@ Fechar a v1: garantir que nenhuma gravação se perca com sinal fraco em qualque
 
 ## Subtarefas
 
-- [ ] 10.1 Configurar a persistência do QueryClient e registrar `setMutationDefaults` para cada mutação existente
-- [ ] 10.2 Componente `SyncStatus` (offline, sincronizando, N pendentes) no shell
+- [x] 10.1 Configurar a persistência do QueryClient e registrar `setMutationDefaults` para cada mutação existente
+- [x] 10.2 Componente `SyncStatus` (offline, sincronizando, N pendentes) no shell
 - [ ] 10.3 Teste manual guiado: modo avião no celular, marcar refeição, hábito e tarefa, fechar o app, reabrir online e conferir
-- [ ] 10.4 Auditoria de acessibilidade com `@axe-core/playwright` em todas as rotas, nos dois temas; corrigir as violações
-- [ ] 10.5 Revisar o contraste dos tokens e ajustar variações (ex: laranja mais escuro para texto em fundo claro)
-- [ ] 10.6 Completar e estabilizar a suíte E2E (cenários 1 a 6) e criar o script `npm run test:all`
-- [ ] 10.7 Rodar `get_advisors` (segurança e performance) e resolver os alertas
+  - Pendente (dono): depende do celular real. O mesmo fluxo está coberto no Chromium por `tests/e2e/offline.spec.ts`.
+- [x] 10.4 Auditoria de acessibilidade com `@axe-core/playwright` em todas as rotas, nos dois temas; corrigir as violações
+- [x] 10.5 Revisar o contraste dos tokens e ajustar variações (ex: laranja mais escuro para texto em fundo claro)
+- [x] 10.6 Completar e estabilizar a suíte E2E (cenários 1 a 6) e criar o script `npm run test:all`
+- [x] 10.7 Rodar `get_advisors` (segurança e performance) e resolver os alertas
 - [ ] 10.8 Deploy final em produção via Vercel, smoke test no celular e atualização do `CLAUDE.md` e do README
+  - `CLAUDE.md` e README atualizados. Pendente (dono): push (publica na Vercel) e smoke test no celular.
 
 ## Detalhes de Implementação
 
@@ -46,8 +48,8 @@ Ver techspec: **Pontos de Integração** (fila offline), **Testes de E2E** (cen�
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `SyncStatus` mostra o estado certo para online, offline e N pendentes; registro de `setMutationDefaults` cobre todas as chaves exportadas
-- [ ] Testes de integração: Playwright com `setOffline(true)`, marca refeição, hábito e tarefa, recarrega a página ainda offline, volta online e confere no banco; axe em todas as rotas; suíte E2E completa
+- [x] Testes de unidade: `SyncStatus` mostra o estado certo para online, offline e N pendentes; registro de `setMutationDefaults` cobre todas as chaves exportadas
+- [x] Testes de integração: Playwright com `setOffline(true)`, marca refeição, hábito e tarefa, recarrega a página ainda offline, volta online e confere no banco; axe em todas as rotas; suíte E2E completa
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 

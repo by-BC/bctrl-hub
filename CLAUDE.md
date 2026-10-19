@@ -19,7 +19,7 @@ App pessoal (usuário único) de treino, alimentação, hábitos e tarefas. Docs
 | `npm test` | Unidade (`tests/unit`) |
 | `npm run test:integration` | Integração contra o Supabase local (`tests/integration`) |
 | `npm run test:e2e` | Playwright; sobe o app na porta 3100 com o Supabase local |
-| `npm run test:all` | typecheck + lint + todas as suítes |
+| `npm run test:all` | typecheck + lint + unidade + integração + E2E (inclui axe e fila offline) |
 | `npm run db:types` | Regenera `src/lib/database.types.ts` |
 
 `.env.local` (ignorado) aponta para o Supabase **local**; valores em `npx supabase status -o env`. Modelo em `.env.example`.
@@ -35,9 +35,11 @@ App pessoal (usuário único) de treino, alimentação, hábitos e tarefas. Docs
 - **Cores e fontes só por tokens** (`src/styles/tokens.css` + `@theme` em `globals.css`). Nada de hex solto em componente.
   - Texto azul sobre o fundo: `text-primary-text` (o `#2448DB` puro some no tema escuro).
   - Texto laranja: `text-highlight-text`. O `#D96735` puro fica em 3.1:1 sobre o off-white: só em ícone, preenchimento ou texto grande.
-  - Texto grafite sobre fundo laranja: 4.2:1, só em texto grande ou negrito.
+  - Texto grafite sobre fundo laranja: 4.2:1, só em texto grande ou negrito. Superfície laranja com texto pequeno (timer de descanso): `bg-highlight-surface` (5.7:1).
+  - Número + unidade ("42,5 kg"): `<NumUnit>` (`src/components/num-unit.tsx`). O espaço em mono ocupa um caractere inteiro e parece duplo.
   - Números (cargas, reps, timer, métricas): classe `num` (IBM Plex Mono tabular).
-- **Acessibilidade**: alvos de toque ≥ 44 px, estados com ícone ou texto (não só cor), `prefers-reduced-motion` respeitado globalmente.
+- **Acessibilidade**: alvos de toque ≥ 44 px, estados com ícone ou texto (não só cor), `prefers-reduced-motion` respeitado globalmente, atalho "Pular para o conteúdo" no layout. `tests/e2e/a11y.spec.ts` roda o axe (WCAG 2.1 A/AA) em todas as rotas, nos 2 temas e 2 viewports, mais sheet aberto e sessão ativa: 0 violações *serious*/*critical*. Rota nova entra na lista desse teste. `aria-label` de botão começa pelo texto visível (regra `label-content-name-mismatch`).
+- **Fila offline** (`src/components/providers/query-provider.tsx` + `src/lib/query/mutation-defaults.ts`): toda gravação usa uma entrada de `WRITES` (chave `[grupo, ação]` + função de envio), espalhada no `useMutation` do hook; nunca `mutationFn` inline num hook (um teste de unidade barra). As variáveis levam tudo o que o envio usa (nada de closure: a mutação pode ser reenviada depois de reabrir o app, sem o hook). `networkMode: 'offlineFirst'`, erro de rede repete até 8 vezes; sem rede, pausa. As gravações pendentes (só elas, nenhuma leitura) ficam no `localStorage` (`bctrl.queryCache`, `buster` + `maxAge` de 7 dias) e são reenviadas no `onSuccess` do provider e no evento `online`. Mudou a forma das variáveis de alguma gravação? Suba o `CACHE_BUSTER`. Sair limpa a fila. `SyncStatus` (shell) mostra offline / sincronizando / N pendentes. O treino ativo tem fila própria (`pendingSync` no store), fora disso.
 - **Nada pessoal no Git** (repo público): `supabase/seed.sql`, o anexo de dados iniciais, PDFs e `.env*` estão no `.gitignore`.
 - **Seeds**: `supabase/seed.example.sql` (fictício, versionado) roda no `npx supabase db reset` local e cria o usuário de E2E (`e2e@bctrl.test`) com 4 rotinas, 6 refeições e os hábitos do sistema. O seed real fica em `supabase/seed.private.sql` (ignorado, idempotente) e vai ao remoto com `npx supabase db query --linked -f supabase/seed.private.sql`. Migrations no remoto: `npx supabase db push` (nunca `--include-seed` nem `db reset --linked`).
 - **Banco**: FKs entre tabelas do app são compostas com `user_id` (nada aponta para linha de outro usuário). Em insert em lote pelo supabase-js, passe `{ defaultToNull: false }` ou envie todas as colunas (colunas ausentes viram `null`). Hábitos com `system_key` não podem ser excluídos (trigger). `finish_workout` recebe o payload validado por `finishWorkoutSchema` (`src/lib/schemas/workout.ts`).
