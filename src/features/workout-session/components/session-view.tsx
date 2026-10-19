@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, CloudOff, History, LoaderCircle, Minus, Plus, RefreshCw, Trash2, X } from "lucide-react";
+import { CheckCircle2, CloudOff, History, LoaderCircle, Minus, Plus, RefreshCw, Share2, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -279,6 +279,12 @@ function FinishedSession({ finished }: { finished: Finished }) {
         <PrList prs={finished.prs} />
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button asChild className="h-12 font-semibold">
+            <Link href={`/treino/historico/${finished.workoutId}/story`}>
+              <Share2 aria-hidden />
+              Gerar story
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-12">
             <Link href={`/treino/historico/${finished.workoutId}`}>
               <History aria-hidden />
               Ver no histórico

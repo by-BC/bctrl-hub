@@ -11,6 +11,13 @@
   --brand-paper: #f4f0e8;
   --brand-ink: #25272c;
 
+  /* Variações de contraste (fixas): azul e laranja legíveis sobre o grafite,
+     laranja escuro legível sobre o off-white. */
+  --blue-on-ink: #6a87fb; /* L 0,66 em OKLCH: dentro da faixa validada para o tema escuro */
+  --blue-text-on-ink: #8aa2ff;
+  --orange-text-on-ink: #e8875d;
+  --orange-text-on-paper: #a3471d;
+
   --radius: 0.75rem;
 
   /* Tema claro */
@@ -39,7 +46,7 @@
      4.5:1 sobre o off-white, então o texto usa uma variação mais escura. */
   --highlight: var(--brand-orange);
   --highlight-foreground: var(--brand-ink);
-  --highlight-text: #a3471d;
+  --highlight-text: var(--orange-text-on-paper);
 
   --chart-1: var(--brand-blue);
   --chart-2: var(--brand-orange);
@@ -66,7 +73,7 @@
   --popover-foreground: var(--brand-paper);
   --primary: var(--brand-blue);
   --primary-foreground: var(--brand-paper);
-  --primary-text: #8aa2ff;
+  --primary-text: var(--blue-text-on-ink);
   --secondary: #32353c;
   --secondary-foreground: var(--brand-paper);
   --muted: #32353c;
@@ -80,9 +87,9 @@
 
   --highlight: var(--brand-orange);
   --highlight-foreground: var(--brand-ink);
-  --highlight-text: #e8875d;
+  --highlight-text: var(--orange-text-on-ink);
 
-  --chart-1: #6a87fb; /* L 0,66 em OKLCH: dentro da faixa validada para o tema escuro */
+  --chart-1: var(--blue-on-ink);
   --chart-2: var(--brand-orange);
   --chart-3: #a9abb2;
   --chart-4: #3f5fe0;
@@ -96,4 +103,31 @@
   --sidebar-accent-foreground: var(--brand-paper);
   --sidebar-border: #3a3d45;
   --sidebar-ring: #6f8cff;
+}
+
+/*
+ * Story (1080×1920): cada layout tem a sua paleta fixa, independente do tema do app,
+ * para o PNG sair igual no claro e no escuro. O quadro (ou um trecho dele, como o
+ * papel do Recibo) aplica uma destas classes; o fundo vem das utilidades bg-brand-*.
+ */
+.story-ink {
+  --chart-1: var(--blue-on-ink);
+  --chart-2: var(--brand-orange);
+  --primary-text: var(--blue-text-on-ink);
+  --highlight-text: var(--orange-text-on-ink);
+  color: var(--brand-paper);
+}
+
+.story-paper {
+  --chart-1: var(--brand-blue);
+  --chart-2: var(--brand-orange);
+  --primary-text: var(--brand-blue);
+  --highlight-text: var(--orange-text-on-paper);
+  color: var(--brand-ink);
+}
+
+.story-blue {
+  --primary-text: var(--brand-paper);
+  --highlight-text: var(--brand-paper);
+  color: var(--brand-paper);
 }

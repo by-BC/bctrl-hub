@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Check, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, Pencil, Share2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -89,6 +89,13 @@ function Detail({ workout }: { workout: HistoryDetail }) {
 
       <div className="space-y-6">
         <SummaryGrid summary={summary} />
+
+        <Button asChild className="h-12 w-full font-semibold sm:w-auto">
+          <Link href={`/treino/historico/${workout.id}/story`}>
+            <Share2 aria-hidden />
+            Gerar story
+          </Link>
+        </Button>
 
         <ol className="space-y-3" aria-label="Exercícios do treino">
           {workout.workout_exercises.map((exercise) => (
