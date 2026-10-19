@@ -7,7 +7,7 @@
 - [x] 3.0 Rotinas e exercícios (Complexidade: MEDIUM)
 - [x] 4.0 Sessão de treino e histórico (Complexidade: HIGH)
 - [x] 5.0 Evolução e peso corporal (Complexidade: MEDIUM)
-- [ ] 6.0 Plano alimentar e refeições (Complexidade: MEDIUM)
+- [x] 6.0 Plano alimentar e refeições (Complexidade: MEDIUM)
 - [ ] 7.0 Hábitos e tarefas (Complexidade: MEDIUM)
 - [ ] 8.0 Painel Hoje e Hex Week (Complexidade: MEDIUM)
 - [ ] 9.0 Story Studio (Complexidade: HIGH)

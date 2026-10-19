@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { ComingSoon, PageHeader } from "@/components/shell/page-header";
+import { MealDay } from "@/features/meals/components/meal-day";
 
 export const metadata: Metadata = { title: "Comida" };
 
+// Dados lidos no cliente (TanStack Query + RLS) e o dia calculado no navegador
+// (America/Sao_Paulo): o shell continua estático.
 export default function ComidaPage() {
-  return (
-    <>
-      <PageHeader title="Comida" eyebrow="Plano alimentar" />
-      <ComingSoon task="6.0">Refeições do dia: escolha a opção e marque como feita.</ComingSoon>
-    </>
-  );
+  return <MealDay />;
 }

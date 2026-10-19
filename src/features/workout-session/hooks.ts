@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { DataError, routineKeys } from "@/features/routines/api";
 import { historyKeys } from "@/features/history/api";
 import { progressKeys } from "@/features/progress/api";
+import { weekKeys } from "@/features/week/api";
 import { fetchLastFinishedRoutineId, fetchSessionSeed, sendWorkout, workoutKeys } from "./api";
 import { useActiveWorkout, type FinishResult } from "./store";
 
@@ -97,6 +98,8 @@ export function useWorkoutSync() {
           qc.invalidateQueries({ queryKey: historyKeys.all }),
           qc.invalidateQueries({ queryKey: routineKeys.all }),
           qc.invalidateQueries({ queryKey: progressKeys.all }),
+          // Treinos da semana e o pós-treino previsto.
+          qc.invalidateQueries({ queryKey: weekKeys.all }),
         ]);
       }
     },

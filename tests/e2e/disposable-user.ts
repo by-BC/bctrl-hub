@@ -124,3 +124,31 @@ export async function seedTrainingPlan(user: DisposableUser): Promise<TrainingPl
   await seedWorkout(user, { routine: routine.lower, day: "2026-10-13", sets: [[ex.agachamento, [[60, 10], [60, 10]]]] }, insert);
   return { ...routine, exercises: ex };
 }
+
+export type MealPlanIds = { cafe: string; almoco: string; pos: string; jantar: string };
+
+/**
+ * Plano alimentar mínimo: café (2 opções), almoço, pós-treino (só em dia de treino, sem
+ * horário, na posição 3) e jantar (2 opções). Sem treino, o dia prevê 3 refeições.
+ */
+export async function seedMealPlan(user: DisposableUser): Promise<MealPlanIds> {
+  const insert = inserter(user);
+  const id = () => crypto.randomUUID();
+  const meals: MealPlanIds = { cafe: id(), almoco: id(), pos: id(), jantar: id() };
+  await insert("meals", [
+    { id: meals.cafe, name: "Café da manhã", time: "08:30", position: 1, training_day_only: false },
+    { id: meals.almoco, name: "Almoço", time: "12:30", position: 2, training_day_only: false },
+    { id: meals.pos, name: "Pós-treino", time: null, position: 3, training_day_only: true },
+    { id: meals.jantar, name: "Jantar", time: "19:30", position: 4, training_day_only: false },
+  ]);
+  const item = (name: string, qty: string, subs: string[] = []) => ({ name, qty, subs });
+  await insert("meal_options", [
+    { meal_id: meals.cafe, position: 1, title: "Tapioca", items: [item("Tapioca", "40 g", ["Cuscuz 60 g"]), item("Queijo branco", "30 g")] },
+    { meal_id: meals.cafe, position: 2, title: "Iogurte", items: [item("Iogurte natural", "170 g"), item("Granola", "30 g", ["Aveia 30 g"])] },
+    { meal_id: meals.almoco, position: 1, title: "Prato feito", items: [item("Arroz", "150 g"), item("Frango", "120 g", ["Peixe 150 g"])] },
+    { meal_id: meals.pos, position: 1, title: "Vitamina", items: [item("Leite", "250 ml"), item("Banana", "1 un")] },
+    { meal_id: meals.jantar, position: 1, title: "Omelete", items: [item("Ovos", "3 un")] },
+    { meal_id: meals.jantar, position: 2, title: "Sopa", items: [item("Sopa de legumes", "400 ml")] },
+  ]);
+  return meals;
+}

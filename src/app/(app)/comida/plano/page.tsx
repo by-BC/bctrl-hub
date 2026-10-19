@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { ComingSoon, PageHeader } from "@/components/shell/page-header";
+import { MealPlanEditor } from "@/features/meals/components/meal-plan-editor";
 
 export const metadata: Metadata = { title: "Plano alimentar" };
 
+// Dados lidos no cliente (TanStack Query + RLS): o shell continua estático.
 export default function ComidaPlanoPage() {
-  return (
-    <>
-      <PageHeader title="Plano alimentar" eyebrow="Comida" />
-      <ComingSoon task="6.0">Edição das refeições, opções e substituições.</ComingSoon>
-    </>
-  );
+  return <MealPlanEditor />;
 }

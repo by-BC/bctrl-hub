@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { DataError, routineKeys } from "@/features/routines/api";
 import { progressKeys } from "@/features/progress/api";
 import { workoutKeys } from "@/features/workout-session/api";
+import { weekKeys } from "@/features/week/api";
 import {
   deleteWorkout,
   fetchHistory,
@@ -57,6 +58,8 @@ function historyMutationOptions(qc: QueryClient) {
           qc.invalidateQueries({ queryKey: workoutKeys.all }),
           // Evolução e recordes saem das mesmas séries.
           qc.invalidateQueries({ queryKey: progressKeys.all }),
+          // Excluir um treino muda os treinos da semana e o pós-treino previsto.
+          qc.invalidateQueries({ queryKey: weekKeys.all }),
         ]);
       }
     },

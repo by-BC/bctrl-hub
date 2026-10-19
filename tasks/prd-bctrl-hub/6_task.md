@@ -23,12 +23,12 @@ Registrar a adesão ao plano alimentar: o plano (refeições, opções, itens e 
 
 ## Subtarefas
 
-- [ ] 6.1 Funções de domínio em `src/lib/domain/meals.ts`: `visibleMeals(meals, hasWorkout)` e `adherence(logs, visibleMeals)`
-- [ ] 6.2 Hooks `useMealPlan`, `useMealLogs(day)` e mutações `logMeal`, `unlogMeal`
-- [ ] 6.3 Tela `/comida` com cards por refeição (horário em Plex Mono, estado feito/pendente/fora do plano com ícone + texto)
-- [ ] 6.4 Sheet de opções com substituições recolhíveis e a ação "fora do plano"
-- [ ] 6.5 Editor `/comida/plano`
-- [ ] 6.6 Escrever e rodar os testes da tarefa
+- [x] 6.1 Funções de domínio em `src/lib/domain/meals.ts`: `visibleMeals(meals, hasWorkout)` e `adherence(logs, visibleMeals)`
+- [x] 6.2 Hooks `useMealPlan`, `useMealLogs(day)` e mutações `logMeal`, `unlogMeal`
+- [x] 6.3 Tela `/comida` com cards por refeição (horário em Plex Mono, estado feito/pendente/fora do plano com ícone + texto)
+- [x] 6.4 Sheet de opções com substituições recolhíveis e a ação "fora do plano"
+- [x] 6.5 Editor `/comida/plano`
+- [x] 6.6 Escrever e rodar os testes da tarefa
 
 ## Detalhes de Implementação
 
@@ -43,8 +43,8 @@ Ver techspec: tabelas `meals`, `meal_options` (itens em `jsonb`) e `meal_logs` e
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `visibleMeals` com e sem treino; `adherence` (0 refeições, todas feitas, fora do plano conta como registrada mas não aderente, conforme regra definida no código e documentada)
-- [ ] Testes de integração: `upsert` em `meal_logs` não duplica; Playwright marca o café com a Opção 2 e vê a adesão subir; marca o jantar como fora do plano com nota; com treino semeado no dia, o pós-treino aparece
+- [x] Testes de unidade: `visibleMeals` com e sem treino; `adherence` (0 refeições, todas feitas, fora do plano conta como registrada mas não aderente, conforme regra definida no código e documentada)
+- [x] Testes de integração: `upsert` em `meal_logs` não duplica; Playwright marca o café com a Opção 2 e vê a adesão subir; marca o jantar como fora do plano com nota; com treino semeado no dia, o pós-treino aparece
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 
