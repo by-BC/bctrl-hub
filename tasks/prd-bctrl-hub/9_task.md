@@ -30,17 +30,17 @@ A vitrine da marca: a partir de um treino finalizado, gerar uma imagem 1080×192
 
 ## Subtarefas
 
-- [ ] 9.1 (RED) Testes de `buildStoryData`: melhor série por exercício, volume total, PRs, arredondamento, treino sem PR, treino com muitos exercícios (truncar com "+N")
-- [ ] 9.2 (GREEN/REFACTOR) Implementar `src/lib/domain/story.ts`
-- [ ] 9.3 (RED) Testes de `exportStory` e `shareOrDownload` com `navigator.share`/`canShare` simulados (com e sem suporte a arquivos)
-- [ ] 9.4 (GREEN/REFACTOR) Implementar a exportação e o compartilhamento
-- [ ] 9.5 Criar o `StoryFrame` (1080×1920 com guias de área segura no modo dev) e o `StoryStudio` (carrossel, pré-visualização escalada, botões)
-- [ ] 9.6 Layout Recibo
-- [ ] 9.7 Layout Hex Week
-- [ ] 9.8 Layout Blueprint
-- [ ] 9.9 Layout Foto + overlay com captura (`<input type="file" accept="image/*" capture>`) e ajuste de enquadramento
-- [ ] 9.10 Testar em iPhone e Android reais e anotar as limitações no `CLAUDE.md`
-- [ ] 9.11 Escrever e rodar os testes de integração e E2E
+- [x] 9.1 (RED) Testes de `buildStoryData`: melhor série por exercício, volume total, PRs, arredondamento, treino sem PR, treino com muitos exercícios (truncar com "+N")
+- [x] 9.2 (GREEN/REFACTOR) Implementar `src/lib/domain/story.ts`
+- [x] 9.3 (RED) Testes de `exportStory` e `shareOrDownload` com `navigator.share`/`canShare` simulados (com e sem suporte a arquivos)
+- [x] 9.4 (GREEN/REFACTOR) Implementar a exportação e o compartilhamento
+- [x] 9.5 Criar o `StoryFrame` (1080×1920 com guias de área segura no modo dev) e o `StoryStudio` (carrossel, pré-visualização escalada, botões)
+- [x] 9.6 Layout Recibo
+- [x] 9.7 Layout Hex Week
+- [x] 9.8 Layout Blueprint
+- [x] 9.9 Layout Foto + overlay com captura (`<input type="file" accept="image/*" capture>`) e ajuste de enquadramento
+- [ ] 9.10 Testar em iPhone e Android reais e anotar as limitações no `CLAUDE.md` — **pendente**: teste do dono em aparelho real (iPhone: 4 layouts, menu nativo, Instagram)
+- [x] 9.11 Escrever e rodar os testes de integração e E2E
 
 ## Detalhes de Implementação
 
@@ -56,8 +56,8 @@ Ver techspec: tipo `StoryData` e `StoryLayout` em **Interfaces Principais**; com
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `buildStoryData` (casos da 9.1); `shareOrDownload` (com share, sem share, share cancelado pelo usuário não gera erro)
-- [ ] Testes de integração: Playwright abre o story de um treino semeado, percorre os 4 layouts, exporta cada um e valida as dimensões do PNG baixado; layout Foto + overlay com imagem de teste (`setInputFiles`) sem nenhuma requisição de upload
+- [x] Testes de unidade: `buildStoryData` (casos da 9.1); `shareOrDownload` (com share, sem share, share cancelado pelo usuário não gera erro)
+- [x] Testes de integração: Playwright abre o story de um treino semeado, percorre os 4 layouts, exporta cada um e valida as dimensões do PNG baixado; layout Foto + overlay com imagem de teste (`setInputFiles`) sem nenhuma requisição de upload
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 
