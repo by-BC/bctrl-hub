@@ -1,10 +1,7 @@
 import { expect, type Page } from "@playwright/test";
+import { TEST_USER } from "../support/e2e-user";
 
-// Usuário que só existe no Supabase local de testes.
-export const TEST_USER = {
-  email: "e2e@bctrl.test",
-  password: "e2e-local-only-123",
-};
+export { TEST_USER };
 
 export async function login(page: Page, email = TEST_USER.email, password = TEST_USER.password) {
   await page.goto("/login");

@@ -39,6 +39,8 @@ App pessoal (usuário único) de treino, alimentação, hábitos e tarefas. Docs
   - Números (cargas, reps, timer, métricas): classe `num` (IBM Plex Mono tabular).
 - **Acessibilidade**: alvos de toque ≥ 44 px, estados com ícone ou texto (não só cor), `prefers-reduced-motion` respeitado globalmente.
 - **Nada pessoal no Git** (repo público): `supabase/seed.sql`, o anexo de dados iniciais, PDFs e `.env*` estão no `.gitignore`.
+- **Seeds**: `supabase/seed.example.sql` (fictício, versionado) roda no `npx supabase db reset` local e cria o usuário de E2E (`e2e@bctrl.test`) com 4 rotinas, 6 refeições e os hábitos do sistema. O seed real fica em `supabase/seed.private.sql` (ignorado, idempotente) e vai ao remoto com `npx supabase db query --linked -f supabase/seed.private.sql`. Migrations no remoto: `npx supabase db push` (nunca `--include-seed` nem `db reset --linked`).
+- **Banco**: FKs entre tabelas do app são compostas com `user_id` (nada aponta para linha de outro usuário). Em insert em lote pelo supabase-js, passe `{ defaultToNull: false }` ou envie todas as colunas (colunas ausentes viram `null`). Hábitos com `system_key` não podem ser excluídos (trigger). `finish_workout` recebe o payload validado por `finishWorkoutSchema` (`src/lib/schemas/workout.ts`).
 
 ## Story (POC 1.10)
 

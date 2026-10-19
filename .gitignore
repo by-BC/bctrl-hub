@@ -2,6 +2,7 @@
 tasks/prd-bctrl-hub/anexo-dados-iniciais.md
 supabase/seed.sql
 supabase/seed*.sql
+!supabase/seed.example.sql
 *.pdf
 Captura de tela*.png
 screenshots/
