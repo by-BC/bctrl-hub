@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 240" width="760" height="240">
+  <defs><style>@import url('https://fonts.googleapis.com/css2?family=Sora:wght@800&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap');</style></defs>
+  <rect width="760" height="240" fill="#2448DB"/>
+  <g transform="translate(20,20)"><g fill="none" stroke-width="22" stroke-linejoin="miter" stroke-linecap="butt">
+    <polyline points="108.7,25 169.3,60 169.3,130" stroke="#25272C"/>
+    <polyline points="160.6,145 100,180 39.4,145" stroke="#D96735"/>
+    <polyline points="30.7,130 30.7,60 91.3,25" stroke="#F4F0E8"/>
+  </g>
+  <polygon points="100,78 119,89 119,111 100,122 81,111 81,89" fill="#F4F0E8"/></g>
+  <text x="250" y="138" font-family="Sora, 'Segoe UI', sans-serif" font-weight="800" font-style="italic" font-size="96" letter-spacing="-3" fill="#F4F0E8">Bctrl</text>
+  <text x="530" y="138" font-family="'IBM Plex Mono', Consolas, monospace" font-weight="500" font-size="60" letter-spacing="6" fill="#D96735">/hub</text>
+  <text x="254" y="180" font-family="'IBM Plex Mono', Consolas, monospace" font-size="20" letter-spacing="5" fill="#F4F0E8">BE IN CONTROL.</text>
+</svg>
