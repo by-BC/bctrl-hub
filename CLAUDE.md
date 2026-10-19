@@ -42,4 +42,4 @@ App pessoal (usuário único) de treino, alimentação, hábitos e tarefas. Docs
 
 ## Story (POC 1.10)
 
-`/dev/story-poc` exporta PNG 1080×1920 com `html-to-image` (captura de aquecimento + `document.fonts.ready`). Validado no Chromium (E2E). **Pendente: validar no iPhone real** (Safari) e anotar aqui o resultado antes da task 9.0.
+`/dev/story-poc` exporta PNG 1080×1920 com `html-to-image` (captura de aquecimento + `document.fonts.ready`). Validado no Chromium (E2E) e **no iPhone real (Safari) em 2026-10-19: fontes Sora e IBM Plex Mono corretas no PNG**. Manter a captura de aquecimento e o `document.fonts.ready` no Story Studio (task 9.0).

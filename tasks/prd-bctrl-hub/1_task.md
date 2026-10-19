@@ -32,7 +32,7 @@ Criar o esqueleto do Bctrl Hub: projeto Next.js 16 com identidade visual Bctrl, 
 - [x] 1.7 Tela `/login` (e-mail + senha) com mensagem de erro clara; botão "Sair"
 - [x] 1.8 Shell: `BottomNav` (Hoje, Treino, Comida, Hábitos, Tarefas) no celular e `SideNav` a partir de 1024 px; páginas vazias para cada rota da techspec
 - [x] 1.9 Configurar Vitest (unidade), Playwright (E2E, viewports iPhone 14 e desktop 1440) e Supabase CLI local (`supabase init`)
-- [ ] 1.10 Prova de conceito: página `/dev/story-poc` que exporta um PNG 1080×1920 com `html-to-image` usando as fontes da marca; testar no iPhone real e registrar o resultado no `CLAUDE.md` — POC pronta e validada no Chromium; **pendente**: teste no iPhone real
+- [x] 1.10 Prova de conceito: página `/dev/story-poc` que exporta um PNG 1080×1920 com `html-to-image` usando as fontes da marca; testar no iPhone real e registrar o resultado no `CLAUDE.md` — validada no Chromium e no iPhone real (fontes corretas)
 - [x] 1.11 Criar o `CLAUDE.md` com os padrões da seção "Conformidade com Padrões" da techspec
 - [x] 1.12 Criar o projeto na Vercel via MCP ligado a `by-BC/bctrl-hub`, configurar as variáveis e validar o deploy de produção — feito via Vercel CLI: https://bctrl-hub.vercel.app
 - [x] 1.13 Escrever e rodar os testes da tarefa

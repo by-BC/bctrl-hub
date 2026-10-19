@@ -2,7 +2,7 @@
 
 ## Tarefas
 
-- [ ] 1.0 Fundação: app, login, navegação e deploy (Complexidade: MEDIUM)
+- [x] 1.0 Fundação: app, login, navegação e deploy (Complexidade: MEDIUM)
 - [ ] 2.0 Banco de dados: esquema, RLS, views, RPCs e seed (Complexidade: HIGH)
 - [ ] 3.0 Rotinas e exercícios (Complexidade: MEDIUM)
 - [ ] 4.0 Sessão de treino e histórico (Complexidade: HIGH)
