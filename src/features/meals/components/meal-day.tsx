@@ -12,9 +12,11 @@ import { formatMealTime, mealStatus, type Adherence } from "@/lib/domain/meals";
 import { addDays } from "@/lib/domain/stats";
 import { formatDay } from "@/lib/format";
 import type { Meal, MealLog } from "../api";
-import { useMealDay, useWeekSummary } from "../hooks";
+import { useWeekSummary } from "@/features/week/hooks";
+import { weekStart } from "@/lib/domain/week";
+import { useMealDay } from "../hooks";
 import { optionLabel, MealSheet } from "./meal-sheet";
-import { MealStatusBadge, statusLabel } from "./meal-status";
+import { MealStatusBadge } from "./meal-status";
 
 const DAYS = [
   { value: "-1", label: "Ontem" },
@@ -122,7 +124,7 @@ function DayContent({ day }: { day: string }) {
   );
 }
 
-function MealCard({ meal, log, onOpen }: { meal: Meal; log: MealLog | undefined; onOpen: () => void }) {
+export function MealCard({ meal, log, onOpen }: { meal: Meal; log: MealLog | undefined; onOpen: () => void }) {
   const status = mealStatus(log);
   const time = formatMealTime(meal.time);
   const optionIndex = log?.option_id ? meal.meal_options.findIndex((o) => o.id === log.option_id) : -1;
@@ -140,13 +142,17 @@ function MealCard({ meal, log, onOpen }: { meal: Meal; log: MealLog | undefined;
       type="button"
       onClick={onOpen}
       data-testid="meal-card"
-      aria-label={`${meal.name}, ${time ?? "após o treino"}: ${statusLabel(status)}${detail ? `, ${detail}` : ""}`}
       className={`group flex min-h-16 w-full items-center gap-3 rounded-xl border bg-card px-4 py-3 text-left outline-none hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 ${
         status === "pending" ? "" : "border-l-4"
       } ${status === "done" ? "border-l-primary" : status === "off_plan" ? "border-l-highlight" : ""}`}
     >
       <span className="num w-12 shrink-0 text-sm text-muted-foreground">
-        {time ?? <Dumbbell aria-hidden className="size-4" />}
+        {time ?? (
+          <>
+            <Dumbbell aria-hidden className="size-4" />
+            <span className="sr-only">Após o treino</span>
+          </>
+        )}
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate font-semibold">{meal.name}</span>
@@ -200,7 +206,7 @@ function DayAdherence({ adherence }: { adherence: Adherence }) {
 
 /** Semana (segunda a domingo) pelo `week_summary`: conta o pós-treino só nos dias com treino finalizado. */
 function WeekAdherence({ day }: { day: string }) {
-  const { data, isError } = useWeekSummary(day);
+  const { data, isError } = useWeekSummary(weekStart(day));
   if (isError) {
     return (
       <div className="rounded-xl border bg-card p-4 text-xs text-muted-foreground" role="status">

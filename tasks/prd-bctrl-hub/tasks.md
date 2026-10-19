@@ -9,6 +9,6 @@
 - [x] 5.0 Evolução e peso corporal (Complexidade: MEDIUM)
 - [x] 6.0 Plano alimentar e refeições (Complexidade: MEDIUM)
 - [x] 7.0 Hábitos e tarefas (Complexidade: MEDIUM)
-- [ ] 8.0 Painel Hoje e Hex Week (Complexidade: MEDIUM)
+- [x] 8.0 Painel Hoje e Hex Week (Complexidade: MEDIUM)
 - [ ] 9.0 Story Studio (Complexidade: HIGH)
 - [ ] 10.0 Offline geral, acessibilidade e E2E final (Complexidade: MEDIUM)

@@ -136,7 +136,8 @@ function NewTaskForm() {
   );
 }
 
-function TaskRow({ task }: { task: Task }) {
+/** Linha da tarefa: concluir/reabrir e, se `deletable`, excluir (o painel Hoje só conclui). */
+export function TaskRow({ task, deletable = true }: { task: Task; deletable?: boolean }) {
   const toggle = useToggleTask();
   const remove = useDeleteTask();
   const save = useSaveTask();
@@ -163,18 +164,20 @@ function TaskRow({ task }: { task: Task }) {
         />
         <span className={`min-w-0 break-words ${done ? "text-muted-foreground line-through" : ""}`}>{task.title}</span>
       </label>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-11 shrink-0 text-muted-foreground hover:text-destructive"
-        aria-label={`Excluir: ${task.title}`}
-        onClick={() => {
-          remove.mutate(task.id);
-          toast("Tarefa excluída", { action: { label: "Desfazer", onClick: () => save.mutate(task) } });
-        }}
-      >
-        <Trash2 aria-hidden />
-      </Button>
+      {deletable && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-11 shrink-0 text-muted-foreground hover:text-destructive"
+          aria-label={`Excluir: ${task.title}`}
+          onClick={() => {
+            remove.mutate(task.id);
+            toast("Tarefa excluída", { action: { label: "Desfazer", onClick: () => save.mutate(task) } });
+          }}
+        >
+          <Trash2 aria-hidden />
+        </Button>
+      )}
     </li>
   );
 }

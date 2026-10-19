@@ -9,15 +9,18 @@ import { nextRoutineId } from "@/lib/domain/workout";
 import { useLastFinishedRoutineId, useStartWorkout, useWorkoutHydrated } from "../hooks";
 import { useActiveWorkout } from "../store";
 
+/** Altura do card do treino sugerido (botões empilhados no celular): o skeleton não desloca o layout. */
+export const WORKOUT_CARD_SKELETON = "h-[16.125rem] w-full rounded-2xl sm:h-[9.125rem]";
+
 /**
  * Topo de /treino: "Continuar treino" se houver sessão no aparelho; senão, o treino
  * sugerido (próxima rotina da sequência após a última finalizada) e o treino livre.
  */
-export function StartWorkoutCard() {
+export function StartWorkoutCard({ eyebrow = "Próximo treino" }: { eyebrow?: string }) {
   const hydrated = useWorkoutHydrated();
   const workout = useActiveWorkout((s) => s.workout);
 
-  if (!hydrated) return <Skeleton className="h-36 w-full rounded-2xl" />;
+  if (!hydrated) return <Skeleton className={WORKOUT_CARD_SKELETON} />;
 
   if (workout) {
     const done = workout.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0);
@@ -48,15 +51,15 @@ export function StartWorkoutCard() {
     );
   }
 
-  return <SuggestedWorkout />;
+  return <SuggestedWorkout eyebrow={eyebrow} />;
 }
 
-function SuggestedWorkout() {
+function SuggestedWorkout({ eyebrow }: { eyebrow: string }) {
   const routines = useRoutines();
   const last = useLastFinishedRoutineId();
   const start = useStartWorkout();
 
-  if (routines.isPending || last.isPending) return <Skeleton className="h-36 w-full rounded-2xl" />;
+  if (routines.isPending || last.isPending) return <Skeleton className={WORKOUT_CARD_SKELETON} />;
 
   const list = routines.data ?? [];
   const nextId = nextRoutineId(
@@ -68,7 +71,7 @@ function SuggestedWorkout() {
 
   return (
     <section aria-labelledby="proximo-titulo" className="rounded-2xl border bg-card p-4" data-testid="next-workout-card">
-      <p className="num mb-1 text-xs tracking-[0.2em] text-muted-foreground uppercase">Próximo treino</p>
+      <p className="num mb-1 text-xs tracking-[0.2em] text-muted-foreground uppercase">{eyebrow}</p>
       <h2 id="proximo-titulo" className="mb-4 text-xl font-bold">
         {next ? next.name : "Nenhuma rotina ativa"}
       </h2>

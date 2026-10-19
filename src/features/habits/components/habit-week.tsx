@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToday } from "@/features/progress/use-today";
+import { useWeekSummary } from "@/features/week/hooks";
 import {
   dayMet,
   groupByWeek,
@@ -44,14 +45,13 @@ import {
   useTrainedDays,
   useUndoHabitLog,
   useUpdateHabit,
-  useWeekSummaryOf,
 } from "../hooks";
 import { HabitFormSheet } from "./habit-form-sheet";
 import { HabitLogSheet } from "./habit-log-sheet";
 
 /** Ordem dos hábitos do sistema na tela; os customizados vêm depois, por criação. */
 const SYSTEM_ORDER: Record<string, number> = { cardio: 0, abs: 1, supplements: 2 };
-const order = (h: Habit) => (h.system_key ? SYSTEM_ORDER[h.system_key] ?? 9 : 10);
+export const habitOrder = (h: Pick<Habit, "system_key">) => (h.system_key ? SYSTEM_ORDER[h.system_key] ?? 9 : 10);
 
 /** "30/150 min", "2/3 dias". */
 export function unitOf(habit: Pick<Habit, "kind" | "unit">) {
@@ -111,7 +111,7 @@ function WeekContent({ today }: { today: string }) {
   }
   if (!habits.data || !logs.data) return <WeekSkeleton />;
 
-  const active = habits.data.filter((h) => !h.archived_at).sort((a, b) => order(a) - order(b));
+  const active = habits.data.filter((h) => !h.archived_at).sort((a, b) => habitOrder(a) - habitOrder(b));
   const archived = habits.data.filter((h) => h.archived_at);
   const editingHabit = habits.data.find((h) => h.id === editing) ?? null;
   const loggingHabit = habits.data.find((h) => h.id === logging) ?? null;
@@ -247,7 +247,7 @@ function CardShell({
 
 /** "Treino": somente leitura, conta os treinos finalizados da semana (meta 4). */
 function TrainingCard({ week }: { week: string }) {
-  const summary = useWeekSummaryOf(week);
+  const summary = useWeekSummary(week);
   const trained = useTrainedDays(week);
   const target = summary.data?.workouts.target ?? 4;
 
@@ -433,8 +433,11 @@ function DayStrip({ habit, progress, today }: { habit: Habit; progress: HabitPro
   );
 }
 
-/** Check rápido de hoje em 1 toque; tocar de novo (ou "Desfazer" no aviso) desmarca. */
-function QuickCheck({ habit, logs, week, today }: { habit: Habit; logs: HabitLog[]; week: string; today: string }) {
+/**
+ * Check rápido de hoje em 1 toque; tocar de novo (ou "Desfazer" no aviso) desmarca.
+ * O nome do hábito vai em texto só para leitores de tela (o nome acessível contém o texto visível).
+ */
+export function QuickCheck({ habit, logs, week, today }: { habit: Habit; logs: HabitLog[]; week: string; today: string }) {
   const logHabit = useLogHabit();
   const undo = useUndoHabitLog();
   const todayIds = logs.filter((l) => l.day === today).map((l) => l.id);
@@ -445,18 +448,18 @@ function QuickCheck({ habit, logs, week, today }: { habit: Habit; logs: HabitLog
       <Button
         variant="secondary"
         className="h-11 flex-1 font-semibold"
-        aria-label={`Desfazer ${habit.name} de hoje`}
         onClick={() => undo.mutate({ week, ids: todayIds })}
       >
         <Undo2 aria-hidden />
-        Feito hoje · Desfazer
+        <span>
+          Feito hoje · Desfazer<span className="sr-only"> {habit.name} de hoje</span>
+        </span>
       </Button>
     );
   }
   return (
     <Button
       className="h-11 flex-1 font-semibold"
-      aria-label={`Marcar ${habit.name} hoje`}
       onClick={() => {
         const log = newHabitLog(habit.id, today);
         logHabit.mutate({ week, log });
@@ -466,7 +469,9 @@ function QuickCheck({ habit, logs, week, today }: { habit: Habit; logs: HabitLog
       }}
     >
       <Check aria-hidden />
-      Marcar hoje
+      <span>
+        Marcar<span className="sr-only"> {habit.name}</span> hoje
+      </span>
     </Button>
   );
 }

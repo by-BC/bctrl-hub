@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { DataError } from "@/features/routines/api";
-import { fetchWeekSummary, weekKeys } from "@/features/week/api";
+import { weekKeys } from "@/features/week/api";
 import { STREAK_MAX_WEEKS } from "@/lib/domain/habits";
 import { addWeeks, weekDays } from "@/lib/domain/week";
 import {
@@ -48,11 +48,6 @@ export function useHabitLogs(week: string) {
 export function useTrainedDays(week: string) {
   const { from, to } = logRange(week);
   return useQuery({ queryKey: habitKeys.trainedDays(from, to), queryFn: () => fetchTrainedDays(from, to) });
-}
-
-/** Resumo da semana (treinos x/4 do hábito "Treino"). */
-export function useWeekSummaryOf(week: string) {
-  return useQuery({ queryKey: weekKeys.summary(week), queryFn: () => fetchWeekSummary(week) });
 }
 
 // ── Registros ─────────────────────────────────────────────────────────────

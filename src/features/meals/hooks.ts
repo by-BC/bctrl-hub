@@ -6,9 +6,8 @@ import { toast } from "sonner";
 import { DataError } from "@/features/routines/api";
 import { useWorkoutHydrated } from "@/features/workout-session/hooks";
 import { useActiveWorkout } from "@/features/workout-session/store";
-import { fetchWeekSummary, weekKeys } from "@/features/week/api";
+import { weekKeys } from "@/features/week/api";
 import { adherence, hasWorkoutOn, visibleMeals } from "@/lib/domain/meals";
-import { weekStart } from "@/lib/domain/week";
 import {
   deleteMeal,
   deleteMealLog,
@@ -45,11 +44,6 @@ export function useMealLogs(day: string | null) {
     queryFn: () => fetchMealLogs(day!),
     enabled: !!day,
   });
-}
-
-export function useWeekSummary(day: string | null) {
-  const start = day ? weekStart(day) : "";
-  return useQuery({ queryKey: weekKeys.summary(start), queryFn: () => fetchWeekSummary(start), enabled: !!day });
 }
 
 /**

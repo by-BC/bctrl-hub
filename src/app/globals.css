@@ -84,3 +84,11 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Hex Week: cada segmento enche a partir do vazio (comprimento em --hex-length).
+   Sem "to": termina no stroke-dashoffset do próprio elemento. */
+@keyframes hex-fill {
+  from {
+    stroke-dashoffset: var(--hex-length);
+  }
+}

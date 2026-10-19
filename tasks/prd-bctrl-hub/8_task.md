@@ -25,14 +25,20 @@ A tela inicial (`/`), que responde em ≤ 5 segundos "como está meu dia e minha
 
 ## Subtarefas
 
-- [ ] 8.1 Função `segmentFill(progress)` que converte 0–1 no comprimento do traço de cada segmento (clamp em 0 e 1)
-- [ ] 8.2 Componente `HexProgress` (SVG, tokens de cor, legenda, reduced motion)
-- [ ] 8.3 Hook `useWeekSummary(weekStart)` sobre a RPC
-- [ ] 8.4 Montar a página `/` com Server Component (prefetch) + blocos cliente
-- [ ] 8.5 Ações rápidas reaproveitando as mutações de 6.0 e 7.0, invalidando `week_summary`
-- [ ] 8.6 Layout responsivo e estados vazios (semana sem dados)
-- [ ] 8.7 Medir o carregamento com Speed Insights / Lighthouse mobile
-- [ ] 8.8 Escrever e rodar os testes da tarefa
+- [x] 8.1 Função `segmentFill(progress)` que converte 0–1 no comprimento do traço de cada segmento (clamp em 0 e 1)
+- [x] 8.2 Componente `HexProgress` (SVG, tokens de cor, legenda, reduced motion)
+- [x] 8.3 Hook `useWeekSummary(weekStart)` sobre a RPC
+- [x] 8.4 Montar a página `/` com Server Component (prefetch) + blocos cliente
+- [x] 8.5 Ações rápidas reaproveitando as mutações de 6.0 e 7.0, invalidando `week_summary`
+- [x] 8.6 Layout responsivo e estados vazios (semana sem dados)
+- [x] 8.7 Medir o carregamento com Speed Insights / Lighthouse mobile
+- [x] 8.8 Escrever e rodar os testes da tarefa
+
+## Notas da entrega
+
+- **Leitura no cliente, sem prefetch no servidor (8.4):** como nas tasks 3–7, os blocos leem com TanStack Query no navegador e o dia vem de `useToday()`. Prefetch exigiria ler a sessão (cookies) na página e tiraria `/` do shell estático; o build mantém `/` como estática (○). Skeletons com a altura do conteúdo final (CLS 0,006).
+- **Média dos hábitos (Hex):** média simples de cardio (min/150), abdominal (x/3) e suplementos (dias/7), cada um limitado a 1; meta do hábito vinda do `week_summary` ou a padrão; hábito do sistema arquivado sai da média (`src/lib/domain/hex.ts`).
+- **8.7 Lighthouse mobile** (`next build` + `next start`, Lighthouse 12.8 com sessão logada no Chromium via CDP, usuário do seed local): Performance 99–100, Acessibilidade 100, Best Practices 82 (só "HTTPS": localhost e um script injetado pelo antivírus), LCP 1,7–1,8 s, TBT 0 ms, CLS 0,006 (3 execuções).
 
 ## Detalhes de Implementação
 
@@ -47,8 +53,8 @@ Ver techspec: `HexProgress` e feature `today` em **Visão Geral dos Componentes*
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `segmentFill` (0, 0,5, 1, >1, negativo); `HexProgress` renderiza 3 segmentos com `aria-label` corretos (Testing Library)
-- [ ] Testes de integração: `week_summary` com semana semeada retorna os números exibidos; Playwright abre `/`, vê o treino sugerido correto, marca suplementos e vê o segmento de hábitos aumentar; botão Iniciar leva à sessão da rotina certa
+- [x] Testes de unidade: `segmentFill` (0, 0,5, 1, >1, negativo); `HexProgress` renderiza 3 segmentos com `aria-label` corretos (Testing Library)
+- [x] Testes de integração: `week_summary` com semana semeada retorna os números exibidos; Playwright abre `/`, vê o treino sugerido correto, marca suplementos e vê o segmento de hábitos aumentar; botão Iniciar leva à sessão da rotina certa
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 
