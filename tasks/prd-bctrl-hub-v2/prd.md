@@ -110,7 +110,7 @@ Uma tela de perfil que mostra consistência e marcos.
 
 ## Restrições Técnicas de Alto Nível
 
-- **Fonte do Hevy:** a importação usa a sessão do dono no próprio navegador (Claude in Chrome) e lê apenas os dados da conta dele. Não usar credenciais em código nem automatizar login.
+- **Fonte do Hevy:** a importação usa a **API oficial do Hevy** com a chave do dono (guardada só localmente, fora do repositório). O nome em português e o vídeo de cada exercício vêm de uma leitura única do catálogo do site, com a sessão do dono no Chrome. Não usar credenciais em código nem automatizar login.
 - **Conteúdo de terceiros:** do Hevy, são copiados só os dados factuais (nomes, músculos, equipamentos e os treinos do próprio dono). Imagens e animações são exibidas por referência ao endereço original, sem cópia nem rehospedagem. Os textos de instrução são próprios. A TACO é pública e deve ter a fonte citada no app.
 - **Privacidade:** dados corporais e nutricionais são dados de saúde, acessíveis só ao dono (mesmas regras de isolamento da v1). Nada disso vai para o repositório público. Dados brutos exportados do Hevy não são versionados.
 - **Stack mantido:** Vercel + Supabase, planos gratuitos. Fuso America/Sao_Paulo, unidades métricas, pt-BR.
