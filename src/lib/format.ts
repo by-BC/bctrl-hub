@@ -58,3 +58,25 @@ export function parseReps(text: string): number | null {
 
 /** Número para o campo de carga ("52,5"). */
 export const kgInputValue = (kg: number | null) => (kg === null ? "" : String(kg).replace(".", ","));
+
+const shortDayFormatter = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", timeZone: "UTC" });
+const shortDayYearFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "numeric",
+  month: "short",
+  year: "2-digit",
+  timeZone: "UTC",
+});
+
+/** Dia curto para eixos e tabelas: "2026-10-13" → "13 out" (com `year`: "13 out 26"). */
+export function formatShortDay(day: string, { year = false } = {}) {
+  const parts = (year ? shortDayYearFormatter : shortDayFormatter).formatToParts(new Date(`${day}T12:00:00Z`));
+  return parts
+    .filter((p) => p.type === "day" || p.type === "month" || p.type === "year")
+    .map((p) => p.value.replace(".", ""))
+    .join(" ");
+}
+
+const compactFormatter = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 });
+
+/** Números de eixo: 1200 → "1,2 mil"; abaixo de mil, o número normal. */
+export const formatCompact = (n: number) => (Math.abs(n) >= 1000 ? compactFormatter.format(n) : formatKg(n));

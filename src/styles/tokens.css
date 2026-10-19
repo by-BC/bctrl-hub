@@ -82,7 +82,7 @@
   --highlight-foreground: var(--brand-ink);
   --highlight-text: #e8875d;
 
-  --chart-1: #6f8cff;
+  --chart-1: #6a87fb; /* L 0,66 em OKLCH: dentro da faixa validada para o tema escuro */
   --chart-2: var(--brand-orange);
   --chart-3: #a9abb2;
   --chart-4: #3f5fe0;

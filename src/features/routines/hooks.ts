@@ -9,6 +9,7 @@ import {
   removeById,
 } from "@/lib/domain/routines";
 import { REST_DEFAULT } from "@/lib/schemas/routine";
+import { progressKeys } from "@/features/progress/api";
 import {
   DataError,
   deleteRoutine,
@@ -330,6 +331,7 @@ function exerciseMutationOptions(qc: QueryClient) {
         qc.invalidateQueries({ queryKey: exerciseKeys.all }),
         // O nome aparece também nos itens das rotinas.
         qc.invalidateQueries({ queryKey: routineKeys.all }),
+        qc.invalidateQueries({ queryKey: progressKeys.all }),
       ]),
   };
 }

@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { DataError, routineKeys } from "@/features/routines/api";
+import { progressKeys } from "@/features/progress/api";
 import { workoutKeys } from "@/features/workout-session/api";
 import {
   deleteWorkout,
@@ -54,6 +55,8 @@ function historyMutationOptions(qc: QueryClient) {
           qc.invalidateQueries({ queryKey: historyKeys.all }),
           // Anterior, recordes e o próximo treino sugerido dependem do histórico.
           qc.invalidateQueries({ queryKey: workoutKeys.all }),
+          // Evolução e recordes saem das mesmas séries.
+          qc.invalidateQueries({ queryKey: progressKeys.all }),
         ]);
       }
     },

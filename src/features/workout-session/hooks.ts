@@ -6,6 +6,7 @@ import { useCallback, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { DataError, routineKeys } from "@/features/routines/api";
 import { historyKeys } from "@/features/history/api";
+import { progressKeys } from "@/features/progress/api";
 import { fetchLastFinishedRoutineId, fetchSessionSeed, sendWorkout, workoutKeys } from "./api";
 import { useActiveWorkout, type FinishResult } from "./store";
 
@@ -95,6 +96,7 @@ export function useWorkoutSync() {
           qc.invalidateQueries({ queryKey: workoutKeys.all }),
           qc.invalidateQueries({ queryKey: historyKeys.all }),
           qc.invalidateQueries({ queryKey: routineKeys.all }),
+          qc.invalidateQueries({ queryKey: progressKeys.all }),
         ]);
       }
     },

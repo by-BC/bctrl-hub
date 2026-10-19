@@ -27,7 +27,68 @@ export async function deleteDisposableUser(user: DisposableUser | undefined) {
   if (error) throw error;
 }
 
-export type TrainingPlan = { upper: string; lower: string };
+export type TrainingPlan = {
+  upper: string;
+  lower: string;
+  exercises: { supino: string; remada: string; agachamento: string };
+};
+
+/** [kg, reps] ou [kg, reps, prs]. */
+type SeedSet = readonly [number, number] | readonly [number, number, readonly string[]];
+
+type Insert = (table: string, rows: Record<string, unknown>[]) => Promise<void>;
+
+function inserter(user: DisposableUser): Insert {
+  const db = admin();
+  return async (table, rows) => {
+    const { error } = await db.from(table).insert(rows.map((r) => ({ user_id: user.id, ...r })));
+    if (error) throw new Error(`seed ${table}: ${error.message}`);
+  };
+}
+
+/** Exercício sem histórico. */
+export async function seedExercise(user: DisposableUser, name: string) {
+  const id = crypto.randomUUID();
+  await inserter(user)("exercises", [{ id, name }]);
+  return id;
+}
+
+/** Treino finalizado direto no banco: `sets` = [exercício, [[kg, reps, prs?], …]] na ordem. */
+export async function seedWorkout(
+  user: DisposableUser,
+  w: {
+    routine?: string | null;
+    day: string;
+    sets: readonly (readonly [string, readonly SeedSet[]])[];
+  },
+  insert: Insert = inserter(user),
+) {
+  const workoutId = crypto.randomUUID();
+  await insert("workouts", [
+    {
+      id: workoutId,
+      routine_id: w.routine ?? null,
+      day: w.day,
+      started_at: `${w.day}T13:00:00Z`,
+      finished_at: `${w.day}T14:00:00Z`,
+    },
+  ]);
+  for (const [position, [exerciseId, sets]] of w.sets.entries()) {
+    const weId = crypto.randomUUID();
+    await insert("workout_exercises", [{ id: weId, workout_id: workoutId, exercise_id: exerciseId, position: position + 1 }]);
+    await insert(
+      "workout_sets",
+      sets.map(([weight_kg, reps, pr_kinds = []]: readonly [number, number, (readonly string[])?], i) => ({
+        workout_exercise_id: weId,
+        position: i + 1,
+        weight_kg,
+        reps,
+        pr_kinds,
+      })),
+    );
+  }
+  return workoutId;
+}
 
 /**
  * Plano mínimo para a sessão de treino: Upper E2E (supino + remada) e Lower E2E (agachamento),
@@ -35,16 +96,10 @@ export type TrainingPlan = { upper: string; lower: string };
  * (volta do fim da sequência para o início) e o supino tem "anterior" 40 × 10 e 40 × 8.
  */
 export async function seedTrainingPlan(user: DisposableUser): Promise<TrainingPlan> {
-  const db = admin();
-  const user_id = user.id;
+  const insert = inserter(user);
   const id = () => crypto.randomUUID();
   const ex = { supino: id(), remada: id(), agachamento: id() };
   const routine = { upper: id(), lower: id() };
-
-  const insert = async (table: string, rows: Record<string, unknown>[]) => {
-    const { error } = await db.from(table).insert(rows.map((r) => ({ user_id, ...r })));
-    if (error) throw new Error(`seed ${table}: ${error.message}`);
-  };
 
   await insert("exercises", [
     { id: ex.supino, name: "Supino E2E", muscle_group: "Peito" },
@@ -61,31 +116,11 @@ export async function seedTrainingPlan(user: DisposableUser): Promise<TrainingPl
     { routine_id: routine.lower, exercise_id: ex.agachamento, position: 1, sets: 2, rest_sec: 90 },
   ]);
 
-  const workouts = [
+  await seedWorkout(
+    user,
     { routine: routine.upper, day: "2026-10-12", sets: [[ex.supino, [[40, 10], [40, 8]]], [ex.remada, [[30, 12]]]] },
-    { routine: routine.lower, day: "2026-10-13", sets: [[ex.agachamento, [[60, 10], [60, 10]]]] },
-  ] as const;
-  for (const w of workouts) {
-    const workoutId = id();
-    await insert("workouts", [
-      {
-        id: workoutId,
-        routine_id: w.routine,
-        day: w.day,
-        started_at: `${w.day}T13:00:00Z`,
-        finished_at: `${w.day}T14:00:00Z`,
-      },
-    ]);
-    for (const [position, [exerciseId, sets]] of w.sets.entries()) {
-      const weId = id();
-      await insert("workout_exercises", [
-        { id: weId, workout_id: workoutId, exercise_id: exerciseId, position: position + 1 },
-      ]);
-      await insert(
-        "workout_sets",
-        sets.map(([weight_kg, reps], i) => ({ workout_exercise_id: weId, position: i + 1, weight_kg, reps })),
-      );
-    }
-  }
-  return routine;
+    insert,
+  );
+  await seedWorkout(user, { routine: routine.lower, day: "2026-10-13", sets: [[ex.agachamento, [[60, 10], [60, 10]]]] }, insert);
+  return { ...routine, exercises: ex };
 }

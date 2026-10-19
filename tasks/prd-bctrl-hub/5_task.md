@@ -21,13 +21,13 @@ Telas para acompanhar a evolução: gráficos por exercício (melhor carga, 1RM 
 
 ## Subtarefas
 
-- [ ] 5.1 Função de domínio `movingAverage(points, window)` e transformação das linhas da view para o formato do gráfico
-- [ ] 5.2 Hooks `useExerciseStats(exerciseId, range)`, `useExerciseBests`, `useBodyWeights` e mutação `upsertBodyWeight`
-- [ ] 5.3 Tela `/evolucao` com lista e busca
-- [ ] 5.4 Tela `/evolucao/[exerciseId]` com gráfico, filtros, PRs e histórico
-- [ ] 5.5 Seção de peso corporal: formulário rápido + gráfico; layout em 2 colunas a partir de 1024 px
-- [ ] 5.6 Estados vazios ("Nenhum treino com este exercício ainda")
-- [ ] 5.7 Escrever e rodar os testes da tarefa
+- [x] 5.1 Função de domínio `movingAverage(points, window)` e transformação das linhas da view para o formato do gráfico
+- [x] 5.2 Hooks `useExerciseStats(exerciseId, range)`, `useExerciseBests`, `useBodyWeights` e mutação `upsertBodyWeight`
+- [x] 5.3 Tela `/evolucao` com lista e busca
+- [x] 5.4 Tela `/evolucao/[exerciseId]` com gráfico, filtros, PRs e histórico
+- [x] 5.5 Seção de peso corporal: formulário rápido + gráfico; layout em 2 colunas a partir de 1024 px
+- [x] 5.6 Estados vazios ("Nenhum treino com este exercício ainda")
+- [x] 5.7 Escrever e rodar os testes da tarefa
 
 ## Detalhes de Implementação
 
@@ -42,8 +42,8 @@ Ver techspec: views `v_exercise_session_stats` e `v_exercise_bests` em **Modelos
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `movingAverage` (janela maior que os dados, dias faltando); transformação view → série do gráfico; filtro de período
-- [ ] Testes de integração: com 3 sessões semeadas, a view retorna 3 pontos com best e volume corretos; Playwright registra o peso, vê o ponto no gráfico, abre um exercício, troca a métrica e o período
+- [x] Testes de unidade: `movingAverage` (janela maior que os dados, dias faltando); transformação view → série do gráfico; filtro de período
+- [x] Testes de integração: com 3 sessões semeadas, a view retorna 3 pontos com best e volume corretos; Playwright registra o peso, vê o ponto no gráfico, abre um exercício, troca a métrica e o período
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 

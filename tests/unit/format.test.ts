@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   formatClock,
+  formatCompact,
+  formatShortDay,
   formatDay,
   formatDuration,
   formatElapsed,
@@ -40,5 +42,17 @@ describe("format", () => {
     expect(parseReps("0")).toBeNull();
     expect(kgInputValue(52.5)).toBe("52,5");
     expect(kgInputValue(null)).toBe("");
+  });
+});
+
+describe("formatShortDay e formatCompact (eixos dos gráficos)", () => {
+  it("dia curto sem ponto, com ano opcional", () => {
+    expect(formatShortDay("2026-10-13")).toBe("13 out");
+    expect(formatShortDay("2026-01-01", { year: true })).toBe("1 jan 26");
+  });
+
+  it("compacta a partir de mil", () => {
+    expect(formatCompact(82.5)).toBe("82,5");
+    expect(formatCompact(1250).replace(/\s/g, " ")).toBe("1,3 mil"); // Intl usa espaço inseparável
   });
 });

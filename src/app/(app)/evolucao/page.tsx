@@ -1,13 +1,24 @@
 import type { Metadata } from "next";
-import { ComingSoon, PageHeader } from "@/components/shell/page-header";
+import { PageHeader } from "@/components/shell/page-header";
+import { BodyWeightSection } from "@/features/progress/components/body-weight-section";
+import { ProgressList } from "@/features/progress/components/progress-list";
 
 export const metadata: Metadata = { title: "Evolução" };
 
+// Dados lidos no cliente (TanStack Query + RLS): o shell continua estático.
+// Celular: peso primeiro (registro rápido). A partir de 1024 px: exercícios | peso.
 export default function EvolucaoPage() {
   return (
     <>
       <PageHeader title="Evolução" eyebrow="Progresso" />
-      <ComingSoon task="5.0">Gráficos de carga, 1RM e volume por exercício, e peso corporal.</ComingSoon>
+      <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+        <div className="lg:sticky lg:top-10 lg:order-2">
+          <BodyWeightSection />
+        </div>
+        <div className="lg:order-1">
+          <ProgressList />
+        </div>
+      </div>
     </>
   );
 }
