@@ -31,6 +31,7 @@ Fechar a v2:
 - [x] 8.2 Atalho no Perfil
 - [x] 8.3 Axe nas rotas novas e correção de violações
 - [ ] 8.4 Suíte E2E completa estável (1 worker; sem Lighthouse; servidores encerrados)
+  - Mobile completo: 113 passaram, 1 pulado (só desktop). Desktop: só os specs afetados (`story`, `a11y`, `profile`, `month-card`); o **desktop completo não rodou** (3,2–3,7 GB livres, abaixo dos 4 GB). Pendente desde a v1.
 - [x] 8.5 Documentação (`README.md`, `CLAUDE.md`)
 - [x] 8.6 Advisors do Supabase
 - [ ] 8.7 Smoke test do dono em produção (celular): perfil, nutrição, catálogo, card do mês no Instagram
@@ -59,3 +60,10 @@ Ver techspec: **Sequenciamento → passo 8**, **Monitoramento** e a seção Stor
 - `src/app/(app)/perfil/mes/[month]/story/page.tsx`
 - `tests/e2e/a11y.spec.ts`, `tests/e2e/month-card.spec.ts`
 - `README.md`, `CLAUDE.md`
+
+## Notas de execução
+
+- **Card do mês:** tom grafite (`.story-ink`), mês em Sora itálico, calendário de hexágonos da marca (segunda a domingo) com o número do dia dentro (texto grafite nos níveis 3 e 4, off-white nos outros), hoje com fio laranja e dias futuros só com contorno. Escala `--heat-ink-0…4` (a do tema escuro, agora fixa em `:root`). Mês de 6 semanas usa hexágonos menores; até 3 conquistas na lista (o total vai no título) e o mote "Be in control." sai quando a lista enche. Pior caso conferido (6 semanas, "fevereiro", 154.320 kg, 4 conquistas): o texto termina em y = 1606.
+- **E2E:** `month-card.spec.ts` confere que todo texto do quadro fica entre y = 250 e 1670 e que o PNG sai com 1080×1920.
+- **Lentidão dos seeds:** `readLocalSupabaseEnv()` rodava `npx supabase status` (~4,5 s) a cada cliente admin; agora lê uma vez por processo. Um usuário + 3 inserts caiu de ~23 s para ~5 s.
+- **Advisors (2026-10-20):** segurança, só o já conhecido `auth_leaked_password_protection` (configuração do Auth, cadastro desligado, usuário único). Performance, 5 `unused_index` (INFO) em índices de FK (`routine_exercises_exercise_idx`, `meal_logs_meal_idx`, `habit_logs_habit_idx`, `meal_log_items_meal_log_idx`, `meal_log_items_food_id_idx`), mantidos para os deletes em cascata e as checagens de FK. Nada novo acionável; sem migration.
