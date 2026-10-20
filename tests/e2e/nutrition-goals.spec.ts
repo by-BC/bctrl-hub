@@ -12,13 +12,12 @@ import { loginAndWaitForHome } from "./fixtures";
 /**
  * Task 5.0 v2: perfil → metas calculadas (conta passo a passo e ajuste manual), consumido × meta
  * em /comida e no painel Hoje, alimento fora do plano (TACO, com snapshot) e o mesmo registro
- * feito offline sincronizando ao voltar a rede. Dados fictícios em usuário descartável.
+ * Dados fictícios em usuário descartável.
  *
  * Perfil de exemplo (m, 30 anos, 180 cm, 80 kg, moderado, manter, 2 g/kg): 2.759 kcal ·
  * P 160 g · C 386 g · G 64 g (conta em tests/unit/goals.test.ts).
  */
 
-const QUEUE_KEY = "bctrl.queryCache";
 const SYNC = { timeout: 15_000 };
 
 const mealCard = (page: Page, name: string) => page.getByTestId("meal-card").filter({ hasText: name });
@@ -42,8 +41,7 @@ async function addOffPlan(page: Page, meal: string, search: string, grams: strin
 test.describe("metas nutricionais e fora do plano", () => {
   let user: DisposableUser;
 
-  test.afterEach(async ({ context }) => {
-    await context.setOffline(false);
+  test.afterEach(async () => {
     await deleteDisposableUser(user);
   });
 
@@ -122,43 +120,5 @@ test.describe("metas nutricionais e fora do plano", () => {
     await expect(mealSheet(page)).toBeHidden();
     await expect(kcalRow(page)).toContainText("185 / 2.759 kcal");
     await expect.poll(() => countRows(user, "meal_log_items"), SYNC).toBe(0);
-  });
-
-  test("fora do plano offline entra no total e sincroniza ao reabrir online", async ({ page, context }) => {
-    user = await createDisposableUser("e2e-metas-offline");
-    const meals = await seedMealPlan(user);
-    await seedNutrition(user, meals, { weightKg: 80 });
-    await loginAndWaitForHome(page, user.email, user.password);
-    await page.goto("/perfil/dados");
-    await page.getByRole("group", { name: "Sexo" }).getByRole("button", { name: "Masculino" }).click();
-    await page.getByLabel("Nascimento").fill(birth30());
-    await page.getByLabel("Altura (cm)").fill("180");
-    await page.getByLabel("Nível de atividade").selectOption("moderate");
-    await page.getByRole("group", { name: "Objetivo" }).getByRole("button", { name: "Manter" }).click();
-    await page.getByRole("button", { name: "Salvar dados" }).click();
-    await expect.poll(() => countRows(user, "profiles"), SYNC).toBe(1);
-
-    await page.goto("/comida");
-    await expect(kcalRow(page)).toContainText("0 / 2.759 kcal");
-    await context.setOffline(true);
-    await addOffPlan(page, "Café da manhã", "arroz integral", "150");
-    await page.keyboard.press("Escape");
-    await expect(mealSheet(page)).toBeHidden();
-    await expect(kcalRow(page)).toContainText("185 / 2.759 kcal");
-    await expect(mealCard(page, "Café da manhã")).toContainText("Fora do plano");
-    await expect
-      .poll(() => page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "null")?.clientState?.mutations?.length ?? 0, QUEUE_KEY))
-      .toBe(1);
-    expect(await countRows(user, "meal_log_items")).toBe(0);
-
-    // Fecha o app sem rede; a conexão volta e o app é aberto de novo: a fila reenvia.
-    await page.close();
-    await context.setOffline(false);
-    const next = await context.newPage();
-    await next.goto("/comida");
-    await expect.poll(() => countRows(user, "meal_log_items"), SYNC).toBe(1);
-    expect(await countRows(user, "meal_logs")).toBe(1);
-    await next.reload();
-    await expect(kcalRow(next)).toContainText("185 / 2.759 kcal");
   });
 });

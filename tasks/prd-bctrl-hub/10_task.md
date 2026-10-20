@@ -25,8 +25,8 @@ Fechar a v1: garantir que nenhuma gravação se perca com sinal fraco em qualque
 
 - [x] 10.1 Configurar a persistência do QueryClient e registrar `setMutationDefaults` para cada mutação existente
 - [x] 10.2 Componente `SyncStatus` (offline, sincronizando, N pendentes) no shell
-- [ ] 10.3 Teste manual guiado: modo avião no celular, marcar refeição, hábito e tarefa, fechar o app, reabrir online e conferir
-  - Pendente (dono): depende do celular real. O mesmo fluxo está coberto no Chromium por `tests/e2e/offline.spec.ts`.
+- [x] ~~10.3 Teste manual guiado: modo avião no celular, marcar refeição, hábito e tarefa, fechar o app, reabrir online e conferir
+  - **Cancelada (dono, 2026-10-20):** offline deixou de ser requisito; o app funciona com rede. Os E2E de offline foram removidos.
 - [x] 10.4 Auditoria de acessibilidade com `@axe-core/playwright` em todas as rotas, nos dois temas; corrigir as violações
 - [x] 10.5 Revisar o contraste dos tokens e ajustar variações (ex: laranja mais escuro para texto em fundo claro)
 - [x] 10.6 Completar e estabilizar a suíte E2E (cenários 1 a 6) e criar o script `npm run test:all`

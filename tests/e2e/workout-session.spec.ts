@@ -106,28 +106,6 @@ test.describe("sessão de treino", () => {
     await page.goto("/treino");
     await expect(page.getByTestId("next-workout-card")).toContainText("Lower E2E");
   });
-
-  test("finalizar offline: fica pendente e aparece no histórico ao reconectar", async ({ page, context }) => {
-    const name = await startSuggested(page);
-    const card = page.getByTestId("session-exercise").first();
-    await card.getByRole("button", { name: /^Concluir série 1 de / }).click(); // usa o anterior
-    await expect(card.getByRole("button", { name: /^Desfazer série 1 de / })).toBeVisible();
-
-    await context.setOffline(true);
-    await finishWorkout(page);
-    await expect(page.getByTestId("sync-pending")).toContainText("Aguardando envio");
-    await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
-
-    await context.setOffline(false);
-    // O evento `online` (ou o backoff) reenvia e limpa o aparelho.
-    await expect(page.getByRole("heading", { level: 1, name: "Nenhum treino em andamento" })).toBeVisible({
-      timeout: 15_000,
-    });
-
-    await page.goto("/treino/historico");
-    await expect(page.getByTestId("history-item").first()).toContainText(name);
-  });
-
   test("histórico: editar carga e excluir com confirmação", async ({ page }) => {
     await page.goto("/treino/historico");
     const items = page.getByTestId("history-item");
