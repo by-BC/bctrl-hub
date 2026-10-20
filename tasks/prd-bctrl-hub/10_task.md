@@ -59,3 +59,7 @@ Ver techspec: **Pontos de Integração** (fila offline), **Testes de E2E** (cen�
 - `src/styles/tokens.css`
 - `tests/e2e/offline.spec.ts`, `tests/e2e/a11y.spec.ts`, `tests/e2e/*.spec.ts`
 - `README.md`, `CLAUDE.md`, `package.json` (script `test:all`)
+
+## Encerramento (2026-10-19)
+
+Task encerrada por decisão do dono. Verificado: typecheck, lint, build, 192 testes de unidade, 151 de integração e E2E completo no projeto mobile (45 passaram, 1 pulado). **Ressalva aceita pelo dono:** o E2E do projeto desktop não foi reexecutado depois dos últimos ajustes (rótulo do botão de opção, tempos do `offline.spec`, contrastes); a rodada anterior foi interrompida por suspensão do PC e a seguinte por falta de memória. Rodar `npx playwright test --project=desktop` na próxima oportunidade. Pendentes do dono: 10.3 (modo avião no celular) e smoke test no celular.

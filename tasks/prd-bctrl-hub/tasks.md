@@ -11,4 +11,4 @@
 - [x] 7.0 Hábitos e tarefas (Complexidade: MEDIUM)
 - [x] 8.0 Painel Hoje e Hex Week (Complexidade: MEDIUM)
 - [x] 9.0 Story Studio (Complexidade: HIGH)
-- [ ] 10.0 Offline geral, acessibilidade e E2E final (Complexidade: MEDIUM)
+- [x] 10.0 Offline geral, acessibilidade e E2E final (Complexidade: MEDIUM)
