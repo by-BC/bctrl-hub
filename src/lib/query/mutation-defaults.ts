@@ -25,6 +25,7 @@ import { deleteBodyWeight, upsertBodyWeight, type BodyWeight } from "@/features/
 import {
   deleteMeal,
   deleteMealLog,
+  deleteOffPlanItem,
   deleteMealOption,
   saveMealPositions,
   updateMeal,
@@ -32,13 +33,17 @@ import {
   upsertMeal,
   upsertMealLog,
   upsertMealOption,
+  upsertOffPlanItem,
   type Meal,
   type MealInsert,
   type MealLog,
   type MealOptionInsert,
   type MealOptionPatch,
   type MealPatch,
+  type OffPlanItemInsert,
 } from "@/features/meals/api";
+import { upsertOwnFood, type OwnFoodInsert } from "@/features/nutrition/api";
+import { upsertProfile, type ProfileSave } from "@/features/profile/api";
 import {
   deleteHabit,
   deleteHabitLogs,
@@ -155,6 +160,24 @@ export const WRITES = {
   // Registro de refeições (scope "meal-logs")
   logMeal: write(["meal-logs", "log"], (log: MealLog) => upsertMealLog(log)),
   unlogMeal: write(["meal-logs", "unlog"], (v: { day: string; meal_id: string }) => deleteMealLog(v)),
+  /**
+   * Alimento fora do plano. `log` vem preenchido quando a refeição ainda não tinha registro:
+   * cria o registro (fora do plano) antes do item, na mesma gravação, porque o item depende dele.
+   */
+  addOffPlanItem: write(
+    ["meal-logs", "add-item"],
+    async ({ log, item }: { day: string; meal_id: string; log: MealLog | null; item: OffPlanItemInsert }) => {
+      if (log) await upsertMealLog(log);
+      await upsertOffPlanItem(item);
+    },
+  ),
+  removeOffPlanItem: write(["meal-logs", "remove-item"], ({ id }: { day: string; id: string }) => deleteOffPlanItem(id)),
+
+  // Alimentos próprios (scope "meal-logs": um item fora do plano pode depender do alimento recém-criado)
+  createFood: write(["foods", "create"], (food: OwnFoodInsert) => upsertOwnFood(food)),
+
+  // Perfil (scope "profile")
+  saveProfile: write(["profile", "save"], (row: ProfileSave) => upsertProfile(row)),
 
   // Plano alimentar (scope "meal-plan")
   createMeal: write(["meal-plan", "create"], (row: MealInsert) => upsertMeal(row)),

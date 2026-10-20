@@ -176,3 +176,222 @@ export function searchFoods<T extends Pick<Food, "name">>(foods: readonly T[], q
     .slice(0, limit)
     .map((s) => s.food);
 }
+
+// ── Total do dia e consumido × meta ───────────────────────────────────────
+
+/** Total do dia: opções marcadas + itens fora do plano (snapshot gravado em `meal_log_items`). */
+export function dayTotals(input: { options: readonly Macros[]; offPlan: readonly Macros[] }): Macros {
+  return [...input.options, ...input.offPlan].reduce(addMacros, { ...ZERO_MACROS });
+}
+
+/** Item fora do plano como vem do banco (valores do item inteiro, não por 100 g). */
+export type OffPlanSnapshot = { kcal: number; protein_g: number; carbs_g: number; fat_g: number };
+
+export const snapshotMacros = (s: OffPlanSnapshot): Macros => ({
+  kcal: Number(s.kcal),
+  protein: Number(s.protein_g),
+  carbs: Number(s.carbs_g),
+  fat: Number(s.fat_g),
+});
+
+/**
+ * Snapshot de um alimento numa quantidade: valores do item inteiro, arredondados como as
+ * colunas de `meal_log_items` (1 casa). É o que fica gravado: editar o alimento depois não muda o dia.
+ */
+export function foodSnapshot(food: Food, grams: number): OffPlanSnapshot {
+  const m = itemMacros(food, grams)!;
+  const r1 = (n: number) => Math.round(n * 10) / 10;
+  return { kcal: r1(m.kcal), protein_g: r1(m.protein), carbs_g: r1(m.carbs), fat_g: r1(m.fat) };
+}
+
+export type MacroProgress = {
+  key: MacroKey;
+  consumed: number;
+  goal: number;
+  /** consumido / meta (0 quando a meta é 0). Pode passar de 1. */
+  ratio: number;
+  /** meta − consumido, quando falta; 0 se já chegou. */
+  remaining: number;
+  /** consumido − meta, quando passou; 0 se não passou. */
+  excess: number;
+};
+
+/**
+ * Consumido × meta por macro, com os valores arredondados para exibir (kcal inteiro, g com 1
+ * casa) antes de comparar: assim "faltam" e "excedeu" batem com os números da tela.
+ */
+export function macroProgress(consumed: Macros, goal: Macros): MacroProgress[] {
+  const c = roundMacros(consumed);
+  const g = roundMacros(goal);
+  const r1 = (n: number) => Math.round(n * 10) / 10;
+  return MACRO_KEYS.map((key) => {
+    const diff = r1(g[key] - c[key]);
+    return {
+      key,
+      consumed: c[key],
+      goal: g[key],
+      ratio: g[key] > 0 ? c[key] / g[key] : 0,
+      remaining: diff > 0 ? diff : 0,
+      excess: diff < 0 ? -diff : 0,
+    };
+  });
+}
+
+// ── Metas a partir do perfil ──────────────────────────────────────────────
+
+export const SEXES = ["m", "f"] as const;
+export type Sex = (typeof SEXES)[number];
+export const ACTIVITY_LEVELS = ["sedentary", "light", "moderate", "active", "very_active"] as const;
+export type ActivityLevel = (typeof ACTIVITY_LEVELS)[number];
+export const GOALS = ["lose", "maintain", "gain"] as const;
+export type Goal = (typeof GOALS)[number];
+
+/** Fator de atividade (gasto diário = TMB × fator). */
+export const ACTIVITY_FACTOR: Record<ActivityLevel, number> = {
+  sedentary: 1.2,
+  light: 1.375,
+  moderate: 1.55,
+  active: 1.725,
+  very_active: 1.9,
+};
+
+/** Ajuste das kcal pelo objetivo: −20% para perder, 0 para manter, +10% para ganhar. */
+export const GOAL_ADJUST: Record<Goal, number> = { lose: -0.2, maintain: 0, gain: 0.1 };
+
+/** Gordura: 0,8 g por kg, com piso de 20% das kcal. */
+export const FAT_G_PER_KG = 0.8;
+export const FAT_MIN_SHARE = 0.2;
+/** Dia de treino: +10% de carboidrato (e as kcal acompanham), sem override. */
+export const TRAINING_CARBS_BONUS = 0.1;
+
+export const KCAL_PER_G = { protein: 4, carbs: 4, fat: 9 } as const;
+
+/** Ajuste manual por macro: `rest` vale no dia sem treino (e de base no de treino), `training` no de treino. */
+export type GoalOverrides = { rest?: Partial<Macros> | null; training?: Partial<Macros> | null };
+
+export type NutritionProfile = {
+  sex: Sex | null;
+  birth_date: string | null;
+  height_cm: number | null;
+  activity_level: ActivityLevel | null;
+  goal: Goal | null;
+  protein_g_per_kg: number;
+  goal_overrides?: GoalOverrides | null;
+};
+
+/** Os campos que o cálculo exige estão preenchidos. */
+export type CompleteProfile = NutritionProfile & {
+  sex: Sex;
+  birth_date: string;
+  height_cm: number;
+  activity_level: ActivityLevel;
+  goal: Goal;
+};
+
+export const isCompleteProfile = (p: NutritionProfile | null | undefined): p is CompleteProfile =>
+  !!p && !!p.sex && !!p.birth_date && typeof p.height_cm === "number" && p.height_cm > 0 && !!p.activity_level && !!p.goal;
+
+/** Idade em anos completos no dia `onDay` (AAAA-MM-DD). */
+export function ageOn(birthDate: string, onDay: string): number {
+  const [by, bm, bd] = birthDate.split("-").map(Number);
+  const [y, m, d] = onDay.split("-").map(Number);
+  return y - by - (m < bm || (m === bm && d < bd) ? 1 : 0);
+}
+
+/** Cada passo da conta, para mostrar no formulário. Valores sem arredondar. */
+export type GoalBreakdown = {
+  age: number;
+  /** TMB (Mifflin-St Jeor). */
+  bmr: number;
+  factor: number;
+  /** Gasto diário = TMB × fator. */
+  tdee: number;
+  adjust: number;
+  kcal: number;
+  protein: number;
+  /** Gordura por kg (0,8 g/kg) e o piso de 20% das kcal, em gramas. */
+  fatPerKg: number;
+  fatMin: number;
+  fat: number;
+  carbs: number;
+};
+
+/**
+ * Metas calculadas (sem override) para o dia sem treino.
+ * TMB = 10·peso + 6,25·altura − 5·idade + 5 (m) ou − 161 (f); kcal = TMB × fator × (1 + ajuste);
+ * proteína = g/kg × peso; gordura = máx(0,8 g/kg, 20% das kcal ÷ 9); carboidrato = o restante ÷ 4.
+ */
+export function goalBreakdown(p: CompleteProfile, weightKg: number, onDay: string): GoalBreakdown {
+  const age = ageOn(p.birth_date, onDay);
+  const bmr = 10 * weightKg + 6.25 * Number(p.height_cm) - 5 * age + (p.sex === "m" ? 5 : -161);
+  const factor = ACTIVITY_FACTOR[p.activity_level];
+  const tdee = bmr * factor;
+  const adjust = GOAL_ADJUST[p.goal];
+  const kcal = tdee * (1 + adjust);
+  const protein = Number(p.protein_g_per_kg) * weightKg;
+  const fatPerKg = FAT_G_PER_KG * weightKg;
+  const fatMin = (FAT_MIN_SHARE * kcal) / KCAL_PER_G.fat;
+  const fat = Math.max(fatPerKg, fatMin);
+  const carbs = Math.max(0, (kcal - protein * KCAL_PER_G.protein - fat * KCAL_PER_G.fat) / KCAL_PER_G.carbs);
+  return { age, bmr, factor, tdee, adjust, kcal, protein, fatPerKg, fatMin, fat, carbs };
+}
+
+const pickOverride = (o: Partial<Macros> | null | undefined, k: MacroKey): number | null => {
+  const v = o?.[k];
+  return typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : null;
+};
+
+/**
+ * Metas do dia (kcal inteiro, macros em g inteiros).
+ *
+ * Dia sem treino: o cálculo, com cada macro do `goal_overrides.rest` substituindo o seu.
+ * Dia de treino: cada macro do `goal_overrides.training` substitui o seu; sem ele, vale o do
+ * dia sem treino, e o carboidrato ganha +10% (as kcal sobem 4 por grama a mais, se também não
+ * tiverem override de treino).
+ */
+export function goalsFromProfile(p: CompleteProfile, weightKg: number, trainingDay: boolean, onDay: string): Macros {
+  const b = goalBreakdown(p, weightKg, onDay);
+  const rest = p.goal_overrides?.rest;
+  const base: Macros = {
+    kcal: pickOverride(rest, "kcal") ?? b.kcal,
+    protein: pickOverride(rest, "protein") ?? b.protein,
+    carbs: pickOverride(rest, "carbs") ?? b.carbs,
+    fat: pickOverride(rest, "fat") ?? b.fat,
+  };
+  if (!trainingDay) return roundGoals(base);
+
+  const training = p.goal_overrides?.training;
+  const carbs = pickOverride(training, "carbs") ?? base.carbs * (1 + TRAINING_CARBS_BONUS);
+  return roundGoals({
+    kcal: pickOverride(training, "kcal") ?? base.kcal + (carbs - base.carbs) * KCAL_PER_G.carbs,
+    protein: pickOverride(training, "protein") ?? base.protein,
+    carbs,
+    fat: pickOverride(training, "fat") ?? base.fat,
+  });
+}
+
+const roundGoals = (m: Macros): Macros => ({
+  kcal: Math.round(m.kcal),
+  protein: Math.round(m.protein),
+  carbs: Math.round(m.carbs),
+  fat: Math.round(m.fat),
+});
+
+// ── Quantidade do item fora do plano ──────────────────────────────────────
+
+export type AmountUnit = { key: string; label: string; grams: number };
+
+/** Unidades de um alimento: g, ml (densidade ≈ 1) e as unidades com peso de referência. */
+export function amountUnits(food: Pick<Food, "unit_grams">): AmountUnit[] {
+  const extra = Object.entries(food.unit_grams ?? {})
+    .filter(([, g]) => typeof g === "number" && Number.isFinite(g) && g > 0)
+    .map(([key, g]) => ({ key, label: key, grams: g }));
+  return [{ key: "g", label: "g", grams: 1 }, { key: "ml", label: "ml", grams: 1 }, ...extra];
+}
+
+/** Gramas de uma quantidade numa unidade (1 casa, como `meal_log_items.grams`). `null` se inválida. */
+export function amountToGrams(amount: number | null, unit: AmountUnit): number | null {
+  if (amount === null || !Number.isFinite(amount) || amount <= 0) return null;
+  const grams = Math.round(amount * unit.grams * 10) / 10;
+  return grams > 0 && grams <= 99999 ? grams : null;
+}

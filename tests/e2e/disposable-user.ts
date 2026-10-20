@@ -255,3 +255,32 @@ export async function seedCatalog(user: DisposableUser): Promise<CatalogSeed> {
   await insert("routine_exercises", [{ routine_id: routine, exercise_id: ex.remada, position: 1, sets: 1, rest_sec: 0 }]);
   return { routine, exercises: ex };
 }
+
+/**
+ * v2 (metas): vincula o "Arroz" do almoço ("Prato feito") ao "Arroz, integral, cozido" da TACO
+ * (150 g ≈ 185 kcal); o frango fica sem valor. Registra o peso (80 kg) se `weightKg` vier.
+ */
+export async function seedNutrition(user: DisposableUser, meals: MealPlanIds, { weightKg }: { weightKg?: number } = {}) {
+  const db = admin();
+  const { data: arroz, error } = await db.from("foods").select("id").eq("name", "Arroz, integral, cozido").is("user_id", null).single();
+  if (error || !arroz) throw new Error(`TACO: ${error?.message ?? "arroz não encontrado"}`);
+  const { error: upd } = await db
+    .from("meal_options")
+    .update({
+      items: [
+        { name: "Arroz", qty: "150 g", subs: [], food_id: arroz.id, grams: 150 },
+        { name: "Frango", qty: "120 g", subs: ["Peixe 150 g"] },
+      ],
+    })
+    .eq("meal_id", meals.almoco)
+    .eq("user_id", user.id);
+  if (upd) throw new Error(`seed meal_options: ${upd.message}`);
+  if (weightKg !== undefined) await inserter(user)("body_weights", [{ day: "2026-10-01", weight_kg: weightKg }]);
+}
+
+/** Perfil fictício completo (m, 180 cm, moderado, manter, 2 g/kg). */
+export async function seedProfile(user: DisposableUser) {
+  await inserter(user)("profiles", [
+    { sex: "m", birth_date: "1996-01-01", height_cm: 180, activity_level: "moderate", goal: "maintain", protein_g_per_kg: 2 },
+  ]);
+}

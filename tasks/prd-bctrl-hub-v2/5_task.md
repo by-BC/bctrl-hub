@@ -22,12 +22,12 @@ O dono informa os dados corporais e o objetivo e recebe metas diárias de kcal e
 
 ## Subtarefas
 
-- [ ] 5.1 `goalsFromProfile` e `dayTotals` com testes (2 perfis calculados à mão)
-- [ ] 5.2 Hooks e mutações de `profiles` e `meal_log_items` (+ mutation defaults offline)
-- [ ] 5.3 Formulário de dados e metas (`/perfil/dados`)
-- [ ] 5.4 `NutritionBars` em `/comida` e no painel Hoje
-- [ ] 5.5 `FoodSearch` + `OffPlanSheet` na refeição fora do plano
-- [ ] 5.6 Escrever e rodar os testes da tarefa
+- [x] 5.1 `goalsFromProfile` e `dayTotals` com testes (2 perfis calculados à mão)
+- [x] 5.2 Hooks e mutações de `profiles` e `meal_log_items` (+ mutation defaults offline)
+- [x] 5.3 Formulário de dados e metas (`/perfil/dados`)
+- [x] 5.4 `NutritionBars` em `/comida` e no painel Hoje
+- [x] 5.5 `FoodSearch` + `OffPlanSheet` na refeição fora do plano
+- [x] 5.6 Escrever e rodar os testes da tarefa
 
 ## Detalhes de Implementação
 
@@ -42,8 +42,8 @@ Ver techspec: **Interfaces Principais** (`nutrition.ts`), **Modelos de Dados** (
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `goalsFromProfile` (2 perfis, objetivos, dia de treino, overrides); `dayTotals`; `NutritionBars` (faltando e excedente com texto)
-- [ ] Testes de integração: RLS de `profiles` e `meal_log_items`; E2E salva o perfil e vê as metas, marca uma opção e adiciona alimento fora do plano (barras avançam), e o mesmo fluxo offline sincroniza
+- [x] Testes de unidade: `goalsFromProfile` (2 perfis, objetivos, dia de treino, overrides); `dayTotals`; `NutritionBars` (faltando e excedente com texto)
+- [x] Testes de integração: RLS de `profiles` e `meal_log_items`; E2E salva o perfil e vê as metas, marca uma opção e adiciona alimento fora do plano (barras avançam), e o mesmo fluxo offline sincroniza
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 

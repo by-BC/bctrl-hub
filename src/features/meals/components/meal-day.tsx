@@ -15,6 +15,7 @@ import type { Meal, MealLog } from "../api";
 import { useWeekSummary } from "@/features/week/hooks";
 import { weekStart } from "@/lib/domain/week";
 import { OptionMacros } from "@/features/nutrition/components/macro-summary";
+import { DayNutrition } from "@/features/nutrition/components/nutrition-bars";
 import { useMealDay } from "../hooks";
 import { optionLabel, MealSheet } from "./meal-sheet";
 import { MealStatusBadge } from "./meal-status";
@@ -76,8 +77,8 @@ function DayContent({ day }: { day: string }) {
   const openMeal = data.visible.find((m) => m.id === openMealId) ?? null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
-      <section aria-labelledby="refeicoes-titulo" className="space-y-3 lg:order-1">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:grid-rows-[auto_1fr] lg:items-start">
+      <section aria-labelledby="refeicoes-titulo" className="space-y-3 lg:col-start-1 lg:row-span-2 lg:row-start-1">
         <h2 id="refeicoes-titulo" className="sr-only">
           Refeições
         </h2>
@@ -110,10 +111,16 @@ function DayContent({ day }: { day: string }) {
         )}
       </section>
 
-      <aside aria-label="Adesão" className="order-first grid grid-cols-2 gap-2 lg:sticky lg:top-10 lg:order-2 lg:grid-cols-1">
+      <aside
+        aria-label="Adesão"
+        className="order-first grid grid-cols-2 gap-2 lg:order-none lg:col-start-2 lg:row-start-1 lg:grid-cols-1"
+      >
         <DayAdherence adherence={data.adherence} />
         <WeekAdherence day={day} />
       </aside>
+
+      {/* Celular: depois das refeições (marcar vem primeiro). Desktop: na coluna lateral. */}
+      <DayNutrition day={day} className="lg:col-start-2 lg:row-start-2" />
 
       <MealSheet
         day={day}

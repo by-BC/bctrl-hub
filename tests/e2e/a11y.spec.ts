@@ -5,6 +5,8 @@ import {
   createDisposableUser,
   deleteDisposableUser,
   seedMealPlan,
+  seedNutrition,
+  seedProfile,
   seedSystemHabits,
   seedTrainingPlan,
   seedWorkout,
@@ -43,7 +45,9 @@ for (const theme of ["dark", "light"] as const) {
     test.beforeEach(async ({ page }) => {
       user = await createDisposableUser("e2e-a11y");
       const plan = await seedTrainingPlan(user);
-      await seedMealPlan(user);
+      const meals = await seedMealPlan(user);
+      await seedNutrition(user, meals, { weightKg: 80 });
+      await seedProfile(user);
       await seedSystemHabits(user);
       const workout = await seedWorkout(user, {
         routine: plan.upper,
@@ -65,6 +69,7 @@ for (const theme of ["dark", "light"] as const) {
         "/comida/plano",
         "/habitos",
         "/tarefas",
+        "/perfil/dados",
       ];
       await setTheme(page, theme);
     });
@@ -92,6 +97,12 @@ for (const theme of ["dark", "light"] as const) {
       await page.getByTestId("meal-card").first().click();
       await expect(page.getByRole("dialog")).toBeVisible();
       found.push(...(await audit(page, "/comida (sheet de opções)")));
+      await page.getByRole("button", { name: "Adicionar alimento" }).click();
+      const add = page.getByRole("dialog", { name: "Adicionar alimento" });
+      await add.getByLabel("Buscar alimento").fill("arroz");
+      await add.getByRole("button", { name: /^Arroz, integral, cozido/ }).click();
+      await expect(add.getByRole("textbox", { name: "Quantidade", exact: true })).toBeVisible();
+      found.push(...(await audit(page, "/comida (adicionar alimento fora do plano)")));
 
       await page.goto("/treino");
       await page.getByTestId("next-workout-card").getByRole("button", { name: "Iniciar treino" }).click();

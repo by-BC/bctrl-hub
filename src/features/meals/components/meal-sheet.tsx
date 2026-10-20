@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, CircleSlash2, Undo2 } from "lucide-react";
+import { Check, ChevronDown, CircleSlash2, Plus, Trash2, Undo2 } from "lucide-react";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -16,9 +16,19 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { formatMealTime, mealStatus } from "@/lib/domain/meals";
 import { NOTE_MAX, offPlanNoteSchema, type MealItem } from "@/lib/schemas/meal";
-import { OptionMacros } from "@/features/nutrition/components/macro-summary";
-import type { Meal, MealLog, MealOption } from "../api";
-import { buildMealLog, useLogMeal, useUnlogMeal } from "../hooks";
+import { formatMacros, OptionMacros } from "@/features/nutrition/components/macro-summary";
+import { OffPlanSheet } from "@/features/nutrition/components/off-plan-sheet";
+import { dayTotals, foodSnapshot, snapshotMacros } from "@/lib/domain/nutrition";
+import type { Meal, MealLog, MealOption, OffPlanItem } from "../api";
+import {
+  buildMealLog,
+  buildOffPlanAdd,
+  useAddOffPlanItem,
+  useLogMeal,
+  useOffPlanItems,
+  useRemoveOffPlanItem,
+  useUnlogMeal,
+} from "../hooks";
 import { MealStatusBadge } from "./meal-status";
 
 type MealSheetProps = {
@@ -83,6 +93,8 @@ function MealSheetBody({ day, meal, log, close }: { day: string; meal: Meal; log
             ))}
           </ul>
         )}
+
+        <OffPlanItems day={day} meal={meal} log={log} />
 
         <OffPlanForm
           log={log}
@@ -181,6 +193,75 @@ function ItemRow({ item }: { item: MealItem }) {
         </Collapsible>
       )}
     </li>
+  );
+}
+
+const gramsFmt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
+
+/**
+ * Alimentos fora do plano da refeição (snapshot gravado): lista com remover e "Adicionar
+ * alimento". Sem registro, adicionar marca a refeição como fora do plano; com uma opção já
+ * marcada, o alimento entra como extra e também soma no dia.
+ */
+function OffPlanItems({ day, meal, log }: { day: string; meal: Meal; log: MealLog | undefined }) {
+  const [adding, setAdding] = useState(false);
+  const { data } = useOffPlanItems(day);
+  const add = useAddOffPlanItem();
+  const remove = useRemoveOffPlanItem();
+  const items: OffPlanItem[] = log ? (data ?? []).filter((i) => i.meal_log_id === log.id) : [];
+  const total = dayTotals({ options: [], offPlan: items.map(snapshotMacros) });
+
+  return (
+    <section aria-labelledby={`fora-${meal.id}`} className="space-y-2 rounded-xl border border-dashed p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 id={`fora-${meal.id}`} className="text-sm font-semibold">
+          Fora do plano
+        </h3>
+        {items.length > 0 && (
+          <span className="num text-xs text-muted-foreground" data-testid="off-plan-total">
+            {formatMacros(total)}
+          </span>
+        )}
+      </div>
+      {items.length > 0 && (
+        <ul className="divide-y" aria-label="Alimentos fora do plano">
+          {items.map((item) => (
+            <li key={item.id} className="flex items-center gap-2 py-1" data-testid="off-plan-item">
+              <span className="min-w-0 flex-1 text-sm">
+                <span className="block break-words">{item.name}</span>
+                <span className="num block text-xs text-muted-foreground">
+                  {gramsFmt.format(item.grams)} g · {formatMacros(snapshotMacros(item))}
+                </span>
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-11 shrink-0"
+                aria-label={`Remover ${item.name}`}
+                onClick={() => remove.mutate({ day, id: item.id })}
+              >
+                <Trash2 aria-hidden />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Button type="button" variant="outline" className="h-11 w-full" onClick={() => setAdding(true)}>
+        <Plus aria-hidden />
+        Adicionar alimento
+      </Button>
+      <OffPlanSheet
+        open={adding}
+        onOpenChange={setAdding}
+        mealName={meal.name}
+        onAdd={(food, grams) =>
+          add.mutate(
+            buildOffPlanAdd(log, { day, meal_id: meal.id }, { food_id: food.id, name: food.name, grams, ...foodSnapshot(food, grams) }),
+          )
+        }
+      />
+    </section>
   );
 }
 

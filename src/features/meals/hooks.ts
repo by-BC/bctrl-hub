@@ -13,6 +13,7 @@ import {
   fetchHasFinishedWorkout,
   fetchMealLogs,
   fetchMealPlan,
+  fetchOffPlanItems,
   mealKeys,
   workoutDayKey,
   type Meal,
@@ -22,6 +23,8 @@ import {
   type MealOptionInsert,
   type MealOptionPatch,
   type MealPatch,
+  type OffPlanItem,
+  type OffPlanItemInsert,
 } from "./api";
 
 // ── Leituras ──────────────────────────────────────────────────────────────
@@ -34,6 +37,15 @@ export function useMealLogs(day: string | null) {
   return useQuery({
     queryKey: mealKeys.logs(day ?? ""),
     queryFn: () => fetchMealLogs(day!),
+    enabled: !!day,
+  });
+}
+
+/** Alimentos fora do plano do dia (snapshot de nome e valores). */
+export function useOffPlanItems(day: string | null) {
+  return useQuery({
+    queryKey: mealKeys.offPlanItems(day ?? ""),
+    queryFn: () => fetchOffPlanItems(day!),
     enabled: !!day,
   });
 }
@@ -136,6 +148,73 @@ export function useUnlogMeal() {
     WRITES.unlogMeal,
     (logs, v) => logs.filter((l) => l.meal_id !== v.meal_id),
   );
+}
+
+/**
+ * Itens fora do plano: mesma fila e mesma revalidação do registro do dia. Otimistas nos dois
+ * caches (itens e, quando o item cria o registro da refeição, os registros do dia).
+ */
+function useOffPlanMutation<V extends { day: string }>(
+  write: { mutationKey: readonly [string, string]; mutationFn: (v: V) => Promise<void> },
+  apply: (state: { logs: MealLog[]; items: OffPlanItem[] }, v: V) => { logs: MealLog[]; items: OffPlanItem[] },
+) {
+  const qc = useQueryClient();
+  return useMutation({
+    ...write,
+    scope: { id: "meal-logs" },
+    onMutate: async (vars: V) => {
+      const logsKey = mealKeys.logs(vars.day);
+      const itemsKey = mealKeys.offPlanItems(vars.day);
+      await qc.cancelQueries({ queryKey: logsKey });
+      const previous = { logs: qc.getQueryData<MealLog[]>(logsKey), items: qc.getQueryData<OffPlanItem[]>(itemsKey) };
+      const next = apply({ logs: previous.logs ?? [], items: previous.items ?? [] }, vars);
+      qc.setQueryData<MealLog[]>(logsKey, next.logs);
+      qc.setQueryData<OffPlanItem[]>(itemsKey, next.items);
+      return { previous };
+    },
+    onError: (error, vars, ctx) => {
+      if (ctx?.previous.logs) qc.setQueryData(mealKeys.logs(vars.day), ctx.previous.logs);
+      if (ctx?.previous.items) qc.setQueryData(mealKeys.offPlanItems(vars.day), ctx.previous.items);
+      toast.error(errorMessage(error));
+    },
+    onSettled: (_data, _error, vars) => {
+      if (qc.isMutating({ mutationKey: MEAL_LOG_MUTATION_KEY }) === 1) {
+        return Promise.all([
+          qc.invalidateQueries({ queryKey: mealKeys.logs(vars.day) }),
+          qc.invalidateQueries({ queryKey: weekKeys.all }),
+        ]);
+      }
+    },
+  });
+}
+
+/** Adiciona um alimento à refeição; sem registro ainda, a refeição passa a "fora do plano". */
+export function useAddOffPlanItem() {
+  return useOffPlanMutation(WRITES.addOffPlanItem, ({ logs, items }, v) => ({
+    logs: v.log ? [...logs.filter((l) => l.meal_id !== v.log!.meal_id), v.log] : logs,
+    items: [...items.filter((i) => i.id !== v.item.id), { ...v.item, meal_id: v.meal_id }],
+  }));
+}
+
+export function useRemoveOffPlanItem() {
+  return useOffPlanMutation(WRITES.removeOffPlanItem, ({ logs, items }, v) => ({
+    logs,
+    items: items.filter((i) => i.id !== v.id),
+  }));
+}
+
+/**
+ * Variáveis para adicionar um item: reaproveita o registro da refeição se existir; senão cria
+ * um "fora do plano" (sem nota) junto com o item.
+ */
+export function buildOffPlanAdd(
+  existing: MealLog | undefined,
+  base: { day: string; meal_id: string },
+  item: Omit<OffPlanItemInsert, "id" | "meal_log_id">,
+) {
+  const log = existing ? null : buildMealLog(undefined, base, { off_plan: true, note: null });
+  const meal_log_id = existing?.id ?? log!.id;
+  return { day: base.day, meal_id: base.meal_id, log, item: { ...item, id: crypto.randomUUID(), meal_log_id } };
 }
 
 /** Registro novo ou o mesmo id do existente (a chave natural é o dia + refeição). */

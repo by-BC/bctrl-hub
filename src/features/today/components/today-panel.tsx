@@ -11,6 +11,7 @@ import type { Habit, HabitLog } from "@/features/habits/api";
 import { useHabitLogs, useHabits } from "@/features/habits/hooks";
 import { MealCard } from "@/features/meals/components/meal-day";
 import { MealSheet } from "@/features/meals/components/meal-sheet";
+import { DayNutrition } from "@/features/nutrition/components/nutrition-bars";
 import { useMealDay } from "@/features/meals/hooks";
 import { useToday } from "@/features/progress/use-today";
 import { useRoutines } from "@/features/routines/hooks";
@@ -224,6 +225,7 @@ function TodayMeals({ today }: { today: string }) {
           </li>
         ))}
       </ul>
+      <DayNutrition day={today} headingLevel={3} className="mt-3" />
       <MealSheet
         day={today}
         meal={openMeal}

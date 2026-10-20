@@ -17,6 +17,8 @@ export const mealKeys = {
   all: ["meals"] as const,
   plan: () => ["meals", "plan"] as const,
   logs: (day: string) => ["meals", "logs", day] as const,
+  /** Sob a chave do dia: revalidar o registro do dia revalida os itens fora do plano junto. */
+  offPlanItems: (day: string) => ["meals", "logs", day, "items"] as const,
 };
 
 /** Fica sob `workoutKeys.all`: finalizar ou excluir um treino já revalida. */
@@ -87,6 +89,50 @@ export async function upsertMealLog(log: MealLog, client: Client = db()) {
 export async function deleteMealLog({ day, meal_id }: Pick<MealLog, "day" | "meal_id">, client: Client = db()) {
   const { error } = await client.from("meal_logs").delete().eq("day", day).eq("meal_id", meal_id);
   if (error) fail(error, "Não foi possível desmarcar a refeição.");
+}
+
+// ── Itens fora do plano (`meal_log_items`) ────────────────────────────────
+
+/**
+ * Alimento registrado numa refeição, com **snapshot** de nome e valores (do item inteiro) no
+ * momento do registro: editar ou apagar o alimento depois não muda o dia. `meal_id` vem do
+ * registro da refeição (não é coluna da tabela).
+ */
+export type OffPlanItem = Pick<
+  Tables<"meal_log_items">,
+  "id" | "meal_log_id" | "food_id" | "name" | "grams" | "kcal" | "protein_g" | "carbs_g" | "fat_g"
+> & { meal_id: string };
+
+export type OffPlanItemInsert = Omit<OffPlanItem, "meal_id">;
+
+export async function fetchOffPlanItems(day: string, client: Client = db()): Promise<OffPlanItem[]> {
+  const { data, error } = await client
+    .from("meal_log_items")
+    .select("id, meal_log_id, food_id, name, grams, kcal, protein_g, carbs_g, fat_g, meal_logs!inner(day, meal_id)")
+    .eq("meal_logs.day", day)
+    .order("created_at")
+    .order("id");
+  if (error) fail(error, "Não foi possível carregar os alimentos fora do plano.");
+  return data.map(({ meal_logs, ...item }) => ({
+    ...item,
+    grams: Number(item.grams),
+    kcal: Number(item.kcal),
+    protein_g: Number(item.protein_g),
+    carbs_g: Number(item.carbs_g),
+    fat_g: Number(item.fat_g),
+    meal_id: meal_logs.meal_id,
+  }));
+}
+
+/** Grava o item com o id gerado no cliente: reenviar não duplica. */
+export async function upsertOffPlanItem(item: OffPlanItemInsert, client: Client = db()) {
+  const { error } = await client.from("meal_log_items").upsert(item, { defaultToNull: false });
+  if (error) fail(error, "Não foi possível adicionar o alimento.");
+}
+
+export async function deleteOffPlanItem(id: string, client: Client = db()) {
+  const { error } = await client.from("meal_log_items").delete().eq("id", id);
+  if (error) fail(error, "Não foi possível remover o alimento.");
 }
 
 // ── Plano ─────────────────────────────────────────────────────────────────

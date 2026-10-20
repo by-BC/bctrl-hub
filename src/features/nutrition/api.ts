@@ -45,3 +45,17 @@ export async function fetchFoods(client: Client = createClient()): Promise<Food[
     if (data.length < PAGE) return out;
   }
 }
+
+/** Alimento próprio novo: valores por 100 g; `unit_grams` opcional (ex.: { un: 50 }). */
+export type OwnFoodInsert = Pick<Food, "id" | "name" | "kcal" | "protein_g" | "carbs_g" | "fat_g"> & {
+  unit_grams: Record<string, number>;
+};
+
+/** Cria o alimento com o id gerado no cliente (reenviar não duplica). O `user_id` vem do default. */
+export async function upsertOwnFood(food: OwnFoodInsert, client: Client = createClient()) {
+  const { error } = await client.from("foods").upsert(food, { defaultToNull: false });
+  if (error) {
+    console.error("[bctrl]", "Não foi possível criar o alimento.", error);
+    throw new DataError("Não foi possível criar o alimento.", error.code);
+  }
+}
