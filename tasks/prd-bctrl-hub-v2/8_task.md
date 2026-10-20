@@ -67,3 +67,7 @@ Ver techspec: **Sequenciamento → passo 8**, **Monitoramento** e a seção Stor
 - **E2E:** `month-card.spec.ts` confere que todo texto do quadro fica entre y = 250 e 1670 e que o PNG sai com 1080×1920.
 - **Lentidão dos seeds:** `readLocalSupabaseEnv()` rodava `npx supabase status` (~4,5 s) a cada cliente admin; agora lê uma vez por processo. Um usuário + 3 inserts caiu de ~23 s para ~5 s.
 - **Advisors (2026-10-20):** segurança, só o já conhecido `auth_leaked_password_protection` (configuração do Auth, cadastro desligado, usuário único). Performance, 5 `unused_index` (INFO) em índices de FK (`routine_exercises_exercise_idx`, `meal_logs_meal_idx`, `habit_logs_habit_idx`, `meal_log_items_meal_log_idx`, `meal_log_items_food_id_idx`), mantidos para os deletes em cascata e as checagens de FK. Nada novo acionável; sem migration.
+
+## Encerramento (2026-10-20)
+
+V2 encerrada por decisão do dono ("podemos seguir"). Verificado: typecheck, lint, build, 440 testes de unidade, 201 de integração, E2E mobile completo (113 passaram) e specs afetados no desktop; deploy de produção Ready. **Ressalvas aceitas:** E2E desktop completo não rodou (memória < 4 GB durante toda a v2) e o smoke test no iPhone (8.7, card do mês no Instagram) fica a critério do dono.
