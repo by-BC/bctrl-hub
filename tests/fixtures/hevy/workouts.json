@@ -1,0 +1,170 @@
+{
+  "page": 1,
+  "page_count": 1,
+  "workouts": [
+    {
+      "id": "a2222222-2222-4222-8222-222222222222",
+      "title": "Treino B",
+      "routine_id": "00000000-0000-4000-8000-00000000aaaa",
+      "description": "",
+      "start_time": "2026-03-05T12:00:00+00:00",
+      "end_time": "2026-03-05T13:10:00+00:00",
+      "updated_at": "2026-03-05T13:10:00.000Z",
+      "created_at": "2026-03-05T13:10:00.000Z",
+      "exercises": [
+        {
+          "index": 0,
+          "title": "Bench Press (Barbell)",
+          "notes": "",
+          "exercise_template_id": "79D0BB3A",
+          "superset_id": null,
+          "sets": [
+            { "index": 0, "type": "warmup", "weight_kg": 80, "reps": 5, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null },
+            { "index": 1, "type": "normal", "weight_kg": 65, "reps": 6, "distance_meters": null, "duration_seconds": null, "rpe": 8, "custom_metric": null },
+            { "index": 2, "type": "normal", "weight_kg": null, "reps": null, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null }
+          ]
+        },
+        {
+          "index": 1,
+          "title": "Plank",
+          "notes": null,
+          "exercise_template_id": "C6C9B8A0",
+          "superset_id": null,
+          "sets": [
+            { "index": 0, "type": "normal", "weight_kg": null, "reps": null, "distance_meters": null, "duration_seconds": 90, "rpe": null, "custom_metric": null }
+          ]
+        },
+        {
+          "index": 2,
+          "title": "Running",
+          "notes": null,
+          "exercise_template_id": "AC1BB830",
+          "superset_id": null,
+          "sets": [
+            { "index": 0, "type": "normal", "weight_kg": null, "reps": null, "distance_meters": 3000, "duration_seconds": 1100, "rpe": null, "custom_metric": null }
+          ]
+        },
+        {
+          "index": 3,
+          "title": "Removed Exercise",
+          "notes": null,
+          "exercise_template_id": "DEADBEEF",
+          "superset_id": null,
+          "sets": [
+            { "index": 0, "type": "normal", "weight_kg": 10, "reps": 10, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a1111111-1111-4111-8111-111111111111",
+      "title": "Treino A",
+      "routine_id": null,
+      "description": "Descrição fictícia",
+      "start_time": "2026-03-02T01:30:00+00:00",
+      "end_time": "2026-03-02T02:30:00+00:00",
+      "updated_at": "2026-03-02T02:30:00.000Z",
+      "created_at": "2026-03-02T02:30:00.000Z",
+      "exercises": [
+        {
+          "index": 0,
+          "title": "Bench Press (Barbell)",
+          "notes": "Nota fictícia",
+          "exercise_template_id": "79D0BB3A",
+          "superset_id": null,
+          "sets": [
+            { "index": 0, "type": "warmup", "weight_kg": 40, "reps": 10, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null },
+            { "index": 1, "type": "normal", "weight_kg": 60, "reps": 8, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null },
+            { "index": 2, "type": "normal", "weight_kg": 62.5, "reps": 6, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null },
+            { "index": 3, "type": "failure", "weight_kg": 60, "reps": 9, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null }
+          ]
+        },
+        {
+          "index": 1,
+          "title": "Plank",
+          "notes": null,
+          "exercise_template_id": "C6C9B8A0",
+          "superset_id": null,
+          "sets": [
+            { "index": 0, "type": "normal", "weight_kg": null, "reps": null, "distance_meters": null, "duration_seconds": 60, "rpe": null, "custom_metric": null }
+          ]
+        },
+        {
+          "index": 2,
+          "title": "Exercício Personalizado D'Teste",
+          "notes": null,
+          "exercise_template_id": "6f1c2a9e-3b4d-4c5e-8f70-1a2b3c4d5e6f",
+          "superset_id": null,
+          "sets": [
+            { "index": 0, "type": "normal", "weight_kg": null, "reps": 15, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null }
+          ]
+        },
+        {
+          "index": 3,
+          "title": "Running",
+          "notes": null,
+          "exercise_template_id": "AC1BB830",
+          "superset_id": null,
+          "sets": [
+            { "index": 0, "type": "normal", "weight_kg": null, "reps": null, "distance_meters": 2000, "duration_seconds": 720, "rpe": null, "custom_metric": null }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a3333333-3333-4333-8333-333333333333",
+      "title": "Treino C",
+      "routine_id": null,
+      "description": null,
+      "start_time": "2026-03-03T22:00:00+00:00",
+      "end_time": "2026-03-03T23:00:00+00:00",
+      "updated_at": "2026-03-03T23:00:00.000Z",
+      "created_at": "2026-03-03T23:00:00.000Z",
+      "exercises": [
+        {
+          "index": 0,
+          "title": "Lying Leg Curl (Machine)",
+          "notes": null,
+          "exercise_template_id": "B8127AD1",
+          "superset_id": null,
+          "sets": [
+            { "index": 0, "type": "normal", "weight_kg": 50, "reps": 0, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null },
+            { "index": 1, "type": "dropset", "weight_kg": 40, "reps": 10, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null }
+          ]
+        },
+        {
+          "index": 1,
+          "title": "Dumbbell Row",
+          "notes": null,
+          "exercise_template_id": "F1E57334",
+          "superset_id": null,
+          "sets": [
+            { "index": 0, "type": "normal", "weight_kg": 24, "reps": 10, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a4444444-4444-4444-8444-444444444444",
+      "title": "Treino vazio",
+      "routine_id": null,
+      "description": null,
+      "start_time": "2026-03-04T12:00:00+00:00",
+      "end_time": "2026-03-04T12:30:00+00:00",
+      "updated_at": "2026-03-04T12:30:00.000Z",
+      "created_at": "2026-03-04T12:30:00.000Z",
+      "exercises": [
+        {
+          "index": 0,
+          "title": "Removed Exercise",
+          "notes": null,
+          "exercise_template_id": "DEADBEEF",
+          "superset_id": null,
+          "sets": [
+            { "index": 0, "type": "normal", "weight_kg": 10, "reps": 10, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null }
+          ]
+        }
+      ]
+    }
+  ]
+}

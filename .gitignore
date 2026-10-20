@@ -50,3 +50,8 @@ desktop.ini
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# ── Importação do Hevy (dados pessoais e SQL privado) ──
+supabase/*.private.sql
+scripts/hevy/data/
+scripts/hevy/out/

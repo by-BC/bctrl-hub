@@ -32,13 +32,13 @@ O script vincula os 26 exercícios atuais aos equivalentes do catálogo, gera um
 
 ## Subtarefas
 
-- [ ] 2.1 `.gitignore` e estrutura de `scripts/hevy/` (executado com `tsx`; script `npm run import:hevy`)
-- [ ] 2.2 Extrair `catalog-pt.json` pelo Chrome (Claude in Chrome, sessão do dono, só leitura) e validar a estrutura
-- [ ] 2.3 (RED) Testes de `map.ts`: template → exercício (com e sem PT), workout → linhas (aquecimento, distância, duração, personalizado), `linkExisting` (exato, normalizado, override, pendente), SQL determinístico
-- [ ] 2.4 (GREEN) `api.ts` (paginação e backoff) e `map.ts`
-- [ ] 2.5 `run.ts` com `--dry-run`/`--write` e geração do relatório (contagens, vínculos, pendentes, ignorados com motivo)
-- [ ] 2.6 Teste de integração: aplicar no Supabase local o SQL gerado dos fixtures, duas vezes, sem duplicar
-- [ ] 2.7 Rodar o dry-run real e **parar para o dono revisar o `report.md`**; ajustar `overrides.json`
+- [x] 2.1 `.gitignore` e estrutura de `scripts/hevy/` (executado com `tsx`; script `npm run import:hevy`)
+- [x] 2.2 Extrair `catalog-pt.json` pelo Chrome (Claude in Chrome, sessão do dono, só leitura) e validar a estrutura
+- [x] 2.3 (RED) Testes de `map.ts`: template → exercício (com e sem PT), workout → linhas (aquecimento, distância, duração, personalizado), `linkExisting` (exato, normalizado, override, pendente), SQL determinístico
+- [x] 2.4 (GREEN) `api.ts` (paginação e backoff) e `map.ts`
+- [x] 2.5 `run.ts` com `--dry-run`/`--write` e geração do relatório (contagens, vínculos, pendentes, ignorados com motivo)
+- [x] 2.6 Teste de integração: aplicar no Supabase local o SQL gerado dos fixtures, duas vezes, sem duplicar
+- [x] 2.7 Rodar o dry-run real e **parar para o dono revisar o `report.md`**; ajustar `overrides.json`
 - [ ] 2.8 Após aprovação: `--write`, aplicar no remoto, consulta de verificação (82 treinos; contagem de séries igual à da API)
 - [ ] 2.9 Lembrar o dono de gerar uma nova chave da API no Hevy
 
@@ -55,8 +55,8 @@ Ver techspec: **Visão Geral dos Componentes → Importação**, **Interfaces Pr
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `map.ts` e `api.ts` (paginação e backoff com `fetch` simulado)
-- [ ] Testes de integração: SQL gerado dos fixtures aplicado 2x no Supabase local (idempotente, vínculos reaproveitam ids, aquecimento sem PR)
+- [x] Testes de unidade: `map.ts` e `api.ts` (paginação e backoff com `fetch` simulado)
+- [x] Testes de integração: SQL gerado dos fixtures aplicado 2x no Supabase local (idempotente, vínculos reaproveitam ids, aquecimento sem PR)
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 

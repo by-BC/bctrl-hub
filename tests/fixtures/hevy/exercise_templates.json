@@ -1,0 +1,96 @@
+{
+  "page": 1,
+  "page_count": 1,
+  "exercise_templates": [
+    {
+      "id": "79D0BB3A",
+      "title": "Bench Press (Barbell)",
+      "type": "weight_reps",
+      "primary_muscle_group": "chest",
+      "secondary_muscle_groups": ["triceps", "shoulders"],
+      "equipment": "barbell",
+      "is_custom": false,
+      "thumbnail_url": "https://cdn.example.test/exercise-thumbnails/bench-press-barbell.jpg"
+    },
+    {
+      "id": "C6C9B8A0",
+      "title": "Plank",
+      "type": "duration",
+      "primary_muscle_group": "abdominals",
+      "secondary_muscle_groups": [],
+      "equipment": "none",
+      "is_custom": false,
+      "thumbnail_url": "https://cdn.example.test/exercise-thumbnails/plank.jpg"
+    },
+    {
+      "id": "AC1BB830",
+      "title": "Running",
+      "type": "distance_duration",
+      "primary_muscle_group": "cardio",
+      "secondary_muscle_groups": [],
+      "equipment": "none",
+      "is_custom": false,
+      "thumbnail_url": "https://cdn.example.test/exercise-thumbnails/running.jpg"
+    },
+    {
+      "id": "B8127AD1",
+      "title": "Lying Leg Curl (Machine)",
+      "type": "weight_reps",
+      "primary_muscle_group": "hamstrings",
+      "secondary_muscle_groups": ["calves"],
+      "equipment": "machine",
+      "is_custom": false,
+      "thumbnail_url": "https://cdn.example.test/exercise-thumbnails/lying-leg-curl.jpg"
+    },
+    {
+      "id": "F1E57334",
+      "title": "Dumbbell Row",
+      "type": "weight_reps",
+      "primary_muscle_group": "upper_back",
+      "secondary_muscle_groups": ["biceps", "lats"],
+      "equipment": "dumbbell",
+      "is_custom": false,
+      "thumbnail_url": "https://cdn.example.test/exercise-thumbnails/dumbbell-row.jpg"
+    },
+    {
+      "id": "6BE68B62",
+      "title": "Jackknife Sit Up",
+      "type": "reps_only",
+      "primary_muscle_group": "abdominals",
+      "secondary_muscle_groups": [],
+      "equipment": "none",
+      "is_custom": false,
+      "thumbnail_url": "https://cdn.example.test/exercise-thumbnails/jackknife-a.jpg"
+    },
+    {
+      "id": "32B0B590",
+      "title": "Jack Knife (Ball)",
+      "type": "reps_only",
+      "primary_muscle_group": "abdominals",
+      "secondary_muscle_groups": ["quadriceps"],
+      "equipment": "other",
+      "is_custom": false,
+      "thumbnail_url": "https://cdn.example.test/exercise-thumbnails/jackknife-b.jpg"
+    },
+    {
+      "id": "0FAB1E00",
+      "title": "Fictional Press (Machine)",
+      "type": "weight_reps",
+      "primary_muscle_group": "shoulders",
+      "secondary_muscle_groups": [],
+      "equipment": "machine",
+      "is_custom": false,
+      "thumbnail_url": null
+    },
+    {
+      "id": "6f1c2a9e-3b4d-4c5e-8f70-1a2b3c4d5e6f",
+      "title": "Exercício Personalizado D'Teste",
+      "type": "reps_only",
+      "primary_muscle_group": "other",
+      "secondary_muscle_groups": [],
+      "equipment": "none",
+      "is_custom": true,
+      "thumbnail_url": null
+    }
+  ]
+}
