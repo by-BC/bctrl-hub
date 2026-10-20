@@ -106,6 +106,15 @@ function monthNutritionPair(
   return { current: of(summary.current), previous: of(summary.previous) };
 }
 
+/** Só os números do `month_summary` de `month` (e do anterior), sem a nutrição. */
+export function useMonthNumbers(month: string | null) {
+  return useQuery({
+    queryKey: scoreKeys.month(month ?? ""),
+    queryFn: () => fetchMonthSummary(month!),
+    enabled: !!month,
+  });
+}
+
 /**
  * Resumo do mês (`month_summary`) de `month` (qualquer dia do mês) e do anterior. `nutrition`
  * traz kcal e proteína médias × meta de cada um, calculadas no cliente com o plano, a TACO e o
@@ -113,11 +122,7 @@ function monthNutritionPair(
  */
 export function useMonthSummary(month: string | null) {
   const today = useToday();
-  const summary = useQuery({
-    queryKey: scoreKeys.month(month ?? ""),
-    queryFn: () => fetchMonthSummary(month!),
-    enabled: !!month,
-  });
+  const summary = useMonthNumbers(month);
   const plan = useMealPlan();
   const foods = useQuery({ queryKey: foodKeys.all, queryFn: () => fetchFoods(), staleTime: 60 * 60 * 1000 });
   const profile = useProfile();

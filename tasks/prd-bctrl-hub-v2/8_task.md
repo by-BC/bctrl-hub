@@ -27,13 +27,14 @@ Fechar a v2:
 
 ## Subtarefas
 
-- [ ] 8.1 Layout `MonthCard` e rota do story do mês
-- [ ] 8.2 Atalho no Perfil
-- [ ] 8.3 Axe nas rotas novas e correção de violações
+- [x] 8.1 Layout `MonthCard` e rota do story do mês
+- [x] 8.2 Atalho no Perfil
+- [x] 8.3 Axe nas rotas novas e correção de violações
 - [ ] 8.4 Suíte E2E completa estável (1 worker; sem Lighthouse; servidores encerrados)
-- [ ] 8.5 Documentação (`README.md`, `CLAUDE.md`)
-- [ ] 8.6 Advisors do Supabase
+- [x] 8.5 Documentação (`README.md`, `CLAUDE.md`)
+- [x] 8.6 Advisors do Supabase
 - [ ] 8.7 Smoke test do dono em produção (celular): perfil, nutrição, catálogo, card do mês no Instagram
+  - **Pendente (dono)**: depois do push, abrir no iPhone `/perfil` → "Compartilhar mês" → Compartilhar → Instagram › Story e conferir fontes, cores do calendário e áreas seguras; conferir também nutrição e catálogo.
 
 ## Detalhes de Implementação
 
@@ -48,7 +49,7 @@ Ver techspec: **Sequenciamento → passo 8**, **Monitoramento** e a seção Stor
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: dados do card do mês (função pura a partir do `month_summary` + `daily_scores`)
+- [x] Testes de unidade: dados do card do mês (função pura a partir do `month_summary` + `daily_scores`)
 - [ ] Testes de integração: E2E exporta o card do mês e valida as dimensões; axe nas rotas novas; suíte E2E completa
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>

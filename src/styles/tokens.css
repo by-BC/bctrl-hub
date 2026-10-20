@@ -18,6 +18,14 @@
   --orange-text-on-ink: #e8875d;
   --orange-text-on-paper: #a3471d;
 
+  /* Heatmap sobre o grafite (fixo): tema escuro e card do mês no story. A âncora inverte:
+     mais ponto = mais claro. */
+  --heat-ink-0: #32353c;
+  --heat-ink-1: #334a83;
+  --heat-ink-2: #4668c5;
+  --heat-ink-3: #5f8afb;
+  --heat-ink-4: #a6c3ff;
+
   --radius: 0.75rem;
 
   /* Tema claro */
@@ -110,11 +118,11 @@
   --chart-5: #f0a984;
 
   /* Heatmap no escuro: a âncora inverte (mais ponto = mais claro sobre o grafite). */
-  --heat-0: #32353c;
-  --heat-1: #334a83;
-  --heat-2: #4668c5;
-  --heat-3: #5f8afb;
-  --heat-4: #a6c3ff;
+  --heat-0: var(--heat-ink-0);
+  --heat-1: var(--heat-ink-1);
+  --heat-2: var(--heat-ink-2);
+  --heat-3: var(--heat-ink-3);
+  --heat-4: var(--heat-ink-4);
   --heat-stroke: rgb(244 240 232 / 0.06);
 
   --sidebar: #202126;
@@ -135,6 +143,11 @@
 .story-ink {
   --chart-1: var(--blue-on-ink);
   --chart-2: var(--brand-orange);
+  --heat-0: var(--heat-ink-0);
+  --heat-1: var(--heat-ink-1);
+  --heat-2: var(--heat-ink-2);
+  --heat-3: var(--heat-ink-3);
+  --heat-4: var(--heat-ink-4);
   --primary-text: var(--blue-text-on-ink);
   --highlight-text: var(--orange-text-on-ink);
   color: var(--brand-paper);

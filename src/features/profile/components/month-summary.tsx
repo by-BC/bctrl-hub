@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Equal, Minus } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Equal, Minus, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToday } from "@/features/progress/use-today";
+import { monthParam } from "@/lib/domain/month-card";
 import { canGoNextMonth, monthLabel, type MonthDelta } from "@/lib/domain/month-view";
 import { isCompleteProfile } from "@/lib/domain/nutrition";
 import { addMonths, monthStart } from "@/lib/domain/week";
@@ -124,6 +125,12 @@ export function MonthSummary({
           <StatCard key={s.key} stat={s} needsProfile={needsProfile} />
         ))}
       </ul>
+      <Button asChild variant="outline" className="h-11 w-full font-semibold sm:w-auto">
+        <Link href={`/perfil/mes/${monthParam(data.current.month)}/story`}>
+          <Share2 aria-hidden />
+          Compartilhar mês
+        </Link>
+      </Button>
     </>
   );
 }

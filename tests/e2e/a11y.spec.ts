@@ -71,6 +71,7 @@ for (const theme of ["dark", "light"] as const) {
         "/tarefas",
         "/perfil",
         "/perfil/dados",
+        `/perfil/mes/${dayInSaoPaulo(new Date()).slice(0, 7)}/story`,
       ];
       await setTheme(page, theme);
     });
@@ -101,6 +102,18 @@ for (const theme of ["dark", "light"] as const) {
       await page.getByTestId("control-heatmap").locator(`rect[data-date="${dayInSaoPaulo(new Date())}"]`).click();
       await expect(page.getByRole("tooltip")).toBeVisible();
       found.push(...(await audit(page, "/perfil (tooltip e tabela do heatmap)")));
+
+      // Detalhe do exercício (diálogo do catálogo, sem rota própria).
+      await page.goto("/treino/exercicios");
+      await ready(page);
+      await page
+        .getByRole("list", { name: "Biblioteca de exercícios" })
+        .getByTestId("catalog-item")
+        .filter({ hasText: "Supino E2E" })
+        .getByRole("button", { name: /^Supino E2E/ })
+        .click();
+      await expect(page.getByRole("dialog", { name: "Supino E2E" })).toBeVisible();
+      found.push(...(await audit(page, "/treino/exercicios (detalhe do exercício)")));
 
       await page.goto("/comida");
       await page.getByTestId("meal-card").first().click();

@@ -24,12 +24,12 @@ const clampIndex = (i: number) => Math.min(COUNT - 1, Math.max(0, i));
 
 const noop = () => () => {};
 /** Web Share disponível (rótulo do botão). No servidor, `false`. */
-function useCanShare() {
+export function useCanShare() {
   return useSyncExternalStore(noop, () => typeof navigator.canShare === "function", () => false);
 }
 
 /** Escala da prévia: cabe na largura do carrossel e em ~56% da altura da janela. */
-function usePreviewScale(ref: React.RefObject<HTMLElement | null>) {
+export function usePreviewScale(ref: React.RefObject<HTMLElement | null>) {
   const [scale, setScale] = useState(0.22);
   useEffect(() => {
     const el = ref.current;

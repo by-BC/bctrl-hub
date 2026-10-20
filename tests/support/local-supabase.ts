@@ -7,12 +7,22 @@ export type LocalSupabaseEnv = {
   secretKey: string;
 };
 
+let cached: LocalSupabaseEnv | undefined;
+
 /**
  * Lê URL e chaves do Supabase LOCAL via `supabase status`.
  * As chaves locais são fixas e públicas (só valem no Docker da máquina);
  * nunca use isto contra o projeto remoto.
+ *
+ * Uma vez por processo: cada `supabase status` leva ~4–5 s nesta máquina, e os seeds do E2E
+ * criavam um cliente admin por operação (um usuário + 3 inserts passavam de 20 s).
  */
 export function readLocalSupabaseEnv(): LocalSupabaseEnv {
+  cached ??= readStatus();
+  return cached;
+}
+
+function readStatus(): LocalSupabaseEnv {
   let raw: string;
   try {
     // Comando fixo, sem entrada externa.
