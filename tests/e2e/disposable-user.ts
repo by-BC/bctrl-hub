@@ -284,3 +284,23 @@ export async function seedProfile(user: DisposableUser) {
     { sex: "m", birth_date: "1996-01-01", height_cm: 180, activity_level: "moderate", goal: "maintain", protein_g_per_kg: 2 },
   ]);
 }
+
+/** v2 (Perfil): tarefa concluída no dia (meio da tarde em São Paulo), para o critério "tarefas". */
+export async function seedDoneTask(user: DisposableUser, day: string) {
+  await inserter(user)("tasks", [{ title: "Tarefa E2E", done_at: `${day}T18:00:00Z` }]);
+}
+
+/** v2 (Perfil): refeições do dia marcadas na 1ª opção de cada uma, para o critério "dieta". */
+export async function seedMealLogs(user: DisposableUser, day: string, mealIds: readonly string[]) {
+  const { data, error } = await admin()
+    .from("meal_options")
+    .select("id, meal_id")
+    .eq("user_id", user.id)
+    .in("meal_id", [...mealIds])
+    .order("position");
+  if (error) throw new Error(`seed meal_logs: ${error.message}`);
+  await inserter(user)(
+    "meal_logs",
+    mealIds.map((meal_id) => ({ day, meal_id, option_id: data.find((o) => o.meal_id === meal_id)?.id ?? null })),
+  );
+}

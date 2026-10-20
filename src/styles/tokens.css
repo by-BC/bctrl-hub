@@ -58,6 +58,16 @@
   --chart-4: #8aa0f0;
   --chart-5: #e8a07f;
 
+  /* Heatmap do Perfil (pontuação 0–4): escala sequencial do ultramarino, clara → escura.
+     O 0 é o neutro da superfície (dia sem ponto); 1–4 sobem em luminosidade OKLCH
+     (0,82 · 0,66 · 0,48 = #2448DB · 0,35), monotônica e com o mesmo matiz da marca. */
+  --heat-0: #e9e4d8;
+  --heat-1: #aec4f6;
+  --heat-2: #698deb;
+  --heat-3: var(--brand-blue);
+  --heat-4: #142d8c;
+  --heat-stroke: rgb(37 39 44 / 0.08);
+
   --sidebar: #ece7dc;
   --sidebar-foreground: var(--brand-ink);
   --sidebar-primary: var(--brand-blue);
@@ -98,6 +108,14 @@
   --chart-3: #a9abb2;
   --chart-4: #3f5fe0;
   --chart-5: #f0a984;
+
+  /* Heatmap no escuro: a âncora inverte (mais ponto = mais claro sobre o grafite). */
+  --heat-0: #32353c;
+  --heat-1: #334a83;
+  --heat-2: #4668c5;
+  --heat-3: #5f8afb;
+  --heat-4: #a6c3ff;
+  --heat-stroke: rgb(244 240 232 / 0.06);
 
   --sidebar: #202126;
   --sidebar-foreground: var(--brand-paper);

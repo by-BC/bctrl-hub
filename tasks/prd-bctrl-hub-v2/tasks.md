@@ -8,5 +8,5 @@
 - [x] 4.0 TACO e macros do plano alimentar (Complexidade: MEDIUM)
 - [x] 5.0 Perfil, metas nutricionais e fora do plano (Complexidade: MEDIUM)
 - [x] 6.0 Pontuação do dia e resumo mensal (Complexidade: HIGH)
-- [ ] 7.0 Tela de Perfil (Complexidade: MEDIUM)
+- [x] 7.0 Tela de Perfil (Complexidade: MEDIUM)
 - [ ] 8.0 Card do mês e acabamento da v2 (Complexidade: MEDIUM)

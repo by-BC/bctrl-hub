@@ -4,6 +4,7 @@ import {
   Hexagon,
   ListChecks,
   Repeat,
+  UserRound,
   UtensilsCrossed,
   type LucideIcon,
 } from "lucide-react";
@@ -23,6 +24,8 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/habitos", label: "Hábitos", icon: Repeat, mobile: true },
   { href: "/tarefas", label: "Tarefas", icon: ListChecks, mobile: true },
   { href: "/evolucao", label: "Evolução", icon: ChartLine, mobile: false },
+  // No celular, o Perfil fica no cabeçalho (MobileHeader), sem tirar item da barra inferior.
+  { href: "/perfil", label: "Perfil", icon: UserRound, mobile: false },
 ];
 
 /** "/" só é ativo na raiz; os demais também nas sub-rotas (/treino/sessao…). */

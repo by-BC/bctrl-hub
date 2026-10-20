@@ -29,6 +29,10 @@ describe("NAV_ITEMS", () => {
   it("tem no máximo 5 itens na barra do celular", () => {
     expect(NAV_ITEMS.filter((i) => i.mobile).length).toBeLessThanOrEqual(5);
   });
+
+  it("Perfil fica na lateral do desktop, fora da barra do celular (vai no cabeçalho)", () => {
+    expect(NAV_ITEMS.find((i) => i.href === "/perfil")).toMatchObject({ label: "Perfil", mobile: false });
+  });
 });
 
 describe("BottomNav", () => {

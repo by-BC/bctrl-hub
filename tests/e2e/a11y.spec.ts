@@ -69,6 +69,7 @@ for (const theme of ["dark", "light"] as const) {
         "/comida/plano",
         "/habitos",
         "/tarefas",
+        "/perfil",
         "/perfil/dados",
       ];
       await setTheme(page, theme);
@@ -92,7 +93,15 @@ for (const theme of ["dark", "light"] as const) {
         found.push(...(await audit(page, route)));
       }
 
-      // Estados que só existem com interação: sheet aberto e sessão ativa com timer.
+      // Estados que só existem com interação: tooltip e tabela do heatmap, sheet aberto e
+      // sessão ativa com timer.
+      await page.goto("/perfil");
+      await ready(page);
+      await page.getByRole("button", { name: "Ver tabela por mês" }).click();
+      await page.getByTestId("control-heatmap").locator(`rect[data-date="${dayInSaoPaulo(new Date())}"]`).click();
+      await expect(page.getByRole("tooltip")).toBeVisible();
+      found.push(...(await audit(page, "/perfil (tooltip e tabela do heatmap)")));
+
       await page.goto("/comida");
       await page.getByTestId("meal-card").first().click();
       await expect(page.getByRole("dialog")).toBeVisible();

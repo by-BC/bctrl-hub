@@ -1,3 +1,4 @@
+import { UserRound } from "lucide-react";
 import Link from "next/link";
 import { BrandSymbol, BrandWordmark } from "@/components/brand/brand-symbol";
 import { LogoutButton } from "./logout-button";
@@ -12,6 +13,15 @@ export function MobileHeader() {
         <BrandWordmark className="text-lg" />
       </Link>
       <div className="flex items-center gap-1">
+        <Link
+          href="/perfil"
+          aria-label="Perfil"
+          className="flex size-11 items-center justify-center rounded-md outline-none transition-colors hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
+          <span aria-hidden className="flex size-8 items-center justify-center rounded-full bg-muted text-foreground">
+            <UserRound className="size-[18px]" />
+          </span>
+        </Link>
         <ThemeToggle />
         <LogoutButton />
       </div>
