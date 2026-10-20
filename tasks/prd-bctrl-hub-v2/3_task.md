@@ -25,14 +25,18 @@ O seletor de exercício (rotina e sessão) passa a usar o catálogo com os mesmo
 
 ## Subtarefas
 
-- [ ] 3.1 Função pura de filtro e busca (`src/lib/domain/catalog.ts`) com testes
-- [ ] 3.2 Tela `/treino/exercicios`: barra de busca, chips de músculo e equipamento, lista com miniatura
-- [ ] 3.3 Detalhe do exercício (sheet ou rota) com mídia, instruções, músculos secundários e link "ver no histórico/evolução"
-- [ ] 3.4 Componente `ExerciseMedia` com placeholder em caso de erro
-- [ ] 3.5 `exercise-picker` da v1 usando o catálogo e os filtros
-- [ ] 3.6 Escrever as instruções em lotes (primeiro os usados, depois o restante) e aplicá-las (local e remoto)
-- [ ] 3.7 Instruções recolhíveis na sessão de treino
-- [ ] 3.8 Escrever e rodar os testes da tarefa
+- [x] 3.1 Função pura de filtro e busca (`src/lib/domain/catalog.ts`) com testes
+- [x] 3.2 Tela `/treino/exercicios`: barra de busca, chips de músculo e equipamento, lista com miniatura
+- [x] 3.3 Detalhe do exercício (sheet ou rota) com mídia, instruções, músculos secundários e link "ver no histórico/evolução"
+- [x] 3.4 Componente `ExerciseMedia` com placeholder em caso de erro
+- [x] 3.5 `exercise-picker` da v1 usando o catálogo e os filtros
+- [ ] 3.6 Escrever as instruções em lotes (primeiro os usados, depois o restante) e aplicá-las (local e remoto) — falta só a aplicação remota, com o dono
+  - [x] 455/455 textos próprios em `scripts/hevy/instructions/*.json` (01 = rotinas e histórico; 02–09 por grupo), fora do Git
+  - [x] `npm run instructions:hevy` gera `supabase/instructions.private.sql` (idempotente, só o dono, por `hevy_template_id`)
+  - [x] Validado no Supabase local num usuário descartável: importação + instruções, 455/455, segunda aplicação sem mudança
+  - [ ] **Dono:** aplicar no remoto com `npx supabase db query --linked -f supabase/instructions.private.sql`
+- [x] 3.7 Instruções recolhíveis na sessão de treino
+- [x] 3.8 Escrever e rodar os testes da tarefa
 
 ## Detalhes de Implementação
 
@@ -47,8 +51,8 @@ Ver techspec: **Pontos de Integração → Mídia por link**, **Visão Geral →
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `catalog.ts` (busca sem acento, combinação de filtros, ordenação); `ExerciseMedia` cai no placeholder em `onError`
-- [ ] Testes de integração: E2E filtra e abre o detalhe; mídia bloqueada (`page.route` abortando o CDN) mostra placeholder; adicionar exercício do catálogo a uma rotina
+- [x] Testes de unidade: `catalog.ts` (busca sem acento, combinação de filtros, ordenação); `ExerciseMedia` cai no placeholder em `onError`
+- [x] Testes de integração: E2E filtra e abre o detalhe; mídia bloqueada (`page.route` abortando o CDN) mostra placeholder; adicionar exercício do catálogo a uma rotina
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 
