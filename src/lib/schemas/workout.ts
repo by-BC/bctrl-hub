@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PR_KINDS, SET_TYPES } from "@/lib/domain/exercise-types";
 
 /**
  * Payload da RPC `finish_workout` (supabase/migrations/*_rpcs.sql).
@@ -7,14 +8,27 @@ import { z } from "zod";
  * torna o reenvio idempotente. A ordem dos arrays vira a `position` no banco.
  */
 
-export const prKindSchema = z.enum(["weight", "volume", "e1rm"]);
+export const prKindSchema = z.enum(PR_KINDS);
+export const setTypeSchema = z.enum(SET_TYPES);
 
-export const workoutSetSchema = z.object({
-  id: z.uuid().optional(),
-  weight_kg: z.number().min(0).max(9999.99), // numeric(6,2)
-  reps: z.number().int().positive(),
-  pr_kinds: z.array(prKindSchema).default([]),
-});
+/**
+ * Série v2: os campos usados dependem do tipo do exercício (carga × reps, só reps, duração,
+ * distância…), mas sempre há ao menos uma métrica (mesmo check do banco). O payload da v1
+ * (só `weight_kg` e `reps`) continua válido e vira série `normal`.
+ */
+export const workoutSetSchema = z
+  .object({
+    id: z.uuid().optional(),
+    set_type: setTypeSchema.default("normal"),
+    weight_kg: z.number().min(0).max(9999.99).nullish(), // numeric(6,2)
+    reps: z.number().int().positive().nullish(),
+    distance_m: z.number().min(0).max(9_999_999.9).nullish(), // numeric(8,1)
+    duration_s: z.number().int().min(0).max(2_147_483_647).nullish(),
+    pr_kinds: z.array(prKindSchema).default([]),
+  })
+  .refine((s) => [s.weight_kg, s.reps, s.distance_m, s.duration_s].some((v) => v !== null && v !== undefined), {
+    message: "A série precisa de ao menos uma métrica.",
+  });
 
 export const workoutExerciseSchema = z.object({
   id: z.uuid().optional(),

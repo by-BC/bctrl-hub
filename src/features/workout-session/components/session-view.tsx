@@ -10,14 +10,34 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExercisePicker } from "@/features/routines/components/exercise-picker";
 import { BackLink } from "@/features/routines/components/back-link";
+import { FIELDS, type ExerciseType } from "@/lib/domain/exercise-types";
 import type { SessionSummary } from "@/lib/domain/workout";
 import { formatElapsed } from "@/lib/format";
 import { fetchExerciseSeed } from "../api";
 import { SYNC_TOAST_ID, useNow, useWorkoutHydrated, useWorkoutSync } from "../hooks";
-import { summaryOf, useActiveWorkout, type ActiveWorkout, type FinishResult, type SessionExercise } from "../store";
+import {
+  previousFor,
+  summaryOf,
+  useActiveWorkout,
+  type ActiveWorkout,
+  type FinishResult,
+  type SessionExercise,
+} from "../store";
 import { FinishSheet, PrList, SummaryGrid, prHighlights, type PrHighlight } from "./finish-sheet";
 import { RestTimer } from "./rest-timer";
-import { SET_GRID, SetRow } from "./set-row";
+import { fieldHeader, setGrid, SetRow } from "./set-row";
+
+/** Aviso ao tocar em ✓ sem o mínimo do tipo (e sem anterior para completar). */
+const MISSING_MESSAGE: Record<ExerciseType, string> = {
+  weight_reps: "Digite a carga e as repetições da série.",
+  reps_only: "Digite as repetições da série.",
+  bodyweight_reps: "Digite as repetições da série.",
+  bodyweight_assisted_reps: "Digite as repetições da série.",
+  duration: "Digite a duração da série (ex.: 1:00).",
+  weight_duration: "Digite a duração da série (ex.: 0:45).",
+  distance_duration: "Digite a distância ou a duração da série.",
+  short_distance_weight: "Digite a distância da série.",
+};
 
 type Finished = { workoutId: string; summary: SessionSummary; prs: PrHighlight[] };
 
@@ -169,11 +189,17 @@ function ExerciseCard({ exercise, exIdx }: { exercise: SessionExercise; exIdx: n
           </details>
         )}
 
-        <div className={`${SET_GRID} px-1 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase`} aria-hidden>
+        <div
+          className={`${setGrid(exercise.exerciseType)} px-1 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase`}
+          aria-hidden
+        >
           <span className="text-center">Sér.</span>
           <span>Anterior</span>
-          <span className="text-center">kg</span>
-          <span className="text-center">Reps</span>
+          {FIELDS[exercise.exerciseType].map((field) => (
+            <span key={field} className="text-center">
+              {fieldHeader(field, exercise.exerciseType)}
+            </span>
+          ))}
           <span className="text-center">✓</span>
         </div>
         <ul className="space-y-1" aria-label={`Séries de ${exercise.name}`}>
@@ -182,18 +208,21 @@ function ExerciseCard({ exercise, exIdx }: { exercise: SessionExercise; exIdx: n
               key={set.id}
               index={setIdx}
               set={set}
-              previous={exercise.previous[setIdx]}
+              previous={previousFor(exercise, setIdx)}
               exerciseName={exercise.name}
+              exerciseType={exercise.exerciseType}
               onChange={(patch) => actions.updateSet(exIdx, setIdx, patch)}
+              onToggleWarmup={() => actions.toggleWarmup(exIdx, setIdx)}
               onToggle={() => {
                 const wasDone = set.done;
                 if (!actions.completeSet(exIdx, setIdx) && !wasDone) {
-                  toast("Digite a carga e as repetições da série.", { id: "set-empty" });
+                  toast(MISSING_MESSAGE[exercise.exerciseType], { id: "set-empty" });
                 }
               }}
             />
           ))}
         </ul>
+        <p className="mt-1 px-1 text-xs text-muted-foreground">Toque no número da série para marcar aquecimento.</p>
 
         <div className="mt-2 flex gap-2">
           <Button variant="secondary" className="h-11 flex-1" onClick={() => actions.addSet(exIdx)}>

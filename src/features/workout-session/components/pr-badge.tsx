@@ -2,7 +2,13 @@ import { Trophy } from "lucide-react";
 import type { PrKind } from "@/lib/domain/workout";
 import { cn } from "@/lib/utils";
 
-export const PR_LABELS: Record<PrKind, string> = { weight: "carga", volume: "volume", e1rm: "1RM" };
+export const PR_LABELS: Record<PrKind, string> = {
+  weight: "carga",
+  volume: "volume",
+  e1rm: "1RM",
+  duration: "duração",
+  distance: "distância",
+};
 
 /** Selo de recorde: troféu + texto (não depende só da cor). */
 export function PrBadge({ kinds, className }: { kinds: readonly PrKind[]; className?: string }) {

@@ -132,6 +132,33 @@ export async function seedTrainingPlan(user: DisposableUser): Promise<TrainingPl
   return { ...routine, exercises: ex };
 }
 
+export type TypedPlan = { routine: string; exercises: { prancha: string; corrida: string; supino: string } };
+
+/**
+ * v2: rotina com um exercício de cada família de tipo (duração, distância × duração e
+ * carga × reps), sem descanso (o timer não cobre a tela). O supino tem um treino anterior
+ * (40 × 10), então uma série de trabalho acima disso seria PR.
+ */
+export async function seedTypedPlan(user: DisposableUser): Promise<TypedPlan> {
+  const insert = inserter(user);
+  const id = () => crypto.randomUUID();
+  const ex = { prancha: id(), corrida: id(), supino: id() };
+  const routine = id();
+  await insert("exercises", [
+    { id: ex.prancha, name: "Prancha E2E", muscle_group: "Abdômen", exercise_type: "duration" },
+    { id: ex.corrida, name: "Corrida E2E", muscle_group: "Cardio", exercise_type: "distance_duration" },
+    { id: ex.supino, name: "Supino Tipos E2E", muscle_group: "Peito", exercise_type: "weight_reps" },
+  ]);
+  await insert("routines", [{ id: routine, name: "Tipos E2E", position: 1, rest_sec: 0 }]);
+  await insert("routine_exercises", [
+    { routine_id: routine, exercise_id: ex.prancha, position: 1, sets: 1, rest_sec: 0 },
+    { routine_id: routine, exercise_id: ex.corrida, position: 2, sets: 1, rest_sec: 0 },
+    { routine_id: routine, exercise_id: ex.supino, position: 3, sets: 2, rest_sec: 0 },
+  ]);
+  await seedWorkout(user, { day: "2026-10-12", sets: [[ex.supino, [[40, 10]]]] }, insert);
+  return { routine, exercises: ex };
+}
+
 export type MealPlanIds = { cafe: string; almoco: string; pos: string; jantar: string };
 
 /**

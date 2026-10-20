@@ -39,14 +39,28 @@ export type Database = {
                   ]
                 },"exercises": {
                   Row: {
-                    "created_at": string,"id": string,"muscle_group": string | null,"name": string,"notes": string | null,"user_id": string
+                    "created_at": string,"equipment": string | null,"exercise_type": string,"hevy_template_id": string | null,"id": string,"instructions": string | null,"media_url": string | null,"muscle_group": string | null,"name": string,"notes": string | null,"secondary_muscles": (string)[],"source": string,"thumbnail_url": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"muscle_group"?: string | null,"name": string,"notes"?: string | null,"user_id"?: string
+                    "created_at"?: string,"equipment"?: string | null,"exercise_type"?: string,"hevy_template_id"?: string | null,"id"?: string,"instructions"?: string | null,"media_url"?: string | null,"muscle_group"?: string | null,"name": string,"notes"?: string | null,"secondary_muscles"?: (string)[],"source"?: string,"thumbnail_url"?: string | null,"user_id"?: string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"muscle_group"?: string | null,"name"?: string,"notes"?: string | null,"user_id"?: string
+                    "created_at"?: string,"equipment"?: string | null,"exercise_type"?: string,"hevy_template_id"?: string | null,"id"?: string,"instructions"?: string | null,"media_url"?: string | null,"muscle_group"?: string | null,"name"?: string,"notes"?: string | null,"secondary_muscles"?: (string)[],"source"?: string,"thumbnail_url"?: string | null,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"foods": {
+                  Row: {
+                    "carbs_g": number,"category": string | null,"created_at": string,"fat_g": number,"id": string,"kcal": number,"name": string,"protein_g": number,"taco_id": number | null,"unit_grams": NonNullable<Json>,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "carbs_g": number,"category"?: string | null,"created_at"?: string,"fat_g": number,"id"?: string,"kcal": number,"name": string,"protein_g": number,"taco_id"?: number | null,"unit_grams"?: NonNullable<Json>,"user_id"?: string | null
+                  }
+                  Update: {
+                    "carbs_g"?: number,"category"?: string | null,"created_at"?: string,"fat_g"?: number,"id"?: string,"kcal"?: number,"name"?: string,"protein_g"?: number,"taco_id"?: number | null,"unit_grams"?: NonNullable<Json>,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -84,6 +98,32 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"meal_log_items": {
+                  Row: {
+                    "carbs_g": number,"created_at": string,"fat_g": number,"food_id": string | null,"grams": number,"id": string,"kcal": number,"meal_log_id": string,"name": string,"protein_g": number,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "carbs_g": number,"created_at"?: string,"fat_g": number,"food_id"?: string | null,"grams": number,"id"?: string,"kcal": number,"meal_log_id": string,"name": string,"protein_g": number,"user_id"?: string
+                  }
+                  Update: {
+                    "carbs_g"?: number,"created_at"?: string,"fat_g"?: number,"food_id"?: string | null,"grams"?: number,"id"?: string,"kcal"?: number,"meal_log_id"?: string,"name"?: string,"protein_g"?: number,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "meal_log_items_food_id_fkey"
+      columns: ["food_id"]
+isOneToOne: false
+      referencedRelation: "foods"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "meal_log_items_meal_log_id_user_id_fkey"
+      columns: ["meal_log_id","user_id"]
+isOneToOne: false
+      referencedRelation: "meal_logs"
+      referencedColumns: ["id","user_id"]
+    }
                   ]
                 },"meal_logs": {
                   Row: {
@@ -141,6 +181,20 @@ isOneToOne: false
                   }
                   Update: {
                     "created_at"?: string,"id"?: string,"name"?: string,"position"?: number,"time"?: string | null,"training_day_only"?: boolean,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"profiles": {
+                  Row: {
+                    "activity_level": string | null,"birth_date": string | null,"created_at": string,"display_name": string | null,"goal": string | null,"goal_overrides": NonNullable<Json>,"height_cm": number | null,"protein_g_per_kg": number,"sex": string | null,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activity_level"?: string | null,"birth_date"?: string | null,"created_at"?: string,"display_name"?: string | null,"goal"?: string | null,"goal_overrides"?: NonNullable<Json>,"height_cm"?: number | null,"protein_g_per_kg"?: number,"sex"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "activity_level"?: string | null,"birth_date"?: string | null,"created_at"?: string,"display_name"?: string | null,"goal"?: string | null,"goal_overrides"?: NonNullable<Json>,"height_cm"?: number | null,"protein_g_per_kg"?: number,"sex"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -233,14 +287,14 @@ isOneToOne: false
                   ]
                 },"workout_sets": {
                   Row: {
-                    "created_at": string,"id": string,"position": number,"pr_kinds": (string)[],"reps": number,"user_id": string,"weight_kg": number,"workout_exercise_id": string
+                    "created_at": string,"distance_m": number | null,"duration_s": number | null,"id": string,"position": number,"pr_kinds": (string)[],"reps": number | null,"set_type": string,"user_id": string,"weight_kg": number | null,"workout_exercise_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"position"?: number,"pr_kinds"?: (string)[],"reps": number,"user_id"?: string,"weight_kg": number,"workout_exercise_id": string
+                    "created_at"?: string,"distance_m"?: number | null,"duration_s"?: number | null,"id"?: string,"position"?: number,"pr_kinds"?: (string)[],"reps"?: number | null,"set_type"?: string,"user_id"?: string,"weight_kg"?: number | null,"workout_exercise_id": string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"position"?: number,"pr_kinds"?: (string)[],"reps"?: number,"user_id"?: string,"weight_kg"?: number,"workout_exercise_id"?: string
+                    "created_at"?: string,"distance_m"?: number | null,"duration_s"?: number | null,"id"?: string,"position"?: number,"pr_kinds"?: (string)[],"reps"?: number | null,"set_type"?: string,"user_id"?: string,"weight_kg"?: number | null,"workout_exercise_id"?: string
                   }
                   Relationships: [
                     {
@@ -259,14 +313,14 @@ isOneToOne: false
                   ]
                 },"workouts": {
                   Row: {
-                    "created_at": string,"day": string,"finished_at": string | null,"id": string,"notes": string | null,"routine_id": string | null,"started_at": string,"user_id": string
+                    "created_at": string,"day": string,"finished_at": string | null,"hevy_workout_id": string | null,"id": string,"notes": string | null,"routine_id": string | null,"source": string,"started_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"day": string,"finished_at"?: string | null,"id"?: string,"notes"?: string | null,"routine_id"?: string | null,"started_at": string,"user_id"?: string
+                    "created_at"?: string,"day": string,"finished_at"?: string | null,"hevy_workout_id"?: string | null,"id"?: string,"notes"?: string | null,"routine_id"?: string | null,"source"?: string,"started_at": string,"user_id"?: string
                   }
                   Update: {
-                    "created_at"?: string,"day"?: string,"finished_at"?: string | null,"id"?: string,"notes"?: string | null,"routine_id"?: string | null,"started_at"?: string,"user_id"?: string
+                    "created_at"?: string,"day"?: string,"finished_at"?: string | null,"hevy_workout_id"?: string | null,"id"?: string,"notes"?: string | null,"routine_id"?: string | null,"source"?: string,"started_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -282,7 +336,7 @@ isOneToOne: false
           Views: {
             "v_exercise_bests": {
                   Row: {
-                    "exercise_id": string | null,"max_e1rm": number | null,"max_set_volume": number | null,"max_weight": number | null,"user_id": string | null
+                    "exercise_id": string | null,"max_distance_m": number | null,"max_duration_s": number | null,"max_e1rm": number | null,"max_set_volume": number | null,"max_weight": number | null,"user_id": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -296,7 +350,7 @@ isOneToOne: false
                   ]
                 },"v_exercise_last_sets": {
                   Row: {
-                    "day": string | null,"exercise_id": string | null,"position": number | null,"reps": number | null,"started_at": string | null,"user_id": string | null,"weight_kg": number | null,"workout_exercise_id": string | null,"workout_id": string | null
+                    "day": string | null,"distance_m": number | null,"duration_s": number | null,"exercise_id": string | null,"position": number | null,"reps": number | null,"started_at": string | null,"user_id": string | null,"weight_kg": number | null,"workout_exercise_id": string | null,"workout_id": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -310,7 +364,7 @@ isOneToOne: false
                   ]
                 },"v_exercise_session_stats": {
                   Row: {
-                    "best_e1rm": number | null,"best_weight": number | null,"day": string | null,"exercise_id": string | null,"sets": number | null,"started_at": string | null,"user_id": string | null,"volume": number | null,"workout_id": string | null
+                    "best_distance_m": number | null,"best_duration_s": number | null,"best_e1rm": number | null,"best_weight": number | null,"day": string | null,"exercise_id": string | null,"sets": number | null,"started_at": string | null,"total_distance_m": number | null,"total_duration_s": number | null,"user_id": string | null,"volume": number | null,"workout_id": string | null
                   }
                   ComputedFields: never
                   Relationships: [

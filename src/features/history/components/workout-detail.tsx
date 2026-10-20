@@ -10,8 +10,20 @@ import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PrBadge } from "@/features/workout-session/components/pr-badge";
+import { WarmupBadge } from "@/features/workout-session/components/set-row";
+import { FIELDS, isSetComplete, toExerciseType, type ExerciseType, type SetField } from "@/lib/domain/exercise-types";
 import type { PrKind } from "@/lib/domain/workout";
-import { formatDay, formatKg, kgInputValue, parseDecimal, parseReps } from "@/lib/format";
+import {
+  durationInputValue,
+  formatDay,
+  formatSet,
+  kgInputValue,
+  kmInputValue,
+  parseDecimal,
+  parseDuration,
+  parseKm,
+  parseReps,
+} from "@/lib/format";
 import { SummaryGrid } from "@/features/workout-session/components/finish-sheet";
 import type { HistoryDetail, HistoryExercise } from "../api";
 import { useDeleteWorkout, useUpdateWorkoutSet, useWorkoutDetail } from "../hooks";
@@ -137,19 +149,23 @@ function ExerciseBlock({
   editing: boolean;
 }) {
   const name = exercise.exercise?.name ?? "Exercício";
+  const type = toExerciseType(exercise.exercise?.exercise_type);
   return (
     <article aria-label={name} className="rounded-xl border bg-card p-3">
       <h2 className="mb-2 px-1 font-semibold">{name}</h2>
       <ul className="space-y-1">
         {exercise.workout_sets.map((set, i) =>
           editing ? (
-            <EditableSet key={set.id} workoutId={workoutId} index={i} exerciseName={name} set={set} />
+            <EditableSet key={set.id} workoutId={workoutId} index={i} exerciseName={name} type={type} set={set} />
           ) : (
-            <li key={set.id} className="flex min-h-9 flex-wrap items-center gap-x-3 gap-y-1 px-1 text-sm">
+            <li
+              key={set.id}
+              data-testid="history-set"
+              className="flex min-h-9 flex-wrap items-center gap-x-3 gap-y-1 px-1 text-sm"
+            >
               <span className="num w-6 text-muted-foreground">{i + 1}</span>
-              <span className="num font-medium">
-                {formatKg(Number(set.weight_kg))} kg × {set.reps}
-              </span>
+              <span className="num font-medium">{formatSet(storedValues(set), type)}</span>
+              {set.set_type === "warmup" && <WarmupBadge />}
               <PrBadge kinds={set.pr_kinds as PrKind[]} />
             </li>
           ),
@@ -160,30 +176,105 @@ function ExerciseBlock({
 }
 
 type StoredSet = HistoryExercise["workout_sets"][number];
+type Values = Record<SetField, number | null>;
 
+/** numeric chega do PostgREST como número (ou texto): normaliza para os campos da série. */
+function storedValues(set: StoredSet) {
+  return {
+    weightKg: set.weight_kg === null ? null : Number(set.weight_kg),
+    reps: set.reps,
+    distanceM: set.distance_m === null ? null : Number(set.distance_m),
+    durationS: set.duration_s,
+  };
+}
+
+const EDIT_FIELDS: Record<
+  SetField,
+  {
+    column: "weight_kg" | "reps" | "distance_m" | "duration_s";
+    label: (n: number, e: string) => string;
+    inputMode: "decimal" | "numeric" | "text";
+    toText: (v: number | null) => string;
+    parse: (t: string) => number | null;
+    max?: number;
+  }
+> = {
+  weight: {
+    column: "weight_kg",
+    label: (n, e) => `Carga da série ${n} de ${e} (kg)`,
+    inputMode: "decimal",
+    toText: kgInputValue,
+    parse: parseDecimal,
+    max: MAX_KG,
+  },
+  reps: {
+    column: "reps",
+    label: (n, e) => `Repetições da série ${n} de ${e}`,
+    inputMode: "numeric",
+    toText: (v) => (v === null ? "" : String(v)),
+    parse: parseReps,
+  },
+  distance: {
+    column: "distance_m",
+    label: (n, e) => `Distância da série ${n} de ${e} (km)`,
+    inputMode: "decimal",
+    toText: kmInputValue,
+    parse: parseKm,
+  },
+  duration: {
+    column: "duration_s",
+    label: (n, e) => `Duração da série ${n} de ${e} (minutos:segundos)`,
+    inputMode: "text",
+    toText: durationInputValue,
+    parse: parseDuration,
+  },
+};
+
+/** Edição de uma série gravada, com os campos do tipo do exercício. Salva ao sair do campo. */
 function EditableSet({
   workoutId,
   index,
   exerciseName,
+  type,
   set,
 }: {
   workoutId: string;
   index: number;
   exerciseName: string;
+  type: ExerciseType;
   set: StoredSet;
 }) {
   const update = useUpdateWorkoutSet(workoutId);
-  const [kg, setKg] = useState(kgInputValue(Number(set.weight_kg)));
-  const [reps, setReps] = useState(String(set.reps));
-  const kgValue = parseDecimal(kg);
-  const repsValue = parseReps(reps);
-  const kgInvalid = kgValue === null || kgValue > MAX_KG;
-  const repsInvalid = repsValue === null;
+  const stored = storedValues(set);
+  const initial: Values = { weight: stored.weightKg, reps: stored.reps, distance: stored.distanceM, duration: stored.durationS };
+  const fields = FIELDS[type];
+  const [texts, setTexts] = useState<Record<SetField, string>>(() =>
+    Object.fromEntries(fields.map((f) => [f, EDIT_FIELDS[f].toText(initial[f])])) as Record<SetField, string>,
+  );
+  const values = Object.fromEntries(
+    fields.map((f) => {
+      const text = texts[f] ?? "";
+      return [f, text.trim() === "" ? null : EDIT_FIELDS[f].parse(text)];
+    }),
+  ) as Values;
+  const fieldInvalid = (f: SetField) => {
+    const text = texts[f] ?? "";
+    const max = EDIT_FIELDS[f].max;
+    return (text.trim() !== "" && values[f] === null) || (max !== undefined && (values[f] ?? 0) > max);
+  };
+  const complete = isSetComplete(type, {
+    weightKg: values.weight ?? null,
+    reps: values.reps ?? null,
+    distanceM: values.distance ?? null,
+    durationS: values.duration ?? null,
+  });
+  const invalid = !complete || fields.some(fieldInvalid);
 
   function save() {
-    if (kgInvalid || repsInvalid) return;
-    if (kgValue === Number(set.weight_kg) && repsValue === set.reps) return;
-    update.mutate({ id: set.id, patch: { weight_kg: kgValue, reps: repsValue } });
+    if (invalid) return;
+    if (fields.every((f) => values[f] === initial[f])) return;
+    const patch = Object.fromEntries(fields.map((f) => [EDIT_FIELDS[f].column, values[f]]));
+    update.mutate({ id: set.id, patch });
   }
 
   const n = index + 1;
@@ -193,37 +284,45 @@ function EditableSet({
   return (
     <li className="flex flex-wrap items-center gap-2 px-1">
       <span className="num w-6 text-sm text-muted-foreground">{n}</span>
-      <input
-        aria-label={`Carga da série ${n} de ${exerciseName} (kg)`}
-        inputMode="decimal"
-        autoComplete="off"
-        value={kg}
-        aria-invalid={kgInvalid || undefined}
-        onChange={(e) => setKg(e.target.value)}
-        onBlur={save}
-        className={field}
-      />
-      <span aria-hidden className="text-muted-foreground">
-        ×
-      </span>
-      <input
-        aria-label={`Repetições da série ${n} de ${exerciseName}`}
-        inputMode="numeric"
-        autoComplete="off"
-        value={reps}
-        aria-invalid={repsInvalid || undefined}
-        onChange={(e) => setReps(e.target.value)}
-        onBlur={save}
-        className={field}
-      />
-      {(kgInvalid || repsInvalid) && (
+      {fields.map((f, i) => (
+        <span key={f} className="contents">
+          {i > 0 && (
+            <span aria-hidden className="text-muted-foreground">
+              {fields.includes("reps") ? "×" : "·"}
+            </span>
+          )}
+          <input
+            aria-label={EDIT_FIELDS[f].label(n, exerciseName)}
+            inputMode={EDIT_FIELDS[f].inputMode}
+            autoComplete="off"
+            value={texts[f]}
+            aria-invalid={fieldInvalid(f) || (!complete && values[f] === null) || undefined}
+            onChange={(e) => setTexts((t) => ({ ...t, [f]: e.target.value }))}
+            onBlur={save}
+            className={field}
+          />
+        </span>
+      ))}
+      {set.set_type === "warmup" && <WarmupBadge />}
+      {invalid && (
         <span role="alert" className="text-xs text-destructive">
-          {kgInvalid ? "Carga inválida." : "Reps: número inteiro ≥ 1."}
+          {INVALID_MESSAGE[type]}
         </span>
       )}
     </li>
   );
 }
+
+const INVALID_MESSAGE: Record<ExerciseType, string> = {
+  weight_reps: "Carga e reps (inteiro ≥ 1) obrigatórias.",
+  reps_only: "Reps: número inteiro ≥ 1.",
+  bodyweight_reps: "Reps: número inteiro ≥ 1; carga extra opcional.",
+  bodyweight_assisted_reps: "Reps: número inteiro ≥ 1; assistência opcional.",
+  duration: "Duração no formato m:ss (ex.: 1:00).",
+  weight_duration: "Duração no formato m:ss; carga opcional.",
+  distance_duration: "Informe a distância (km) ou a duração (m:ss).",
+  short_distance_weight: "Informe a distância (km); carga opcional.",
+};
 
 export function WorkoutDetailSkeleton() {
   return (

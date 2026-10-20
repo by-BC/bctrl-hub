@@ -2,7 +2,7 @@
 
 import { ChevronRight, Dumbbell, Trophy } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { z } from "zod";
 import { NumUnit } from "@/components/num-unit";
 import { PageHeader } from "@/components/shell/page-header";
@@ -10,19 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BackLink } from "@/features/routines/components/back-link";
 import { PrBadge } from "@/features/workout-session/components/pr-badge";
+import { WarmupBadge } from "@/features/workout-session/components/set-row";
+import type { ExerciseType } from "@/lib/domain/exercise-types";
 import {
   METRIC_LABEL,
-  METRICS,
+  metricsFor,
   RANGE_LABEL,
   RANGES,
   type ExerciseSession,
   type Metric,
   type PrEntry,
   type Range,
-  type SessionPoint,
 } from "@/lib/domain/stats";
 import type { PrKind } from "@/lib/domain/workout";
-import { formatDay, formatKg, formatShortDay } from "@/lib/format";
+import { formatDay, formatDistance, formatKg, formatSeconds, formatSet, formatShortDay } from "@/lib/format";
 import type { ExerciseBests } from "../api";
 import { useExerciseBests, useExerciseHistory, useExerciseStats } from "../hooks";
 import { ChartCard, DataTable, Segmented } from "./chart-card";
@@ -30,7 +31,21 @@ import { TrendChart, type TrendSeries } from "./trend-chart";
 
 const uuid = z.guid();
 const kg = (n: number) => `${formatKg(n)} kg`;
-const METRIC_SHORT: Record<Metric, string> = { weight: "Carga", e1rm: "1RM", volume: "Volume" };
+const METRIC_SHORT: Record<Metric, string> = {
+  weight: "Carga",
+  e1rm: "1RM",
+  volume: "Volume",
+  distance: "Distância",
+  duration: "Tempo",
+};
+/** Valor com unidade de cada métrica (tooltip, tabela, resumo). */
+const METRIC_FORMAT: Record<Metric, (n: number) => string> = {
+  weight: kg,
+  e1rm: kg,
+  volume: kg,
+  distance: formatDistance,
+  duration: formatSeconds,
+};
 
 function EvolucaoBackLink() {
   return <BackLink href="/evolucao" label="Evolução" />;
@@ -86,12 +101,13 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
       <EvolucaoBackLink />
       <PageHeader title={data.name} eyebrow="Evolução" />
       {data.muscle_group && <p className="-mt-4 mb-6 text-sm text-muted-foreground">{data.muscle_group}</p>}
-      {data.bests ? (
+      {/* Só reps não tem recorde numérico: a página mostra o histórico de séries. */}
+      {data.bests || metricsFor(data.exercise_type).length === 0 ? (
         <div className="space-y-6">
-          <BestsGrid bests={data.bests} />
-          <ExerciseChart exerciseId={exerciseId} />
+          {data.bests && <BestsGrid bests={data.bests} type={data.exercise_type} />}
+          {metricsFor(data.exercise_type).length > 0 && <ExerciseChart exerciseId={exerciseId} type={data.exercise_type} />}
           <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-            <ExerciseRecords exerciseId={exerciseId} />
+            <ExerciseRecords exerciseId={exerciseId} type={data.exercise_type} />
           </div>
         </div>
       ) : (
@@ -108,45 +124,67 @@ export function ExerciseProgress({ exerciseId }: { exerciseId: string }) {
   );
 }
 
-function BestsGrid({ bests }: { bests: ExerciseBests }) {
-  const items = [
-    { label: "Melhor carga", value: bests.maxWeight },
-    { label: "1RM estimado", value: bests.maxE1rm },
-    { label: "Melhor série (volume)", value: bests.maxSetVolume },
+/** Recordes de todos os tempos, só das métricas do tipo do exercício. */
+function BestsGrid({ bests, type }: { bests: ExerciseBests; type: ExerciseType }) {
+  const all: { metric: Metric; label: string; value: number | null | undefined; text: (n: number) => ReactNode }[] = [
+    { metric: "weight", label: "Melhor carga", value: bests.maxWeight, text: (n) => <NumUnit value={formatKg(n)} unit="kg" /> },
+    { metric: "e1rm", label: "1RM estimado", value: bests.maxE1rm, text: (n) => <NumUnit value={formatKg(n)} unit="kg" /> },
+    {
+      metric: "volume",
+      label: "Melhor série (volume)",
+      value: bests.maxSetVolume,
+      text: (n) => <NumUnit value={formatKg(n)} unit="kg" />,
+    },
+    { metric: "distance", label: "Maior distância", value: bests.maxDistanceM, text: (n) => <span className="num">{formatDistance(n)}</span> },
+    { metric: "duration", label: "Maior duração", value: bests.maxDurationS, text: (n) => <span className="num">{formatSeconds(n)}</span> },
   ];
+  const metrics = metricsFor(type);
+  const items = all.filter((i) => metrics.includes(i.metric) && i.value !== null && i.value !== undefined);
+  if (items.length === 0) return null;
   return (
     <dl className="grid grid-cols-3 gap-2" aria-label="Recordes de todos os tempos" data-testid="exercise-bests">
       {items.map((item) => (
         <div key={item.label} className="rounded-xl border bg-card p-3">
           <dt className="text-xs text-muted-foreground">{item.label}</dt>
-          <dd className="mt-1 text-base font-semibold sm:text-lg">
-            <NumUnit value={formatKg(item.value)} unit="kg" />
-          </dd>
+          <dd className="mt-1 text-base font-semibold sm:text-lg">{item.text(item.value!)}</dd>
         </div>
       ))}
     </dl>
   );
 }
 
-function ExerciseChart({ exerciseId }: { exerciseId: string }) {
-  const [metric, setMetric] = useState<Metric>("weight");
-  const [range, setRange] = useState<Range>("3m");
-  const { points, isPending, isError, isFetching, refetch } = useExerciseStats(exerciseId, range);
+type ChartPoint = { day: string; t: number; value: number; workoutId: string };
 
-  const series: TrendSeries<Metric>[] = [
-    { key: metric, label: METRIC_LABEL[metric], color: "var(--chart-1)", kind: "line", endLabel: true },
+function ExerciseChart({ exerciseId, type }: { exerciseId: string; type: ExerciseType }) {
+  const metrics = metricsFor(type);
+  const [chosen, setMetric] = useState<Metric>(metrics[0]);
+  const metric = metrics.includes(chosen) ? chosen : metrics[0];
+  const [range, setRange] = useState<Range>("3m");
+  const stats = useExerciseStats(exerciseId, range);
+  const { isPending, isError, isFetching, refetch } = stats;
+  const format = METRIC_FORMAT[metric];
+  // Treino sem a métrica (ex.: corrida só com tempo, sem distância) fica fora da linha.
+  const points: ChartPoint[] | undefined = stats.points?.flatMap((p) =>
+    p[metric] === null ? [] : [{ day: p.day, t: p.t, value: p[metric]!, workoutId: p.workoutId }],
+  );
+  const tablePoints = stats.points ?? [];
+
+  const series: TrendSeries<"value">[] = [
+    { key: "value", label: METRIC_LABEL[metric], color: "var(--chart-1)", kind: "line", endLabel: true },
   ];
 
   return (
     <section aria-label="Gráfico de evolução" className="space-y-3">
       {/* Filtros numa linha, acima do gráfico que eles controlam. */}
       <div className="flex flex-wrap items-center gap-2">
-        <Segmented
-          label="Métrica"
-          options={METRICS.map((m) => ({ value: m, label: METRIC_SHORT[m] }))}
-          value={metric}
-          onChange={setMetric}
-        />
+        {metrics.length > 1 && (
+          <Segmented
+            label="Métrica"
+            options={metrics.map((m) => ({ value: m, label: METRIC_SHORT[m] }))}
+            value={metric}
+            onChange={setMetric}
+          />
+        )}
         <Segmented
           label="Período"
           options={RANGES.map((r) => ({ value: r, label: RANGE_LABEL[r] }))}
@@ -174,24 +212,20 @@ function ExerciseChart({ exerciseId }: { exerciseId: string }) {
           subtitle={`${metricHint(metric)} · ${points.length} ${points.length === 1 ? "sessão" : "sessões"} · ${RANGE_LABEL[range].toLowerCase()}`}
           summary={chartSummary(points, metric)}
           refreshing={isFetching}
-          chart={<TrendChart data={points} series={series} format={kg} showYear={range === "all"} />}
+          chart={<TrendChart data={points} series={series} format={format} showYear={range === "all"} />}
           table={
             <DataTable
-              caption={`Evolução por sessão: carga, 1RM estimado e volume`}
+              caption={`Evolução por sessão: ${metrics.map((m) => METRIC_LABEL[m].toLowerCase()).join(", ")}`}
               columns={[
                 { label: "Dia" },
-                { label: "Carga", numeric: true },
-                { label: "1RM", numeric: true },
-                { label: "Volume", numeric: true },
+                ...metrics.map((m) => ({ label: METRIC_SHORT[m], numeric: true })),
                 { label: "Séries", numeric: true },
               ]}
-              rows={[...points].reverse().map((p) => ({
+              rows={[...tablePoints].reverse().map((p) => ({
                 key: p.workoutId,
                 cells: [
                   <span key="d" className="num">{formatShortDay(p.day, { year: true })}</span>,
-                  kg(p.weight),
-                  kg(p.e1rm),
-                  kg(p.volume),
+                  ...metrics.map((m) => (p[m] === null ? "—" : METRIC_FORMAT[m](p[m]!))),
                   String(p.sets),
                 ],
               }))}
@@ -206,17 +240,20 @@ function ExerciseChart({ exerciseId }: { exerciseId: string }) {
 function metricHint(metric: Metric) {
   if (metric === "weight") return "maior carga da sessão";
   if (metric === "e1rm") return "melhor série pela fórmula de Epley";
+  if (metric === "distance") return "maior distância numa série";
+  if (metric === "duration") return "maior duração numa série";
   return "soma de carga × reps da sessão";
 }
 
-function chartSummary(points: SessionPoint[], metric: Metric) {
+function chartSummary(points: ChartPoint[], metric: Metric) {
+  const format = METRIC_FORMAT[metric];
   const first = points[0];
   const last = points[points.length - 1];
-  const max = Math.max(...points.map((p) => p[metric]));
-  return `${METRIC_LABEL[metric]} em ${points.length} sessões, de ${formatDay(first.day)} a ${formatDay(last.day)}. Primeira: ${kg(first[metric])}. Última: ${kg(last[metric])}. Máxima: ${kg(max)}.`;
+  const max = Math.max(...points.map((p) => p.value));
+  return `${METRIC_LABEL[metric]} em ${points.length} sessões, de ${formatDay(first.day)} a ${formatDay(last.day)}. Primeira: ${format(first.value)}. Última: ${format(last.value)}. Máxima: ${format(max)}.`;
 }
 
-function ExerciseRecords({ exerciseId }: { exerciseId: string }) {
+function ExerciseRecords({ exerciseId, type }: { exerciseId: string; type: ExerciseType }) {
   const { data, isPending, isError, refetch } = useExerciseHistory(exerciseId);
 
   if (isPending) {
@@ -239,13 +276,13 @@ function ExerciseRecords({ exerciseId }: { exerciseId: string }) {
   }
   return (
     <>
-      <PrSection prs={data.prs} />
-      <HistorySection sessions={data.sessions} />
+      <PrSection prs={data.prs} type={type} />
+      <HistorySection sessions={data.sessions} type={type} />
     </>
   );
 }
 
-function PrSection({ prs }: { prs: PrEntry[] }) {
+function PrSection({ prs, type }: { prs: PrEntry[]; type: ExerciseType }) {
   return (
     <section aria-labelledby="prs-exercicio" className="space-y-3">
       <h2 id="prs-exercicio" className="flex items-center gap-2 text-lg font-semibold">
@@ -261,9 +298,7 @@ function PrSection({ prs }: { prs: PrEntry[] }) {
           {prs.map((pr) => (
             <li key={pr.setId} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-card p-3">
               <span>
-                <span className="num block font-semibold">
-                  {formatKg(pr.weightKg)} kg × {pr.reps}
-                </span>
+                <span className="num block font-semibold">{formatSet(pr, type)}</span>
                 <span className="block text-xs text-muted-foreground first-letter:uppercase">{formatDay(pr.day)}</span>
               </span>
               <PrBadge kinds={pr.kinds as PrKind[]} />
@@ -275,12 +310,17 @@ function PrSection({ prs }: { prs: PrEntry[] }) {
   );
 }
 
-function HistorySection({ sessions }: { sessions: ExerciseSession[] }) {
+function HistorySection({ sessions, type }: { sessions: ExerciseSession[]; type: ExerciseType }) {
   return (
     <section aria-labelledby="historico-exercicio" className="space-y-3">
       <h2 id="historico-exercicio" className="text-lg font-semibold">
         Histórico de séries
       </h2>
+      {sessions.length === 0 && (
+        <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
+          Nenhum treino com este exercício ainda.
+        </p>
+      )}
       <ol className="space-y-2" aria-label="Sessões, da mais recente à mais antiga">
         {sessions.map((s) => (
           <li key={s.workoutId}>
@@ -303,9 +343,8 @@ function HistorySection({ sessions }: { sessions: ExerciseSession[] }) {
                       <span className="sr-only">Série </span>
                       {i + 1}
                     </span>
-                    <span className="num">
-                      {formatKg(Number(set.weight_kg))} kg × {set.reps}
-                    </span>
+                    <span className="num">{formatSet(storedSet(set), type)}</span>
+                    {set.set_type === "warmup" && <WarmupBadge />}
                     <PrBadge kinds={set.pr_kinds as PrKind[]} />
                   </li>
                 ))}
@@ -316,4 +355,14 @@ function HistorySection({ sessions }: { sessions: ExerciseSession[] }) {
       </ol>
     </section>
   );
+}
+
+/** Linha de `workout_sets` → valores para `formatSet` (numeric chega como número ou texto). */
+function storedSet(set: ExerciseSession["sets"][number]) {
+  return {
+    weightKg: set.weight_kg === null ? null : Number(set.weight_kg),
+    reps: set.reps,
+    distanceM: set.distance_m == null ? null : Number(set.distance_m),
+    durationS: set.duration_s ?? null,
+  };
 }

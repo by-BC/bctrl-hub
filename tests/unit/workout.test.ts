@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   detectPrs,
+  isCountable,
   e1rm,
   markSessionPrs,
   mergeBests,
@@ -160,5 +161,115 @@ describe("nextRoutineId", () => {
   it("nenhuma rotina ativa: null", () => {
     expect(nextRoutineId([], null)).toBeNull();
     expect(nextRoutineId([{ id: "x", position: 1, archivedAt: "2026-10-01T00:00:00Z" }], "x")).toBeNull();
+  });
+});
+
+// ── v2: tipos de série e de exercício ─────────────────────────────────────
+
+const warmup = (weightKg: number, reps: number): SetEntry => ({ weightKg, reps, done: true, setType: "warmup" });
+const timed = (durationS: number | null, extra: Partial<SetEntry> = {}): SetEntry => ({
+  weightKg: null,
+  reps: null,
+  durationS,
+  done: true,
+  ...extra,
+});
+const ran = (distanceM: number | null, durationS: number | null): SetEntry => ({
+  weightKg: null,
+  reps: null,
+  distanceM,
+  durationS,
+  done: true,
+});
+
+describe("aquecimento", () => {
+  it("não gera PR, mesmo superando os recordes", () => {
+    expect(detectPrs(warmup(80, 10), bests(50, 500, 66.67))).toEqual([]);
+  });
+
+  it("não entra nos recordes da sessão (a série seguinte compara com o histórico)", () => {
+    const sets = [warmup(60, 10), done(55, 10)];
+    expect(markSessionPrs(sets, bests(50, 500, e1rm(50, 10)))).toEqual([[], ["weight", "volume", "e1rm"]]);
+    expect(mergeBests(bests(50, 500, 66), warmup(90, 10))).toEqual(bests(50, 500, 66));
+  });
+
+  it("não entra no volume nem na contagem de séries do resumo", () => {
+    const summary = summarizeSession(
+      [{ sets: [{ ...warmup(40, 10), prs: [] }, { ...done(60, 10), prs: [] }] }],
+      "2026-10-13T10:00:00.000Z",
+      "2026-10-13T10:30:00.000Z",
+    );
+    expect(summary).toEqual({ durationMin: 30, sets: 1, volumeKg: 600, prs: 0 });
+  });
+});
+
+describe("séries sem carga", () => {
+  it("só reps: conta como série, sem volume e sem PR de carga", () => {
+    const reps: SetEntry = { weightKg: null, reps: 12, done: true };
+    expect(isCountable(reps, "reps_only")).toBe(true);
+    expect(isCountable(reps)).toBe(false); // carga × reps exige a carga
+    expect(detectPrs(reps, bests(50, 500, 60), "reps_only")).toEqual([]);
+    const summary = summarizeSession(
+      [{ type: "reps_only", sets: [{ ...reps, prs: [] }] }],
+      "2026-10-13T10:00:00.000Z",
+      "2026-10-13T10:10:00.000Z",
+    );
+    expect(summary).toMatchObject({ sets: 1, volumeKg: 0 });
+  });
+
+  it("peso corporal com carga extra entra nos recordes de carga", () => {
+    expect(detectPrs(done(15, 8), bests(10, 80, e1rm(10, 8)), "bodyweight_reps")).toEqual(["weight", "volume", "e1rm"]);
+    expect(detectPrs({ weightKg: null, reps: 20, done: true }, bests(10, 80, 12), "bodyweight_reps")).toEqual([]);
+  });
+
+  it("assistido não tem PR de carga (menos assistência é melhor)", () => {
+    expect(detectPrs(done(40, 10), bests(20, 200, 26), "bodyweight_assisted_reps")).toEqual([]);
+  });
+});
+
+describe("recordes de duração e distância", () => {
+  it("duração: PR quando passa do maior tempo; empate não", () => {
+    const b: Bests = { maxDurationS: 60 };
+    expect(isCountable(timed(75), "duration")).toBe(true);
+    expect(detectPrs(timed(75), b, "duration")).toEqual(["duration"]);
+    expect(detectPrs(timed(60), b, "duration")).toEqual([]);
+    expect(detectPrs(timed(90, { setType: "warmup" }), b, "duration")).toEqual([]);
+  });
+
+  it("primeira vez no exercício não é PR, e cada métrica precisa da própria referência", () => {
+    expect(detectPrs(timed(75), null, "duration")).toEqual([]);
+    expect(detectPrs(timed(75), bests(50, 500, 60), "duration")).toEqual([]);
+  });
+
+  it("distância: PR pela maior distância (corrida)", () => {
+    const b: Bests = { maxDistanceM: 2000, maxDurationS: 900 };
+    expect(detectPrs(ran(2500, 800), b, "distance_duration")).toEqual(["distance"]);
+    expect(detectPrs(ran(2000, 600), b, "distance_duration")).toEqual([]);
+  });
+
+  it("mergeBests acompanha duração e distância sem inventar carga", () => {
+    expect(mergeBests(null, timed(60))).toEqual({ maxDurationS: 60 });
+    expect(mergeBests({ maxDurationS: 60 }, timed(45))).toEqual({ maxDurationS: 60 });
+    expect(mergeBests({ maxDistanceM: 2000 }, ran(2500, 700))).toEqual({ maxDistanceM: 2500, maxDurationS: 700 });
+  });
+
+  it("markSessionPrs por tipo: a 2ª prancha compara com a 1ª da sessão", () => {
+    expect(markSessionPrs([timed(70), timed(65), timed(80)], { maxDurationS: 60 }, "duration")).toEqual([
+      ["duration"],
+      [],
+      ["duration"],
+    ]);
+  });
+
+  it("resumo conta séries de duração e distância e os PRs delas", () => {
+    const summary = summarizeSession(
+      [
+        { type: "duration", sets: [{ ...timed(60), prs: ["duration"] }] },
+        { type: "distance_duration", sets: [{ ...ran(2000, 720), prs: [] }] },
+      ],
+      "2026-10-13T10:00:00.000Z",
+      "2026-10-13T10:40:00.000Z",
+    );
+    expect(summary).toEqual({ durationMin: 40, sets: 2, volumeKg: 0, prs: 1 });
   });
 });

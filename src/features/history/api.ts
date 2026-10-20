@@ -10,15 +10,19 @@ export const historyKeys = {
   detail: (id: string) => ["history", "detail", id] as const,
 };
 
-type SetRow = Pick<Tables<"workout_sets">, "id" | "position" | "weight_kg" | "reps" | "pr_kinds">;
+type SetRow = Pick<
+  Tables<"workout_sets">,
+  "id" | "position" | "set_type" | "weight_kg" | "reps" | "distance_m" | "duration_s" | "pr_kinds"
+>;
+type SetMetricsRow = Pick<SetRow, "set_type" | "weight_kg" | "reps" | "distance_m" | "duration_s" | "pr_kinds">;
 
 export type HistoryListItem = Pick<Tables<"workouts">, "id" | "day" | "started_at" | "finished_at"> & {
   routine: { name: string } | null;
-  workout_exercises: { id: string; workout_sets: Pick<SetRow, "weight_kg" | "reps" | "pr_kinds">[] }[];
+  workout_exercises: { id: string; exercise: { exercise_type: string } | null; workout_sets: SetMetricsRow[] }[];
 };
 
 export type HistoryExercise = Pick<Tables<"workout_exercises">, "id" | "position" | "exercise_id"> & {
-  exercise: { name: string } | null;
+  exercise: { name: string; exercise_type: string } | null;
   workout_sets: SetRow[];
 };
 
@@ -37,7 +41,8 @@ const db = () => createClient();
 export async function fetchHistory(): Promise<HistoryListItem[]> {
   const { data, error } = await db()
     .from("workouts")
-    .select("id, day, started_at, finished_at, routine:routines(name), workout_exercises(id, workout_sets(weight_kg, reps, pr_kinds))")
+    .select("id, day, started_at, finished_at, routine:routines(name), workout_exercises(id, exercise:exercises(exercise_type), workout_sets(set_type, weight_kg, reps, distance_m, duration_s, pr_kinds))",
+    )
     .not("finished_at", "is", null)
     .order("started_at", { ascending: false })
     .limit(200);
@@ -49,7 +54,7 @@ export async function fetchWorkoutDetail(id: string): Promise<HistoryDetail | nu
   const { data, error } = await db()
     .from("workouts")
     .select(
-      "id, day, started_at, finished_at, routine_id, routine:routines(name), workout_exercises(id, position, exercise_id, exercise:exercises(name), workout_sets(id, position, weight_kg, reps, pr_kinds))",
+      "id, day, started_at, finished_at, routine_id, routine:routines(name), workout_exercises(id, position, exercise_id, exercise:exercises(name, exercise_type), workout_sets(id, position, set_type, weight_kg, reps, distance_m, duration_s, pr_kinds))",
     )
     .eq("id", id)
     .order("position", { referencedTable: "workout_exercises" })
@@ -59,7 +64,10 @@ export async function fetchWorkoutDetail(id: string): Promise<HistoryDetail | nu
   return data;
 }
 
-export async function updateWorkoutSet(id: string, patch: Pick<TablesUpdate<"workout_sets">, "weight_kg" | "reps">) {
+export async function updateWorkoutSet(
+  id: string,
+  patch: Pick<TablesUpdate<"workout_sets">, "weight_kg" | "reps" | "distance_m" | "duration_s">,
+) {
   const { error } = await db().from("workout_sets").update(patch).eq("id", id);
   if (error) fail(error, "Não foi possível salvar a série.");
 }

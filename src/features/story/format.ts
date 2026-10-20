@@ -30,7 +30,13 @@ export function storyDate(day: string): StoryDate {
   };
 }
 
-export const STORY_PR_LABELS: Record<PrKind, string> = { weight: "Carga", volume: "Volume", e1rm: "1RM est." };
+export const STORY_PR_LABELS: Record<PrKind, string> = {
+  weight: "Carga",
+  volume: "Volume",
+  e1rm: "1RM est.",
+  duration: "Duração",
+  distance: "Distância",
+};
 
 /** Número do recorde (a unidade é sempre kg): "72,5", "1.000", "96,7". */
 export const prValue = (kind: PrKind, value: number) => (kind === "volume" ? formatInt(value) : formatKg(value));

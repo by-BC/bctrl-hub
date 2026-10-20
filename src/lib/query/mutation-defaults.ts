@@ -75,7 +75,8 @@ function stripRow(item: RoutineItem): RoutineExercise {
 
 export type RoutinePatch = Partial<Pick<RoutineDetail, "name" | "notes" | "rest_sec">>;
 export type RoutineItemPatch = Partial<Pick<RoutineExercise, "sets" | "rest_sec" | "notes">>;
-export type SetPatch = { weight_kg: number; reps: number };
+/** Campos editáveis de uma série gravada (os do tipo do exercício). */
+export type SetPatch = Partial<{ weight_kg: number | null; reps: number | null; distance_m: number | null; duration_s: number | null }>;
 
 export const WRITES = {
   // Rotinas e exercícios da rotina (scope "routines")

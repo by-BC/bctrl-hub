@@ -14,19 +14,20 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { isCountable, type PrKind, type SessionSummary } from "@/lib/domain/workout";
-import { formatDuration, formatKg } from "@/lib/format";
+import { formatDuration, formatKg, formatSet } from "@/lib/format";
 import { SYNC_TOAST_ID, useWorkoutSync } from "../hooks";
 import { hasCountableSet, summaryOf, type ActiveWorkout, type FinishResult } from "../store";
 import { PrBadge } from "./pr-badge";
 
-export type PrHighlight = { exercise: string; weightKg: number; reps: number; kinds: PrKind[] };
+/** Recorde batido na sessão; `set` já formatado pelo tipo ("60 kg × 10", "1:15", "2,5 km · 13:00"). */
+export type PrHighlight = { exercise: string; set: string; kinds: PrKind[] };
 
 /** PRs da sessão, para o resumo (antes de o store limpar a sessão). */
 export function prHighlights(workout: ActiveWorkout): PrHighlight[] {
   return workout.exercises.flatMap((e) =>
     e.sets
-      .filter((s) => isCountable(s) && s.prs.length > 0)
-      .map((s) => ({ exercise: e.name, weightKg: s.weightKg!, reps: s.reps!, kinds: s.prs })),
+      .filter((s) => isCountable(s, e.exerciseType) && s.prs.length > 0)
+      .map((s) => ({ exercise: e.name, set: formatSet(s, e.exerciseType), kinds: s.prs })),
   );
 }
 
@@ -137,9 +138,7 @@ export function PrList({ prs }: { prs: PrHighlight[] }) {
           <li key={i} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3 text-sm">
             <span className="min-w-0">
               <span className="block font-medium">{pr.exercise}</span>
-              <span className="num text-muted-foreground">
-                {formatKg(pr.weightKg)} kg × {pr.reps}
-              </span>
+              <span className="num text-muted-foreground">{pr.set}</span>
             </span>
             <PrBadge kinds={pr.kinds} />
           </li>

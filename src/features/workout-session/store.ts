@@ -2,7 +2,17 @@ import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import { dayInSaoPaulo } from "@/lib/domain/day";
 import {
+  DEFAULT_EXERCISE_TYPE,
+  FIELDS,
+  toExerciseType,
+  toSetType,
+  type ExerciseType,
+  type SetField,
+  type SetType,
+} from "@/lib/domain/exercise-types";
+import {
   isCountable,
+  isWarmup,
   markSessionPrs,
   summarizeSession,
   type Bests,
@@ -20,14 +30,27 @@ import { finishWorkoutSchema, type FinishWorkoutPayload } from "@/lib/schemas/wo
 
 export const ACTIVE_WORKOUT_STORAGE_KEY = "bctrl.activeWorkout";
 
-export type PreviousSet = { weightKg: number; reps: number };
-export type SessionSet = SetEntry & { id: string; prs: PrKind[] };
+/** Série de trabalho da última sessão do exercício (métricas ausentes = não usadas pelo tipo). */
+export type PreviousSet = { weightKg: number | null; reps: number | null; distanceM?: number | null; durationS?: number | null };
+
+export type SessionSet = SetEntry & {
+  id: string;
+  prs: PrKind[];
+  setType: SetType;
+  distanceM: number | null;
+  durationS: number | null;
+};
+
+/** Campos editáveis de uma série (carga, reps, distância em m, duração em s). */
+export type SetPatch = Partial<Pick<SessionSet, "weightKg" | "reps" | "distanceM" | "durationS">>;
 
 export type SessionExercise = {
   /** Vira o id de `workout_exercises` (gerado no aparelho: reenvio idempotente). */
   id: string;
   exerciseId: string;
   name: string;
+  /** Define os campos da série (ver `FIELDS`). */
+  exerciseType: ExerciseType;
   restSec: number;
   notes: string | null;
   previous: PreviousSet[];
@@ -54,6 +77,8 @@ export type ActiveWorkout = {
 export type ExerciseSeed = {
   exerciseId: string;
   name: string;
+  /** Sem tipo (dados antigos), carga × reps. */
+  exerciseType?: ExerciseType;
   restSec: number;
   notes: string | null;
   sets: number;
@@ -92,7 +117,9 @@ type State = { workout: ActiveWorkout | null };
 
 type Actions = {
   start(seed: SessionSeed, now?: Date): void;
-  updateSet(exIdx: number, setIdx: number, patch: Partial<Pick<SetEntry, "weightKg" | "reps">>): void;
+  updateSet(exIdx: number, setIdx: number, patch: SetPatch): void;
+  /** Alterna a série entre aquecimento e normal (aquecimento não conta para PR nem volume). */
+  toggleWarmup(exIdx: number, setIdx: number): void;
   /** Alterna a série. Ao concluir, usa o anterior se faltar valor e inicia o descanso. */
   completeSet(exIdx: number, setIdx: number, now?: number): boolean;
   addSet(exIdx: number): void;
@@ -109,13 +136,30 @@ type Actions = {
 
 export type ActiveWorkoutStore = State & Actions;
 
-const emptySet = (): SessionSet => ({ id: crypto.randomUUID(), weightKg: null, reps: null, done: false, prs: [] });
+const emptySet = (): SessionSet => ({
+  id: crypto.randomUUID(),
+  setType: "normal",
+  weightKg: null,
+  reps: null,
+  distanceM: null,
+  durationS: null,
+  done: false,
+  prs: [],
+});
+
+const PATCH_KEY: Record<SetField, keyof SetPatch> = {
+  weight: "weightKg",
+  reps: "reps",
+  distance: "distanceM",
+  duration: "durationS",
+};
 
 function exerciseFromSeed(seed: ExerciseSeed): SessionExercise {
   return {
     id: crypto.randomUUID(),
     exerciseId: seed.exerciseId,
     name: seed.name,
+    exerciseType: seed.exerciseType ?? DEFAULT_EXERCISE_TYPE,
     restSec: seed.restSec,
     notes: seed.notes,
     previous: seed.previous.map((p) => ({ ...p })),
@@ -126,8 +170,19 @@ function exerciseFromSeed(seed: ExerciseSeed): SessionExercise {
 
 /** Recalcula os PRs do exercício inteiro (a ordem das séries importa). */
 function withPrs(exercise: SessionExercise): SessionExercise {
-  const prs = markSessionPrs(exercise.sets, exercise.bests);
+  const prs = markSessionPrs(exercise.sets, exercise.bests, exercise.exerciseType);
   return { ...exercise, sets: exercise.sets.map((s, i) => ({ ...s, prs: prs[i] })) };
+}
+
+/**
+ * O "anterior" da série: as séries de trabalho da última sessão, na ordem. Aquecimento
+ * não tem anterior e não desloca a coluna (a 1ª série de trabalho pega o 1º anterior).
+ */
+export function previousFor(exercise: SessionExercise, setIdx: number): PreviousSet | undefined {
+  const set = exercise.sets[setIdx];
+  if (!set || isWarmup(set)) return undefined;
+  const workingIdx = exercise.sets.slice(0, setIdx).filter((s) => !isWarmup(s)).length;
+  return exercise.previous[workingIdx];
 }
 
 function finishedAtOf(workout: ActiveWorkout): string {
@@ -141,12 +196,22 @@ export function toFinishPayload(workout: ActiveWorkout, finishedAt = finishedAtO
       id: e.id,
       exercise_id: e.exerciseId,
       notes: null,
-      sets: e.sets.filter(isCountable).map((s) => ({
-        id: s.id,
-        weight_kg: s.weightKg!,
-        reps: s.reps!,
-        pr_kinds: s.prs,
-      })),
+      sets: e.sets
+        .filter((s) => isCountable(s, e.exerciseType))
+        .map((s) => {
+          // Só os campos do tipo vão ao banco (um valor esquecido noutro campo fica de fora).
+          const fields = FIELDS[e.exerciseType];
+          const pick = (field: SetField, value: number | null) => (fields.includes(field) ? value : null);
+          return {
+            id: s.id,
+            set_type: s.setType,
+            weight_kg: pick("weight", s.weightKg),
+            reps: pick("reps", s.reps),
+            distance_m: pick("distance", s.distanceM),
+            duration_s: pick("duration", s.durationS),
+            pr_kinds: s.prs,
+          };
+        }),
     }))
     .filter((e) => e.sets.length > 0);
 
@@ -162,11 +227,33 @@ export function toFinishPayload(workout: ActiveWorkout, finishedAt = finishedAtO
 }
 
 export function summaryOf(workout: ActiveWorkout, finishedAt = finishedAtOf(workout)): SessionSummary {
-  return summarizeSession(workout.exercises, workout.startedAt, finishedAt);
+  return summarizeSession(
+    workout.exercises.map((e) => ({ type: e.exerciseType, sets: e.sets })),
+    workout.startedAt,
+    finishedAt,
+  );
 }
 
 export function hasCountableSet(workout: ActiveWorkout): boolean {
-  return workout.exercises.some((e) => e.sets.some(isCountable));
+  return workout.exercises.some((e) => e.sets.some((s) => isCountable(s, e.exerciseType)));
+}
+
+/** Sessão salva por uma versão anterior do app (v1: sem tipos de exercício e de série). */
+export function migrateWorkout(workout: ActiveWorkout | null): ActiveWorkout | null {
+  if (!workout) return null;
+  return {
+    ...workout,
+    exercises: workout.exercises.map((e) => ({
+      ...e,
+      exerciseType: toExerciseType(e.exerciseType),
+      sets: e.sets.map((s) => ({
+        ...s,
+        setType: toSetType(s.setType),
+        distanceM: s.distanceM ?? null,
+        durationS: s.durationS ?? null,
+      })),
+    })),
+  };
 }
 
 function errorInfo(error: unknown): { message: string; retryable: boolean } {
@@ -253,6 +340,17 @@ export function createActiveWorkoutStore({ storage, skipHydration = true }: Stor
             );
           },
 
+          toggleWarmup(exIdx, setIdx) {
+            updateExercise(exIdx, (e) =>
+              withPrs({
+                ...e,
+                sets: e.sets.map((s, i) =>
+                  i === setIdx ? { ...s, setType: s.setType === "warmup" ? "normal" : "warmup" } : s,
+                ),
+              }),
+            );
+          },
+
           completeSet(exIdx, setIdx, now = Date.now()) {
             const exercise = get().workout?.exercises[exIdx];
             const current = exercise?.sets[setIdx];
@@ -265,14 +363,14 @@ export function createActiveWorkoutStore({ storage, skipHydration = true }: Stor
               return false;
             }
 
-            const previous = exercise.previous[setIdx];
-            const next: SessionSet = {
-              ...current,
-              weightKg: current.weightKg ?? previous?.weightKg ?? null,
-              reps: current.reps ?? previous?.reps ?? null,
-              done: true,
-            };
-            if (!isCountable(next)) return false;
+            // Campo vazio usa o anterior (só os campos do tipo do exercício).
+            const previous = previousFor(exercise, setIdx);
+            const next: SessionSet = { ...current, done: true };
+            for (const field of FIELDS[exercise.exerciseType]) {
+              const key = PATCH_KEY[field];
+              next[key] = current[key] ?? previous?.[key] ?? null;
+            }
+            if (!isCountable(next, exercise.exerciseType)) return false;
 
             updateExercise(exIdx, (e) => withPrs({ ...e, sets: e.sets.map((s, i) => (i === setIdx ? next : s)) }));
             updateWorkout((w) => ({
@@ -288,7 +386,13 @@ export function createActiveWorkoutStore({ storage, skipHydration = true }: Stor
           addSet(exIdx) {
             updateExercise(exIdx, (e) => {
               const last = e.sets.at(-1);
-              const added: SessionSet = { ...emptySet(), weightKg: last?.weightKg ?? null, reps: last?.reps ?? null };
+              const added: SessionSet = {
+                ...emptySet(),
+                weightKg: last?.weightKg ?? null,
+                reps: last?.reps ?? null,
+                distanceM: last?.distanceM ?? null,
+                durationS: last?.durationS ?? null,
+              };
               return { ...e, sets: [...e.sets, added] };
             });
           },
@@ -345,7 +449,11 @@ export function createActiveWorkoutStore({ storage, skipHydration = true }: Stor
       },
       {
         name: ACTIVE_WORKOUT_STORAGE_KEY,
-        version: 1,
+        // v2: tipos de exercício e de série. Sessão em andamento da v1 é migrada, não perdida.
+        version: 2,
+        migrate: (persisted) => ({
+          workout: migrateWorkout((persisted as Partial<State> | undefined)?.workout ?? null),
+        }),
         storage: createJSONStorage(() => storage ?? localStorage),
         partialize: (state) => ({ workout: state.workout }),
         // Reidratação no cliente (WorkoutSessionProvider): o HTML do servidor não conhece o localStorage.

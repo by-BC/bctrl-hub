@@ -6,6 +6,7 @@ import {
   groupExerciseHistory,
   lastDayByExercise,
   listPrs,
+  metricsFor,
   movingAverage,
   niceAxis,
   rangeStart,
@@ -94,8 +95,8 @@ describe("toSessionSeries", () => {
       row({ workout_id: "a", day: "2026-10-01" }),
     ]);
     expect(series).toEqual([
-      { workoutId: "a", day: "2026-10-01", t: dayToTime("2026-10-01"), weight: 40, e1rm: 53.33, volume: 720, sets: 2 },
-      { workoutId: "b", day: "2026-10-08", t: dayToTime("2026-10-08"), weight: 45, e1rm: 57, volume: 760, sets: 2 },
+      { workoutId: "a", day: "2026-10-01", t: dayToTime("2026-10-01"), weight: 40, e1rm: 53.33, volume: 720, distance: null, duration: null, sets: 2 },
+      { workoutId: "b", day: "2026-10-08", t: dayToTime("2026-10-08"), weight: 45, e1rm: 57, volume: 760, distance: null, duration: null, sets: 2 },
     ]);
   });
 
@@ -107,6 +108,29 @@ describe("toSessionSeries", () => {
       row({ workout_id: "sem-carga", best_weight: null }),
     ]);
     expect(series.map((p) => p.workoutId)).toEqual(["manha", "tarde"]);
+  });
+
+  it("v2: treino sem carga entra pela duração ou distância, sem inventar carga", () => {
+    const series = toSessionSeries([
+      row({ workout_id: "prancha", best_weight: null, best_e1rm: null, volume: null, best_duration_s: 60 }),
+      row({ workout_id: "corrida", day: "2026-10-02", best_weight: null, best_e1rm: null, volume: null, best_distance_m: 2000, best_duration_s: 720 }),
+    ]);
+    expect(series.map(({ workoutId, weight, e1rm, volume, distance, duration }) => ({ workoutId, weight, e1rm, volume, distance, duration }))).toEqual([
+      { workoutId: "prancha", weight: null, e1rm: null, volume: null, distance: null, duration: 60 },
+      { workoutId: "corrida", weight: null, e1rm: null, volume: null, distance: 2000, duration: 720 },
+    ]);
+  });
+});
+
+describe("métricas por tipo de exercício", () => {
+  it("carga × reps tem carga, 1RM e volume; prancha, duração; corrida, distância e duração; só reps, nenhuma", () => {
+    expect(metricsFor("weight_reps")).toEqual(["weight", "e1rm", "volume"]);
+    expect(metricsFor("bodyweight_reps")).toEqual(["weight", "e1rm", "volume"]);
+    expect(metricsFor("duration")).toEqual(["duration"]);
+    expect(metricsFor("weight_duration")).toEqual(["duration"]);
+    expect(metricsFor("distance_duration")).toEqual(["distance", "duration"]);
+    expect(metricsFor("short_distance_weight")).toEqual(["distance"]);
+    expect(metricsFor("reps_only")).toEqual([]);
   });
 });
 
@@ -176,8 +200,8 @@ describe("histórico e recordes do exercício", () => {
 
   it("lista só as séries com PR", () => {
     expect(listPrs(groupExerciseHistory(rows))).toEqual([
-      { setId: "s3", workoutId: "w2", day: "2026-10-08", weightKg: 45, reps: 8, kinds: ["weight", "e1rm"] },
-      { setId: "s5", workoutId: "w2", day: "2026-10-08", weightKg: 50, reps: 5, kinds: ["weight"] },
+      { setId: "s3", workoutId: "w2", day: "2026-10-08", weightKg: 45, reps: 8, distanceM: null, durationS: null, kinds: ["weight", "e1rm"] },
+      { setId: "s5", workoutId: "w2", day: "2026-10-08", weightKg: 50, reps: 5, distanceM: null, durationS: null, kinds: ["weight"] },
     ]);
   });
 

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { filterExercises } from "@/lib/domain/routines";
-import { formatKg, formatShortDay } from "@/lib/format";
+import { formatDistance, formatKg, formatSeconds, formatShortDay } from "@/lib/format";
 import type { ProgressOverviewItem } from "../api";
 import { useProgressOverview } from "../hooks";
 
@@ -94,10 +94,10 @@ export function ProgressList() {
                     {e.muscle_group && <> · {e.muscle_group}</>}
                   </span>
                 </span>
-                {e.maxWeight !== null && (
+                {headline(e) && (
                   <span className="shrink-0 text-right">
-                    <span className="num block font-semibold">{formatKg(e.maxWeight)} kg</span>
-                    <span className="block text-xs text-muted-foreground">melhor carga</span>
+                    <span className="num block font-semibold">{headline(e)!.value}</span>
+                    <span className="block text-xs text-muted-foreground">{headline(e)!.label}</span>
                   </span>
                 )}
                 <ChevronRight
@@ -111,4 +111,12 @@ export function ProgressList() {
       )}
     </section>
   );
+}
+
+/** Marca de destaque na lista: melhor carga; sem carga, maior distância ou maior duração. */
+function headline(e: ProgressOverviewItem): { value: string; label: string } | null {
+  if (e.maxWeight !== null) return { value: `${formatKg(e.maxWeight)} kg`, label: "melhor carga" };
+  if (e.bests?.maxDistanceM != null) return { value: formatDistance(e.bests.maxDistanceM), label: "maior distância" };
+  if (e.bests?.maxDurationS != null) return { value: formatSeconds(e.bests.maxDurationS), label: "maior duração" };
+  return null;
 }

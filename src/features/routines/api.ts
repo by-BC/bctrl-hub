@@ -10,7 +10,21 @@ import { createClient } from "@/lib/supabase/client";
 export type Routine = Tables<"routines">;
 export type Exercise = Tables<"exercises">;
 export type RoutineExercise = Tables<"routine_exercises">;
-export type ExerciseSummary = Pick<Exercise, "id" | "name" | "muscle_group">;
+/** O tipo vem junto quando a linha veio do banco (o seletor da sessão usa para os campos da série). */
+export type ExerciseSummary = Pick<Exercise, "id" | "name" | "muscle_group"> & Partial<Pick<Exercise, "exercise_type">>;
+
+/** Padrões do banco para um exercício criado no app (usado na linha otimista). */
+export const NEW_EXERCISE_DEFAULTS = {
+  notes: null,
+  exercise_type: "weight_reps",
+  equipment: null,
+  secondary_muscles: [],
+  thumbnail_url: null,
+  media_url: null,
+  instructions: null,
+  hevy_template_id: null,
+  source: "bctrl",
+} satisfies Partial<Exercise>;
 
 export type RoutineListItem = Routine & { routine_exercises: Pick<RoutineExercise, "id" | "sets">[] };
 export type RoutineItem = RoutineExercise & { exercise: ExerciseSummary };

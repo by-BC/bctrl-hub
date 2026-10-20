@@ -4,6 +4,8 @@
  * Dias são datas puras "AAAA-MM-DD" (já calculadas em America/Sao_Paulo).
  */
 
+import { FIELDS, type ExerciseType } from "./exercise-types";
+
 const DAY_MS = 86_400_000;
 
 /** "2026-10-13" → instante 00:00 UTC do dia (eixo de tempo dos gráficos). */
@@ -40,14 +42,29 @@ export function filterByRange<T extends { day: string }>(points: readonly T[], r
 
 // ── Séries por exercício (v_exercise_session_stats) ───────────────────────
 
-export const METRICS = ["weight", "e1rm", "volume"] as const;
+export const METRICS = ["weight", "e1rm", "volume", "distance", "duration"] as const;
 export type Metric = (typeof METRICS)[number];
 
 export const METRIC_LABEL: Record<Metric, string> = {
   weight: "Melhor carga",
   e1rm: "1RM estimado",
   volume: "Volume",
+  distance: "Maior distância",
+  duration: "Maior duração",
 };
+
+/**
+ * Métricas de evolução de cada tipo de exercício: carga, 1RM e volume quando a série tem
+ * carga e reps; distância e duração quando o tipo as registra. Só reps: nenhuma (só histórico).
+ */
+export function metricsFor(type: ExerciseType): Metric[] {
+  const fields = FIELDS[type];
+  const metrics: Metric[] = [];
+  if (fields.includes("weight") && fields.includes("reps")) metrics.push("weight", "e1rm", "volume");
+  if (fields.includes("distance")) metrics.push("distance");
+  if (fields.includes("duration")) metrics.push("duration");
+  return metrics;
+}
 
 /** Linha da view como chega do PostgREST (colunas da view são anuláveis). */
 export type SessionStatRow = {
@@ -58,35 +75,54 @@ export type SessionStatRow = {
   best_e1rm: number | null;
   volume: number | null;
   sets: number | null;
+  best_duration_s?: number | null;
+  best_distance_m?: number | null;
 };
 
+/** Um treino no gráfico. Métrica que o treino não registrou (ex.: carga na prancha) = `null`. */
 export type SessionPoint = {
   workoutId: string;
   day: string;
   /** Eixo X: dia em ms (UTC). */
   t: number;
-  weight: number;
-  e1rm: number;
-  volume: number;
+  weight: number | null;
+  e1rm: number | null;
+  volume: number | null;
+  /** Metros. */
+  distance: number | null;
+  /** Segundos. */
+  duration: number | null;
   sets: number;
 };
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-/** Linhas da view → pontos do gráfico, do mais antigo para o mais recente. Linhas incompletas saem. */
+const orNull = (v: number | null | undefined) => (v === null || v === undefined ? null : round2(Number(v)));
+
+/** Linhas da view → pontos do gráfico, do mais antigo para o mais recente. Linhas sem métrica saem. */
 export function toSessionSeries(rows: readonly SessionStatRow[]): SessionPoint[] {
   return rows
-    .filter((r) => r.workout_id && r.day && r.best_weight !== null)
+    .filter(
+      (r) =>
+        r.workout_id &&
+        r.day &&
+        (r.best_weight !== null || (r.best_duration_s ?? null) !== null || (r.best_distance_m ?? null) !== null),
+    )
     .sort((a, b) => a.day!.localeCompare(b.day!) || (a.started_at ?? "").localeCompare(b.started_at ?? ""))
-    .map((r) => ({
-      workoutId: r.workout_id!,
-      day: r.day!,
-      t: dayToTime(r.day!),
-      weight: round2(Number(r.best_weight)),
-      e1rm: round2(Number(r.best_e1rm ?? r.best_weight)),
-      volume: round2(Number(r.volume ?? 0)),
-      sets: r.sets ?? 0,
-    }));
+    .map((r) => {
+      const load = r.best_weight !== null;
+      return {
+        workoutId: r.workout_id!,
+        day: r.day!,
+        t: dayToTime(r.day!),
+        weight: orNull(r.best_weight),
+        e1rm: load ? round2(Number(r.best_e1rm ?? r.best_weight)) : null,
+        volume: load ? round2(Number(r.volume ?? 0)) : null,
+        distance: orNull(r.best_distance_m),
+        duration: orNull(r.best_duration_s),
+        sets: r.sets ?? 0,
+      };
+    });
 }
 
 // ── Peso corporal ─────────────────────────────────────────────────────────
@@ -119,7 +155,16 @@ export function movingAverage(points: readonly DayValue[], window: number): Aver
 
 // ── Histórico de séries e recordes por exercício ──────────────────────────
 
-export type ExerciseSetRow = { id: string; position: number; weight_kg: number; reps: number; pr_kinds: string[] };
+export type ExerciseSetRow = {
+  id: string;
+  position: number;
+  set_type?: string | null;
+  weight_kg: number | null;
+  reps: number | null;
+  distance_m?: number | null;
+  duration_s?: number | null;
+  pr_kinds: string[];
+};
 
 /** Ocorrência do exercício num treino (o mesmo treino pode ter o exercício duas vezes). */
 export type ExerciseOccurrenceRow = {
@@ -170,8 +215,10 @@ export type PrEntry = {
   setId: string;
   workoutId: string;
   day: string;
-  weightKg: number;
-  reps: number;
+  weightKg: number | null;
+  reps: number | null;
+  distanceM: number | null;
+  durationS: number | null;
   kinds: string[];
 };
 
@@ -184,8 +231,10 @@ export function listPrs(sessions: readonly ExerciseSession[]): PrEntry[] {
         setId: set.id,
         workoutId: s.workoutId,
         day: s.day,
-        weightKg: Number(set.weight_kg),
+        weightKg: set.weight_kg === null ? null : Number(set.weight_kg),
         reps: set.reps,
+        distanceM: set.distance_m == null ? null : Number(set.distance_m),
+        durationS: set.duration_s ?? null,
         kinds: set.pr_kinds,
       })),
   );

@@ -1,5 +1,7 @@
 /** Formatação pt-BR de números e datas (sem I/O). */
 
+import { FIELDS, type ExerciseType } from "@/lib/domain/exercise-types";
+
 const kgFormatter = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });
 const intFormatter = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
 
@@ -80,3 +82,73 @@ const compactFormatter = new Intl.NumberFormat("pt-BR", { notation: "compact", m
 
 /** Números de eixo: 1200 → "1,2 mil"; abaixo de mil, o número normal. */
 export const formatCompact = (n: number) => (Math.abs(n) >= 1000 ? compactFormatter.format(n) : formatKg(n));
+
+// ── Séries por tipo de exercício (duração, distância) ─────────────────────
+
+/** Segundos → "0:45", "12:00" ou "1:02:05". */
+export const formatSeconds = (s: number) => formatElapsed(s * 1000);
+
+/** Metros → "800 m" (abaixo de 1 km) ou "2,5 km". */
+export function formatDistance(m: number) {
+  if (m < 1000) return `${formatKg(Math.round(m * 10) / 10)} m`;
+  return `${formatKg(Math.round(m / 10) / 100)} km`;
+}
+
+/**
+ * Duração digitada → segundos inteiros ≥ 1. Aceita "45" (segundos), "1:30" (mm:ss)
+ * e "1:02:05" (h:mm:ss). Vazio ou inválido → null.
+ */
+export function parseDuration(text: string): number | null {
+  const clean = text.trim();
+  if (clean === "") return null;
+  const parts = clean.split(":");
+  if (parts.length > 3 || parts.some((p) => !/^\d+$/.test(p))) return null;
+  const nums = parts.map(Number);
+  // Depois do primeiro bloco, minutos e segundos vão até 59.
+  if (nums.slice(1).some((n) => n > 59)) return null;
+  const total = nums.reduce((acc, n) => acc * 60 + n, 0);
+  return total >= 1 ? total : null;
+}
+
+/** Segundos → texto do campo de duração ("1:30"). */
+export const durationInputValue = (s: number | null) => (s === null ? "" : formatSeconds(s));
+
+/** Distância digitada em km ("2,5") → metros (1 casa). Vazio, zero ou inválido → null. */
+export function parseKm(text: string): number | null {
+  const km = parseDecimal(text);
+  if (km === null || km <= 0) return null;
+  return Math.round(km * 10_000) / 10;
+}
+
+/** Metros → texto do campo em km ("2,5"). */
+export const kmInputValue = (m: number | null) => (m === null ? "" : String(Math.round(m) / 1000).replace(".", ","));
+
+export type SetValues = {
+  weightKg: number | null;
+  reps: number | null;
+  distanceM?: number | null;
+  durationS?: number | null;
+};
+
+/**
+ * Texto da série conforme o tipo do exercício: "60 kg × 10", "12 reps", "+10 kg × 8"
+ * (carga extra), "−20 kg × 8" (assistência), "1:00", "2 km · 12:00", "32 kg · 40 m".
+ * Com `unit: false`, a carga sai sem "kg" (coluna "anterior": "40 × 10").
+ */
+export function formatSet(set: SetValues, type: ExerciseType, { unit = true } = {}): string {
+  const kg = (w: number) => (unit ? `${formatKg(w)} kg` : formatKg(w));
+  const { weightKg: w, reps: r } = set;
+  if (FIELDS[type].includes("reps")) {
+    if (r === null) return w === null ? "—" : kg(w);
+    if (type === "weight_reps") return w === null ? `${r} reps` : `${kg(w)} × ${r}`;
+    if (w === null || w === 0) return `${r} reps`;
+    return `${type === "bodyweight_assisted_reps" ? "−" : "+"}${kg(w)} × ${r}`;
+  }
+  const parts: string[] = [];
+  for (const field of FIELDS[type]) {
+    if (field === "weight" && w !== null) parts.push(kg(w));
+    if (field === "distance" && set.distanceM != null) parts.push(formatDistance(Number(set.distanceM)));
+    if (field === "duration" && set.durationS != null) parts.push(formatSeconds(set.durationS));
+  }
+  return parts.length > 0 ? parts.join(" · ") : "—";
+}

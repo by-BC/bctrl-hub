@@ -1,7 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/lib/database.types";
+import { toExerciseType } from "@/lib/domain/exercise-types";
 import type { Bests } from "@/lib/domain/workout";
-import type { FinishWorkoutPayload } from "@/lib/schemas/workout";
+import type { FinishWorkoutInput } from "@/lib/schemas/workout";
 import { REST_DEFAULT } from "@/lib/schemas/routine";
 import { createClient } from "@/lib/supabase/client";
 import { DataError } from "@/features/routines/api";
@@ -39,28 +40,49 @@ export async function fetchExerciseHistory(
   const [last, bests] = await Promise.all([
     client
       .from("v_exercise_last_sets")
-      .select("exercise_id, position, weight_kg, reps")
+      .select("exercise_id, position, weight_kg, reps, distance_m, duration_s")
       .in("exercise_id", ids)
       .order("position"),
-    client.from("v_exercise_bests").select("exercise_id, max_weight, max_set_volume, max_e1rm").in("exercise_id", ids),
+    client
+      .from("v_exercise_bests")
+      .select("exercise_id, max_weight, max_set_volume, max_e1rm, max_duration_s, max_distance_m")
+      .in("exercise_id", ids),
   ]);
   if (last.error) fail(last.error, "Não foi possível carregar o treino anterior.");
   if (bests.error) fail(bests.error, "Não foi possível carregar os recordes.");
 
   for (const row of last.data) {
-    if (!row.exercise_id || row.weight_kg === null || row.reps === null) continue;
-    history.get(row.exercise_id)?.previous.push({ weightKg: Number(row.weight_kg), reps: row.reps });
+    if (!row.exercise_id) continue;
+    history.get(row.exercise_id)?.previous.push({
+      weightKg: toNumber(row.weight_kg),
+      reps: row.reps,
+      ...present({ distanceM: row.distance_m, durationS: row.duration_s }),
+    });
   }
   for (const row of bests.data) {
     const entry = row.exercise_id ? history.get(row.exercise_id) : undefined;
-    if (!entry || row.max_weight === null) continue;
-    entry.bests = {
-      maxWeight: Number(row.max_weight),
-      maxSetVolume: Number(row.max_set_volume ?? 0),
-      maxE1rm: Number(row.max_e1rm ?? 0),
-    };
+    if (!entry) continue;
+    const found = present({
+      maxWeight: row.max_weight,
+      maxSetVolume: row.max_set_volume,
+      maxE1rm: row.max_e1rm,
+      maxDurationS: row.max_duration_s,
+      maxDistanceM: row.max_distance_m,
+    });
+    entry.bests = Object.keys(found).length > 0 ? found : null;
   }
   return history;
+}
+
+const toNumber = (value: number | string | null) => (value === null ? null : Number(value));
+
+/** Só as métricas preenchidas, como número (numeric chega do PostgREST como número ou texto). */
+function present<K extends string>(values: Record<K, number | string | null>): Partial<Record<K, number>> {
+  const out: Partial<Record<K, number>> = {};
+  for (const key of Object.keys(values) as K[]) {
+    if (values[key] !== null) out[key] = Number(values[key]);
+  }
+  return out;
 }
 
 /** Tudo o que a sessão precisa da rotina, já com o anterior e os recordes (para seguir sem rede). */
@@ -69,7 +91,7 @@ export async function fetchSessionSeed(routineId: string | null, client: Client 
 
   const { data: routine, error } = await client
     .from("routines")
-    .select("id, name, rest_sec, routine_exercises(exercise_id, position, sets, rest_sec, notes, exercise:exercises(name, notes))")
+    .select("id, name, rest_sec, routine_exercises(exercise_id, position, sets, rest_sec, notes, exercise:exercises(name, notes, exercise_type))")
     .eq("id", routineId)
     .order("position", { referencedTable: "routine_exercises" })
     .maybeSingle();
@@ -83,6 +105,7 @@ export async function fetchSessionSeed(routineId: string | null, client: Client 
   const exercises: ExerciseSeed[] = routine.routine_exercises.map((item) => ({
     exerciseId: item.exercise_id,
     name: item.exercise?.name ?? "Exercício",
+    exerciseType: toExerciseType(item.exercise?.exercise_type),
     restSec: item.rest_sec ?? routine.rest_sec,
     notes: item.notes?.trim() || item.exercise?.notes?.trim() || null,
     sets: item.sets,
@@ -91,19 +114,36 @@ export async function fetchSessionSeed(routineId: string | null, client: Client 
   return { routineId: routine.id, routineName: routine.name, exercises };
 }
 
-/** Exercício adicionado durante a sessão. Sem rede, entra sem anterior nem recordes. */
+/**
+ * Exercício adicionado durante a sessão. Sem rede, entra sem anterior nem recordes
+ * (e, se o seletor não trouxe o tipo, como carga × reps).
+ */
 export async function fetchExerciseSeed(
-  exercise: { id: string; name: string },
+  exercise: { id: string; name: string; exercise_type?: string | null },
   restSec = REST_DEFAULT,
   client: Client = db(),
 ): Promise<ExerciseSeed> {
   let history: ExerciseHistory = { previous: [], bests: null };
+  let type = exercise.exercise_type;
   try {
-    history = (await fetchExerciseHistory([exercise.id], client)).get(exercise.id) ?? history;
+    const [found, row] = await Promise.all([
+      fetchExerciseHistory([exercise.id], client),
+      type ? null : client.from("exercises").select("exercise_type").eq("id", exercise.id).maybeSingle(),
+    ]);
+    history = found.get(exercise.id) ?? history;
+    type ??= row?.data?.exercise_type;
   } catch {
     // Offline na academia: segue sem o histórico.
   }
-  return { exerciseId: exercise.id, name: exercise.name, restSec, notes: null, sets: 3, ...history };
+  return {
+    exerciseId: exercise.id,
+    name: exercise.name,
+    exerciseType: toExerciseType(type),
+    restSec,
+    notes: null,
+    sets: 3,
+    ...history,
+  };
 }
 
 /** Rotina da última sessão finalizada (base do treino sugerido). */
@@ -123,7 +163,7 @@ export async function fetchLastFinishedRoutineId(client: Client = db()): Promise
  * Grava o treino (`finish_workout`, idempotente pelo id).
  * Falha de rede (sem código) ou 5xx vira `SyncError` com reenvio automático; erro do banco não.
  */
-export async function sendWorkout(payload: FinishWorkoutPayload, client: Client = db()): Promise<string> {
+export async function sendWorkout(payload: FinishWorkoutInput, client: Client = db()): Promise<string> {
   let result: Awaited<ReturnType<typeof callFinish>>;
   try {
     result = await callFinish(client, payload);
@@ -144,6 +184,6 @@ export async function sendWorkout(payload: FinishWorkoutPayload, client: Client 
   return data ?? payload.id;
 }
 
-function callFinish(client: Client, payload: FinishWorkoutPayload) {
+function callFinish(client: Client, payload: FinishWorkoutInput) {
   return client.rpc("finish_workout", { payload: payload as unknown as Json });
 }

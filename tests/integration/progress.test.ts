@@ -11,7 +11,7 @@ import {
 import { sendWorkout } from "@/features/workout-session/api";
 import type { Database } from "@/lib/database.types";
 import { groupExerciseHistory, listPrs, toSessionSeries } from "@/lib/domain/stats";
-import { finishWorkoutSchema, type FinishWorkoutPayload, type PrKind } from "@/lib/schemas/workout";
+import { finishWorkoutSchema, type FinishWorkoutInput, type FinishWorkoutPayload, type PrKind } from "@/lib/schemas/workout";
 import { createTestUser, deleteTestUser, type TestUser } from "../support/test-users";
 
 async function exec(op: PromiseLike<{ error: unknown }>) {
@@ -28,7 +28,7 @@ describe("evolução: views → série do gráfico, e peso corporal", () => {
 
   /** Treino com séries de supino (e remada no 1º), gravado pela RPC de verdade. */
   function payload(i: number, day: string, sets: [number, number, PrKind[]?][]): FinishWorkoutPayload {
-    const exercises: FinishWorkoutPayload["exercises"] = [
+    const exercises: FinishWorkoutInput["exercises"] = [
       {
         id: crypto.randomUUID(),
         exercise_id: supino,
@@ -90,6 +90,7 @@ describe("evolução: views → série do gráfico, e peso corporal", () => {
       id: supino,
       name: "Supino reto",
       muscle_group: "Peito",
+      exercise_type: "weight_reps",
       bests: { maxWeight: 50, maxSetVolume: 450, maxE1rm: 60 },
     });
 

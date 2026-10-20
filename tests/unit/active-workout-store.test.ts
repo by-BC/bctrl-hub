@@ -3,6 +3,7 @@ import {
   ACTIVE_WORKOUT_STORAGE_KEY,
   createActiveWorkoutStore,
   NothingToFinishError,
+  previousFor,
   SyncError,
   toFinishPayload,
   type SessionSeed,
@@ -225,8 +226,24 @@ describe("payload de finish_workout", () => {
     expect(payload.exercises).toHaveLength(1);
     expect(payload.exercises[0]).toMatchObject({ id: w.exercises[0].id, exercise_id: supino });
     expect(payload.exercises[0].sets).toEqual([
-      { id: w.exercises[0].sets[0].id, weight_kg: 55, reps: 10, pr_kinds: ["weight", "volume", "e1rm"] },
-      { id: w.exercises[0].sets[1].id, weight_kg: 42.5, reps: 8, pr_kinds: [] },
+      {
+        id: w.exercises[0].sets[0].id,
+        set_type: "normal",
+        weight_kg: 55,
+        reps: 10,
+        distance_m: null,
+        duration_s: null,
+        pr_kinds: ["weight", "volume", "e1rm"],
+      },
+      {
+        id: w.exercises[0].sets[1].id,
+        set_type: "normal",
+        weight_kg: 42.5,
+        reps: 8,
+        distance_m: null,
+        duration_s: null,
+        pr_kinds: [],
+      },
     ]);
   });
 
@@ -313,5 +330,152 @@ describe("finalizar e pendingSync", () => {
     resolve(store.getState().workout!.id);
     await Promise.all([a, b]);
     expect(send).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── v2: campos por tipo de exercício e aquecimento ────────────────────────
+
+describe("useActiveWorkout: tipos de exercício", () => {
+  const prancha = crypto.randomUUID();
+  const corrida = crypto.randomUUID();
+
+  function typedSeed(): SessionSeed {
+    return {
+      routineId: null,
+      routineName: null,
+      exercises: [
+        {
+          exerciseId: prancha,
+          name: "Prancha",
+          exerciseType: "duration",
+          restSec: 60,
+          notes: null,
+          sets: 2,
+          previous: [{ weightKg: null, reps: null, durationS: 50 }],
+          bests: { maxDurationS: 50 },
+        },
+        {
+          exerciseId: corrida,
+          name: "Corrida",
+          exerciseType: "distance_duration",
+          restSec: 0,
+          notes: null,
+          sets: 1,
+          previous: [],
+          bests: null,
+        },
+      ],
+    };
+  }
+
+  it("guarda o tipo do exercício; sem tipo no seed, carga × reps", async () => {
+    const store = await freshStore();
+    store.getState().start(typedSeed(), T0);
+    expect(store.getState().workout!.exercises.map((e) => e.exerciseType)).toEqual(["duration", "distance_duration"]);
+    store.getState().discard();
+    store.getState().start(seed(), T0);
+    expect(store.getState().workout!.exercises[0].exerciseType).toBe("weight_reps");
+    expect(store.getState().workout!.exercises[0].sets[0]).toMatchObject({ setType: "normal", durationS: null, distanceM: null });
+  });
+
+  it("prancha: conclui pela duração (ou pelo anterior) e detecta PR de duração", async () => {
+    const store = await freshStore();
+    store.getState().start(typedSeed(), T0);
+    store.getState().updateSet(0, 0, { durationS: 60 });
+    expect(store.getState().completeSet(0, 0, T0.getTime())).toBe(true);
+    expect(store.getState().workout!.exercises[0].sets[0].prs).toEqual(["duration"]);
+
+    // Sem anterior para a 2ª série e sem valor: não conclui.
+    expect(store.getState().completeSet(0, 1, T0.getTime())).toBe(false);
+  });
+
+  it("concluir sem digitar usa o anterior também na duração", async () => {
+    const store = await freshStore();
+    store.getState().start(typedSeed(), T0);
+    expect(store.getState().completeSet(0, 0, T0.getTime())).toBe(true);
+    expect(store.getState().workout!.exercises[0].sets[0]).toMatchObject({ durationS: 50, done: true, prs: [] });
+  });
+
+  it("corrida: distância e duração vão para o payload; campos de fora do tipo, não", async () => {
+    const store = await freshStore();
+    store.getState().start(typedSeed(), T0);
+    store.getState().updateSet(1, 0, { distanceM: 2000, durationS: 720, reps: 3 });
+    store.getState().completeSet(1, 0, T0.getTime());
+    store.getState().updateSet(0, 0, { durationS: 60 });
+    store.getState().completeSet(0, 0, T0.getTime());
+
+    const payload = toFinishPayload(store.getState().workout!, new Date(T0.getTime() + 30 * 60_000).toISOString());
+    const id = expect.any(String);
+    expect(payload.exercises.map((e) => e.sets)).toEqual([
+      [{ id, set_type: "normal", weight_kg: null, reps: null, distance_m: null, duration_s: 60, pr_kinds: ["duration"] }],
+      [{ id, set_type: "normal", weight_kg: null, reps: null, distance_m: 2000, duration_s: 720, pr_kinds: [] }],
+    ]);
+  });
+
+  it("marcar como aquecimento: some do PR e do volume, vai no payload como warmup", async () => {
+    const store = await freshStore();
+    store.getState().start(seed(), T0);
+    store.getState().updateSet(0, 0, { weightKg: 60, reps: 10 });
+    store.getState().completeSet(0, 0, T0.getTime());
+    expect(store.getState().workout!.exercises[0].sets[0].prs).toEqual(["weight", "volume", "e1rm"]);
+
+    store.getState().toggleWarmup(0, 0);
+    const w = store.getState().workout!;
+    expect(w.exercises[0].sets[0]).toMatchObject({ setType: "warmup", prs: [] });
+    expect(toFinishPayload(w, T0.toISOString()).exercises[0].sets[0]).toMatchObject({ set_type: "warmup", pr_kinds: [] });
+
+    store.getState().toggleWarmup(0, 0);
+    expect(store.getState().workout!.exercises[0].sets[0]).toMatchObject({ setType: "normal", prs: ["weight", "volume", "e1rm"] });
+  });
+
+  it("o anterior acompanha as séries de trabalho: aquecimento não desloca a coluna", async () => {
+    const store = await freshStore();
+    store.getState().start(seed(), T0);
+    store.getState().toggleWarmup(0, 0);
+    const exercise = store.getState().workout!.exercises[0];
+    expect(previousFor(exercise, 0)).toBeUndefined();
+    expect(previousFor(exercise, 1)).toEqual({ weightKg: 50, reps: 10 });
+    expect(previousFor(exercise, 2)).toEqual({ weightKg: 50, reps: 9 });
+
+    // Aquecimento concluído sem digitar não pega o anterior das séries de trabalho.
+    expect(store.getState().completeSet(0, 0, T0.getTime())).toBe(false);
+    expect(store.getState().completeSet(0, 1, T0.getTime())).toBe(true);
+    expect(store.getState().workout!.exercises[0].sets[1]).toMatchObject({ weightKg: 50, reps: 10 });
+  });
+
+  it("sessão salva na v1 (sem tipos) é migrada ao reidratar", async () => {
+    const v1 = {
+      state: {
+        workout: {
+          id: crypto.randomUUID(),
+          routineId: null,
+          routineName: null,
+          startedAt: T0.toISOString(),
+          exercises: [
+            {
+              id: crypto.randomUUID(),
+              exerciseId: supino,
+              name: "Supino reto",
+              restSec: 90,
+              notes: null,
+              previous: [{ weightKg: 50, reps: 10 }],
+              bests: { maxWeight: 50, maxSetVolume: 500, maxE1rm: 66.67 },
+              sets: [{ id: crypto.randomUUID(), weightKg: 55, reps: 10, done: true, prs: ["weight"] }],
+            },
+          ],
+          rest: null,
+          status: "active",
+          finishedAt: null,
+          sync: null,
+        },
+      },
+      version: 1,
+    };
+    localStorage.setItem(ACTIVE_WORKOUT_STORAGE_KEY, JSON.stringify(v1));
+    const store = await freshStore();
+    const e = store.getState().workout!.exercises[0];
+    expect(e.exerciseType).toBe("weight_reps");
+    expect(e.sets[0]).toMatchObject({ setType: "normal", distanceM: null, durationS: null, weightKg: 55 });
+    expect(toFinishPayload(store.getState().workout!, T0.toISOString()).exercises[0].sets).toHaveLength(1);
   });
 });

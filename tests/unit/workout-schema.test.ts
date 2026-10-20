@@ -86,3 +86,42 @@ describe("finishWorkoutSchema", () => {
     expect(finishWorkoutSchema.safeParse({ ...valid(), day: "13/10/2026" }).success).toBe(false);
   });
 });
+
+describe("finishWorkoutSchema v2 (tipos de série)", () => {
+  function withSets(sets: Record<string, unknown>[]) {
+    const p = valid();
+    (p.exercises[0] as { sets: unknown[] }).sets = sets;
+    return p;
+  }
+
+  it("payload antigo da v1 continua válido e vira série normal", () => {
+    const parsed = finishWorkoutSchema.parse(valid());
+    expect(parsed.exercises[0].sets[0]).toMatchObject({ set_type: "normal", weight_kg: 40, reps: 12 });
+  });
+
+  it("aceita duração, distância e aquecimento sem carga nem reps", () => {
+    const parsed = finishWorkoutSchema.parse(
+      withSets([
+        { duration_s: 60 },
+        { distance_m: 2000, duration_s: 720, weight_kg: null, reps: null },
+        { set_type: "warmup", weight_kg: 20, reps: 15 },
+        { reps: 12, pr_kinds: [] },
+        { duration_s: 90, pr_kinds: ["duration"] },
+        { distance_m: 2500.5, pr_kinds: ["distance"] },
+      ]),
+    );
+    expect(parsed.exercises[0].sets.map((s) => s.set_type)).toEqual(["normal", "normal", "warmup", "normal", "normal", "normal"]);
+  });
+
+  it("rejeita série sem nenhuma métrica", () => {
+    expect(finishWorkoutSchema.safeParse(withSets([{ set_type: "warmup" }])).success).toBe(false);
+    expect(finishWorkoutSchema.safeParse(withSets([{ weight_kg: null, reps: null }])).success).toBe(false);
+  });
+
+  it("rejeita tipo de série desconhecido e duração/distância inválidas", () => {
+    expect(finishWorkoutSchema.safeParse(withSets([{ set_type: "pirâmide", reps: 10 }])).success).toBe(false);
+    expect(finishWorkoutSchema.safeParse(withSets([{ duration_s: -1 }])).success).toBe(false);
+    expect(finishWorkoutSchema.safeParse(withSets([{ duration_s: 1.5 }])).success).toBe(false);
+    expect(finishWorkoutSchema.safeParse(withSets([{ distance_m: -10 }])).success).toBe(false);
+  });
+});

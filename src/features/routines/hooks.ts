@@ -14,6 +14,7 @@ import {
   fetchRoutine,
   fetchRoutineWorkoutCount,
   fetchRoutines,
+  NEW_EXERCISE_DEFAULTS,
   routineKeys,
   type Exercise,
   type ExerciseSummary,
@@ -328,7 +329,12 @@ export function useCreateExercise() {
       assertUniqueName(qc, row.name);
       await qc.cancelQueries({ queryKey: exerciseKeys.all });
       const previous = qc.getQueryData<Exercise[]>(exerciseKeys.all);
-      const optimistic: Exercise = { ...row, user_id: "", notes: null, created_at: new Date().toISOString() };
+      const optimistic: Exercise = {
+        ...NEW_EXERCISE_DEFAULTS,
+        ...row,
+        user_id: "",
+        created_at: new Date().toISOString(),
+      };
       qc.setQueryData<Exercise[]>(exerciseKeys.all, (old) => (old ? [...old, optimistic] : old));
       return { previous };
     },
