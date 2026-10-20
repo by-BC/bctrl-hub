@@ -200,3 +200,58 @@ export async function seedSystemHabits(user: DisposableUser): Promise<SystemHabi
   ]);
   return ids;
 }
+
+export type CatalogSeed = { routine: string; exercises: { supinoHalter: string; remada: string } };
+
+/** Links de mídia no formato do CDN do Hevy (os testes interceptam esses hosts). */
+export const CATALOG_MEDIA = {
+  thumb: (slug: string) => `https://pump-app.s3.eu-west-2.amazonaws.com/exercise-thumbnails/e2e-${slug}.jpg`,
+  video: (slug: string) => `https://d2l9nsnmtah87f.cloudfront.net/exercise-assets/e2e-${slug}.mp4`,
+};
+
+/**
+ * v2: catálogo com mídia por link, instruções e filtros. Peito + Halter casa só 2 exercícios;
+ * 45 puxadas de enchimento passam do primeiro bloco da lista (40) para testar "Mostrar mais".
+ * A rotina tem a remada, que tem instruções, para a sessão mostrar o bloco recolhido.
+ */
+export async function seedCatalog(user: DisposableUser): Promise<CatalogSeed> {
+  const insert = inserter(user);
+  const id = () => crypto.randomUUID();
+  const ex = { supinoHalter: id(), remada: id() };
+  const routine = id();
+  const media = (slug: string) => ({
+    thumbnail_url: CATALOG_MEDIA.thumb(slug),
+    media_url: CATALOG_MEDIA.video(slug),
+    source: "hevy",
+  });
+  // Todas as linhas com as mesmas colunas: o insert em lote não pode deixar `source` nulo.
+  const row = (rowId: string, name: string, muscle_group: string, equipment: string, extra: Record<string, unknown> = {}) => ({
+    id: rowId,
+    name,
+    muscle_group,
+    equipment,
+    secondary_muscles: [],
+    thumbnail_url: null,
+    media_url: null,
+    instructions: null,
+    source: "bctrl",
+    ...extra,
+  });
+  await insert("exercises", [
+    row(ex.supinoHalter, "Supino Catálogo (Halter)", "Peito", "Halter", {
+      ...media("supino"),
+      secondary_muscles: ["Tríceps", "Ombros"],
+      instructions: "Posição: deitado no banco.\nExecução: empurre os halteres.\nRespiração: solte o ar ao subir.",
+    }),
+    row(id(), "Crucifixo Catálogo (Halter)", "Peito", "Halter", media("crucifixo")),
+    row(id(), "Supino Catálogo (Barra)", "Peito", "Barra", media("supino-barra")),
+    row(ex.remada, "Remada Catálogo (Halter)", "Costas", "Halter", {
+      ...media("remada"),
+      instructions: "Posição: tronco inclinado.\nExecução: puxe os halteres até a cintura.",
+    }),
+    ...Array.from({ length: 45 }, (_, i) => row(id(), `Puxada Enchimento ${String(i + 1).padStart(2, "0")}`, "Costas", "Máquina")),
+  ]);
+  await insert("routines", [{ id: routine, name: "Rotina Catálogo", position: 1, rest_sec: 0 }]);
+  await insert("routine_exercises", [{ routine_id: routine, exercise_id: ex.remada, position: 1, sets: 1, rest_sec: 0 }]);
+  return { routine, exercises: ex };
+}

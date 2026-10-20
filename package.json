@@ -15,7 +15,8 @@
     "db:start": "supabase start -x studio,imgproxy,vector,logflare,edge-runtime,realtime,storage-api,postgres-meta,supavisor,mailpit",
     "db:types": "supabase gen types typescript --local > src/lib/database.types.ts",
     "test:all": "npm run typecheck && npm run lint && npm run test && npm run test:integration && npm run test:e2e",
-    "import:hevy": "tsx scripts/hevy/run.ts"
+    "import:hevy": "tsx scripts/hevy/run.ts",
+    "instructions:hevy": "tsx scripts/hevy/instructions-run.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

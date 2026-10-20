@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExercisePicker } from "@/features/routines/components/exercise-picker";
 import { BackLink } from "@/features/routines/components/back-link";
+import { useCatalogExercise } from "@/features/exercises/hooks";
 import { FIELDS, type ExerciseType } from "@/lib/domain/exercise-types";
 import type { SessionSummary } from "@/lib/domain/workout";
 import { formatElapsed } from "@/lib/format";
@@ -162,6 +163,8 @@ function ExerciseCard({ exercise, exIdx }: { exercise: SessionExercise; exIdx: n
   const [removeOpen, setRemoveOpen] = useState(false);
   const actions = useActiveWorkout.getState();
   const hasDone = exercise.sets.some((s) => s.done);
+  // Instruções próprias (RF02b) vêm do catálogo em cache; a sessão salva no aparelho não muda.
+  const instructions = useCatalogExercise(exercise.exerciseId)?.instructions;
 
   return (
     <li>
@@ -179,15 +182,8 @@ function ExerciseCard({ exercise, exIdx }: { exercise: SessionExercise; exIdx: n
           </Button>
         </header>
 
-        {exercise.notes && (
-          <details className="group mb-2 rounded-lg bg-muted/60 text-sm">
-            <summary className="flex min-h-11 cursor-pointer list-none items-center px-3 font-medium select-none [&::-webkit-details-marker]:hidden">
-              <span className="flex-1">Observações técnicas</span>
-              <Plus aria-hidden className="size-4 transition-transform group-open:rotate-45" />
-            </summary>
-            <p className="px-3 pb-3 whitespace-pre-line text-muted-foreground">{exercise.notes}</p>
-          </details>
-        )}
+        {exercise.notes && <Collapsed title="Observações técnicas" text={exercise.notes} />}
+        {instructions && <Collapsed title="Como executar" text={instructions} testId="session-instructions" />}
 
         <div
           className={`${setGrid(exercise.exerciseType)} px-1 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase`}
@@ -252,6 +248,19 @@ function ExerciseCard({ exercise, exIdx }: { exercise: SessionExercise; exIdx: n
         onConfirm={() => actions.removeExercise(exIdx)}
       />
     </li>
+  );
+}
+
+/** Bloco recolhido (aberto por toque): observações da rotina e instruções do exercício. */
+function Collapsed({ title, text, testId }: { title: string; text: string; testId?: string }) {
+  return (
+    <details data-testid={testId} className="group mb-2 rounded-lg bg-muted/60 text-sm">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center px-3 font-medium select-none [&::-webkit-details-marker]:hidden">
+        <span className="flex-1">{title}</span>
+        <Plus aria-hidden className="size-4 transition-transform group-open:rotate-45" />
+      </summary>
+      <p className="px-3 pb-3 whitespace-pre-line text-muted-foreground">{text}</p>
+    </details>
   );
 }
 

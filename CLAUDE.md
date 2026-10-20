@@ -21,6 +21,7 @@ App pessoal (usuário único) de treino, alimentação, hábitos e tarefas. Docs
 | `npm run test:e2e` | Playwright; sobe o app na porta 3100 com o Supabase local |
 | `npm run test:all` | typecheck + lint + unidade + integração + E2E (inclui axe e fila offline) |
 | `npm run db:types` | Regenera `src/lib/database.types.ts` |
+| `npm run instructions:hevy` | Valida `scripts/hevy/instructions/*.json` (fora do Git) e gera `supabase/instructions.private.sql` |
 | `npm run import:hevy` | Importação única do Hevy: dry-run gera `scripts/hevy/out/report.md`; `-- --write` gera `supabase/import.private.sql` (ver `scripts/hevy/run.ts`) |
 
 `.env.local` (ignorado) aponta para o Supabase **local**; valores em `npx supabase status -o env`. Modelo em `.env.example`.
