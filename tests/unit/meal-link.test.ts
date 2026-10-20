@@ -144,17 +144,42 @@ describe("seed, plano e SQL", () => {
     ]);
     const sql = buildLinkSql({ ownerEmail: "dono@exemplo.com", plan });
     expect(sql).toContain("where email = 'dono@exemplo.com'");
-    expect(sql).toContain("('Arroz', '100 g', 3, 100, false)");
-    expect(sql).toContain("('Salada', 'à vontade', null, 0, true)");
+    expect(sql).toContain("('Arroz', '100 g', 3::int, null::text, 100::numeric, false)");
+    expect(sql).toContain("('Salada', 'à vontade', null::int, null::text, 0::numeric, true)");
+    expect(sql).not.toContain("insert into public.foods"); // sem alimentos próprios
     expect(sql).not.toContain("ervas"); // pendente não entra no SQL
     expect(sql).toContain("when t.e ? 'food_id' or t.e ? 'free' or m.name is null then t.e");
     expect(buildLinkSql({ ownerEmail: "dono@exemplo.com", plan })).toBe(sql);
     expect(() => buildLinkSql({ ownerEmail: "x' or 1=1 --", plan })).toThrow();
   });
 
+  it("alimentos próprios: override own:<chave>, SQL com upsert determinístico e relatório", () => {
+    const own = [
+      { key: "molho-ervas", name: "Molho d'ervas caseiro", kcal: 80, protein_g: 1, carbs_g: 4, fat_g: 6.5, check: true },
+    ];
+    const plan = planLinks(options, TACO, { "Molho d'ervas": "own:molho-ervas" }, own);
+    const molho = plan.unique.find((l) => l.name === "Molho d'ervas")!;
+    expect(molho).toMatchObject({ status: "auto", via: "override", grams: 10, food: { taco_id: null, own_key: "molho-ervas", kcal: 80 } });
+    const sql = buildLinkSql({ ownerEmail: "dono@exemplo.com", plan });
+    expect(sql).toContain("md5(v_uid::text || ':food:' || v.key)::uuid, v_uid, v.name, 'Próprio'");
+    expect(sql).toContain("('molho-ervas', 'Molho d''ervas caseiro', 80, 1, 4, 6.5)");
+    expect(sql).toContain("('Molho d''ervas', '10 g', null::int, 'molho-ervas'::text, 10::numeric, false)");
+    expect(sql).toContain("is distinct from (excluded.name");
+    const md = renderLinkReport(plan, { generatedAt: "2026-10-20", source: "plano.json" });
+    expect(md).toContain("| Molho d'ervas caseiro | 80 | 1 | 4 | 6,5 | **conferir** |");
+    expect(md).toContain("**0 pendentes**");
+    expect(md).toContain("| Almoço | 1. Prato | 136 |"); // arroz 128,3 + molho 8
+  });
+
+  it("override para alimento próprio inexistente fica pendente; chave inválida é recusada", () => {
+    expect(linkItem({ name: "X", qty: "10 g" }, TACO, { X: "own:nao-existe" })).toMatchObject({ status: "pending" });
+    expect(() => planLinks(options, TACO, {}, [{ key: "Chave Ruim", name: "x", kcal: 1, protein_g: 0, carbs_g: 0, fat_g: 0 }])).toThrow();
+    expect(() => planLinks(options, TACO, {}, [{ key: "ok", name: "x", kcal: -1, protein_g: 0, carbs_g: 0, fat_g: 0 }])).toThrow();
+  });
+
   it("relatório com resumo, pendentes e totais por opção", () => {
     const md = renderLinkReport(planLinks(options, TACO), { generatedAt: "2026-10-19", source: "plano.json" });
-    expect(md).toContain("**1 automáticos**");
+    expect(md).toContain("**1 vinculados**");
     expect(md).toContain("**1 pendentes**");
     expect(md).toContain("| Almoço | 1. Prato | 128 |");
   });

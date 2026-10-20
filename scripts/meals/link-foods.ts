@@ -9,7 +9,10 @@
  *                      ([{ "meal", "position", "title", "items": [{ "name", "qty" }] }])
  *   --email <e-mail>   dono no banco (padrão: MEALS_OWNER_EMAIL ou o e-mail do seed)
  *
- * Entradas locais (fora do Git): o seed privado e scripts/meals/data/overrides.json (opcional).
+ * Entradas locais (fora do Git): o seed privado, scripts/meals/data/overrides.json (opcional;
+ * `{ "nome do item": idTaco | "free" | "pending" | "own:<chave>" }`) e
+ * scripts/meals/data/own-foods.json (opcional; alimentos próprios do dono, por 100 g:
+ * `[{ "key", "name", "kcal", "protein_g", "carbs_g", "fat_g", "note"?, "check"? }]`).
  * A TACO vem da migration versionada (supabase/migrations/*_foods_taco.sql).
  * Aplicar no remoto só depois da revisão: npx supabase db query --linked -f supabase/meal-items.private.sql
  */
@@ -17,7 +20,15 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import { parseTacoMigration } from "../taco/taco";
-import { buildLinkSql, parseSeedMealOptions, parseSeedOwnerEmail, planLinks, type Overrides, type SeedOption } from "./link";
+import {
+  buildLinkSql,
+  parseSeedMealOptions,
+  parseSeedOwnerEmail,
+  planLinks,
+  type OwnFood,
+  type Overrides,
+  type SeedOption,
+} from "./link";
 import { renderLinkReport } from "./report";
 
 const ROOT = process.cwd();
@@ -25,6 +36,7 @@ const path = (...parts: string[]) => resolve(ROOT, ...parts);
 const OUT = path("scripts/meals/out");
 const SQL_OUT = path("supabase/meal-items.private.sql");
 const OVERRIDES = path("scripts/meals/data/overrides.json");
+const OWN_FOODS = path("scripts/meals/data/own-foods.json");
 
 function parseArgs(argv: string[]) {
   const args = { write: false, plan: "supabase/seed.private.sql", email: undefined as string | undefined };
@@ -57,7 +69,8 @@ function main() {
   if (options.length === 0) throw new Error(`Nenhuma opção de refeição reconhecida em ${relative(ROOT, planFile)}.`);
 
   const overrides: Overrides = existsSync(OVERRIDES) ? JSON.parse(readFileSync(OVERRIDES, "utf8")) : {};
-  const plan = planLinks(options, readTaco(), overrides);
+  const ownFoods: OwnFood[] = existsSync(OWN_FOODS) ? JSON.parse(readFileSync(OWN_FOODS, "utf8")) : [];
+  const plan = planLinks(options, readTaco(), overrides, ownFoods);
 
   let sqlPath: string | undefined;
   if (args.write) {
@@ -77,7 +90,7 @@ function main() {
   const count = (s: string) => plan.unique.filter((l) => l.status === s).length;
   console.log(
     `${plan.options.length} opções, ${plan.unique.length} itens distintos: ${count("auto")} automáticos, ` +
-      `${count("free")} livres, ${count("pending")} pendentes.`,
+      `${count("free")} livres, ${count("pending")} pendentes; ${ownFoods.length} alimentos próprios.`,
   );
   console.log(`Relatório: ${relative(ROOT, report)}${sqlPath ? ` · SQL: ${sqlPath}` : " (dry-run, sem SQL)"}`);
 }

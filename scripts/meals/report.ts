@@ -11,6 +11,7 @@ const cell = (text: string | number | null | undefined) => String(text ?? "—")
 const row = (...cells: (string | number | null | undefined)[]) => `| ${cells.map(cell).join(" | ")} |`;
 const fmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
 const kcalOf = (l: ItemLink) => (l.food && l.grams !== null ? Math.round((l.food.kcal * l.grams) / 100) : null);
+const foodLabel = (l: ItemLink) => (l.food ? (l.food.taco_id === null ? `${l.food.name} (próprio)` : l.food.name) : null);
 const tacoLabel = (f: TacoFood) => `${f.taco_id} · ${f.name} (${fmt(f.kcal)} kcal/100 g)`;
 
 export function renderLinkReport(plan: LinkPlan, meta: { generatedAt: string; source: string; sqlPath?: string }): string {
@@ -19,7 +20,8 @@ export function renderLinkReport(plan: LinkPlan, meta: { generatedAt: string; so
   const auto = plan.unique.filter((l) => l.status === "auto");
   const free = plan.unique.filter((l) => l.status === "free");
   const pending = plan.unique.filter((l) => l.status === "pending");
-  const approx = auto.filter((l) => l.note);
+  const approx = auto.filter((l) => l.note && l.food?.taco_id !== null);
+  const checks = plan.ownFoods.filter((f) => f.check);
 
   push(
     "# Vínculo do plano alimentar com a TACO",
@@ -29,16 +31,33 @@ export function renderLinkReport(plan: LinkPlan, meta: { generatedAt: string; so
     "## Resumo",
     "",
     `- ${plan.options.length} opções, ${plan.unique.length} itens distintos (nome + quantidade).`,
-    `- **${auto.length} automáticos** (${approx.length} com aproximação para conferir).`,
+    `- **${auto.length} vinculados** (${auto.filter((l) => l.food?.taco_id === null).length} a alimentos próprios; ${approx.length} com aproximação da TACO).`,
+    `- **${plan.ownFoods.length} alimentos próprios** a criar (${checks.length} marcados "conferir").`,
     `- **${free.length} livres** (à vontade ou sem calorias: 0 kcal).`,
     `- **${pending.length} pendentes** (sem vínculo: ficam com o aviso "sem valor" até o dono decidir).`,
-    meta.sqlPath ? `- SQL: \`${meta.sqlPath}\` (só automáticos e livres).` : "- Dry-run: nenhum SQL gerado.",
+    meta.sqlPath ? `- SQL: \`${meta.sqlPath}\` (alimentos próprios, vínculos e livres).` : "- Dry-run: nenhum SQL gerado.",
     "",
-    "## Automáticos",
+  );
+
+  if (plan.ownFoods.length > 0) {
+    push(
+      "## Alimentos próprios (por 100 g ou 100 ml)",
+      "",
+      row("Alimento", "kcal", "P (g)", "C (g)", "G (g)", "Observação"),
+      row("---", "---:", "---:", "---:", "---:", "---"),
+      ...plan.ownFoods.map((f) =>
+        row(f.name, fmt(f.kcal), fmt(f.protein_g), fmt(f.carbs_g), fmt(f.fat_g), [f.check ? "**conferir**" : "", f.note ?? ""].filter(Boolean).join(" — ") || null),
+      ),
+      "",
+    );
+  }
+
+  push(
+    "## Vinculados",
     "",
-    row("Item", "Quantidade", "TACO", "Gramas", "kcal", "Via"),
+    row("Item", "Quantidade", "Alimento", "Gramas", "kcal", "Via"),
     row("---", "---", "---", "---:", "---:", "---"),
-    ...auto.map((l) => row(l.name, l.qty, l.food?.name, l.grams, kcalOf(l), l.via)),
+    ...auto.map((l) => row(l.name, l.qty, foodLabel(l), l.grams, kcalOf(l), l.via)),
     "",
   );
 
@@ -73,7 +92,7 @@ export function renderLinkReport(plan: LinkPlan, meta: { generatedAt: string; so
     links.map((l) => {
       if (l.status === "free") return { name: l.name, qty: l.qty, free: true };
       if (l.status !== "auto" || !l.food) return { name: l.name, qty: l.qty, free: false };
-      const id = `taco-${l.food.taco_id}`;
+      const id = l.food.taco_id === null ? `own-${l.food.own_key}` : `taco-${l.food.taco_id}`;
       foods.set(id, { id, ...l.food });
       return { name: l.name, qty: l.qty, food_id: id, grams: l.grams };
     });

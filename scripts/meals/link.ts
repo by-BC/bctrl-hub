@@ -155,7 +155,43 @@ export function nameCandidates(name: string): string[] {
   return [...new Set([full, first, plain].filter(Boolean))];
 }
 
-export type Overrides = Record<string, number | "free" | "pending">;
+/**
+ * Decisão do dono por nome de item: id da TACO, "free", "pending" ou `own:<chave>` (alimento
+ * próprio definido em `scripts/meals/data/own-foods.json`, fora do Git).
+ */
+export type Overrides = Record<string, number | "free" | "pending" | `own:${string}`>;
+
+/** Alimento próprio do dono (valores por 100 g ou 100 ml), criado pelo SQL com id determinístico. */
+export type OwnFood = {
+  key: string;
+  name: string;
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  /** Observação para o relatório (fonte do valor, ressalvas). */
+  note?: string;
+  /** Valor proposto sem referência do dono: aparece como "conferir". */
+  check?: boolean;
+};
+
+/** Alimento do vínculo: da TACO (`taco_id`) ou próprio (`own_key`). */
+export type LinkedFood = Omit<TacoFood, "taco_id"> & { taco_id: number | null; own_key?: string };
+
+const OWN_KEY_RE = /^[a-z0-9][a-z0-9-]{0,59}$/;
+
+export function validateOwnFoods(foods: readonly OwnFood[]): void {
+  const seen = new Set<string>();
+  for (const f of foods) {
+    if (!OWN_KEY_RE.test(f.key)) throw new Error(`Alimento próprio com chave inválida: ${f.key}`);
+    if (seen.has(f.key)) throw new Error(`Alimento próprio repetido: ${f.key}`);
+    seen.add(f.key);
+    if (!f.name?.trim() || f.name.length > 200) throw new Error(`Alimento próprio sem nome: ${f.key}`);
+    for (const k of ["kcal", "protein_g", "carbs_g", "fat_g"] as const) {
+      if (typeof f[k] !== "number" || !Number.isFinite(f[k]) || f[k] < 0) throw new Error(`${f.key}: ${k} inválido`);
+    }
+  }
+}
 
 export type LinkStatus = "auto" | "free" | "pending";
 
@@ -165,7 +201,7 @@ export type ItemLink = {
   status: LinkStatus;
   /** De onde veio a decisão. */
   via: "à vontade" | "override" | "sinônimo" | "nome igual" | "sem correspondência";
-  food: TacoFood | null;
+  food: LinkedFood | null;
   grams: number | null;
   note?: string;
   suggestions: TacoFood[];
@@ -199,6 +235,7 @@ export function linkItem(
   item: { name: string; qty: string },
   taco: readonly TacoFood[],
   overrides: Overrides = {},
+  ownFoods: readonly OwnFood[] = [],
 ): ItemLink {
   const parsed = parseQty(item.qty);
   const base = { name: item.name, qty: item.qty, grams: parsed.grams, suggestions: [] as TacoFood[] };
@@ -228,8 +265,19 @@ export function linkItem(
     return { ...base, status: "auto", via, food, ...(note && { note }) };
   };
 
+  const resolveOwn = (key: string): ItemLink => {
+    const own = ownFoods.find((f) => f.key === key);
+    if (!own) return { ...base, status: "pending", via: "override", food: null, note: `alimento próprio "${key}" não definido` };
+    const food: LinkedFood = { taco_id: null, own_key: own.key, name: own.name, category: "Próprio", kcal: own.kcal, protein_g: own.protein_g, carbs_g: own.carbs_g, fat_g: own.fat_g };
+    if (base.grams === null) {
+      return { ...base, status: "pending", via: "override", food, note: "quantidade sem gramas: informe as gramas no editor" };
+    }
+    return { ...base, status: "auto", via: "override", food, ...(own.note && { note: own.note }) };
+  };
+
   for (const c of candidates) {
     const o = normOverrides.get(c);
+    if (typeof o === "string" && o.startsWith("own:")) return resolveOwn(o.slice(4));
     if (o === "free") return { ...base, status: "free", via: "override", food: null, grams: 0 };
     if (o === "pending") return { ...base, status: "pending", via: "override", food: null, suggestions: suggest(item.name, taco) };
     if (typeof o === "number") return resolve(o, "override");
@@ -292,44 +340,64 @@ export type LinkPlan = {
   options: { option: SeedOption; links: ItemLink[] }[];
   /** Um vínculo por (nome, quantidade) distinto: é a chave usada no SQL. */
   unique: ItemLink[];
+  /** Alimentos próprios a criar (ou atualizar) para o dono. */
+  ownFoods: OwnFood[];
 };
 
-export function planLinks(options: readonly SeedOption[], taco: readonly TacoFood[], overrides: Overrides = {}): LinkPlan {
+export function planLinks(
+  options: readonly SeedOption[],
+  taco: readonly TacoFood[],
+  overrides: Overrides = {},
+  ownFoods: readonly OwnFood[] = [],
+): LinkPlan {
+  validateOwnFoods(ownFoods);
   const cache = new Map<string, ItemLink>();
   const out = options.map((option) => ({
     option,
     links: option.items.map((item) => {
       const key = JSON.stringify([item.name, item.qty]);
       let link = cache.get(key);
-      if (!link) cache.set(key, (link = linkItem(item, taco, overrides)));
+      if (!link) cache.set(key, (link = linkItem(item, taco, overrides, ownFoods)));
       return link;
     }),
   }));
-  return { options: out, unique: [...cache.values()] };
+  return { options: out, unique: [...cache.values()], ownFoods: [...ownFoods] };
 }
 
 const q = (value: string) => `'${value.replace(/'/g, "''")}'`;
 const EMAIL_RE = /^[^\s@'"]+@[^\s@'"]+\.[^\s@'"]+$/;
 
+const num = (n: number) => String(Math.round(n * 100) / 100);
+
 /**
- * SQL idempotente que grava `food_id`/`grams` (ou `free`) nos itens do plano do dono,
- * casando cada item por (nome, quantidade). Não mexe em item que já tenha `food_id` ou
- * `free` (vínculo ou ajuste feito no app vence). Reaplicar não muda nada.
+ * SQL idempotente que (1) cria ou atualiza os alimentos próprios do dono, com id
+ * determinístico `md5(user_id || ':food:' || chave)`, e (2) grava `food_id`/`grams` (ou
+ * `free`) nos itens do plano do dono, casando cada item por (nome, quantidade). Não mexe em
+ * item que já tenha `food_id` ou `free` (vínculo ou ajuste feito no app vence). Reaplicar
+ * não muda nada.
  */
 export function buildLinkSql({ ownerEmail, plan }: { ownerEmail: string; plan: LinkPlan }): string {
   if (!EMAIL_RE.test(ownerEmail)) throw new Error("E-mail do dono inválido.");
+  validateOwnFoods(plan.ownFoods);
   const rows = plan.unique.filter((l) => l.status !== "pending");
-  const values = rows.map(
-    (l) =>
-      `      (${q(l.name)}, ${q(l.qty)}, ${l.status === "auto" ? l.food!.taco_id : "null"}, ${l.status === "auto" ? l.grams : "0"}, ${l.status === "free"})`,
+  const values = rows.map((l) => {
+    const auto = l.status === "auto" && l.food;
+    const taco = auto && l.food!.taco_id !== null ? String(l.food!.taco_id) : "null";
+    const own = auto && l.food!.own_key ? q(l.food!.own_key) : "null";
+    return `      (${q(l.name)}, ${q(l.qty)}, ${taco}::int, ${own}::text, ${auto ? num(l.grams!) : "0"}::numeric, ${l.status === "free"})`;
+  });
+  const ownRows = plan.ownFoods.map(
+    (f) => `      (${q(f.key)}, ${q(f.name)}, ${num(f.kcal)}, ${num(f.protein_g)}, ${num(f.carbs_g)}, ${num(f.fat_g)})`,
   );
-  const auto = rows.filter((l) => l.status === "auto").length;
+  const auto = rows.filter((l) => l.status === "auto");
+  const ownLinks = auto.filter((l) => l.food?.own_key).length;
   return [
-    "-- Vínculo dos itens do plano alimentar com a TACO (gerado por scripts/meals/link-foods.ts).",
+    "-- Vínculo dos itens do plano alimentar com a TACO e alimentos próprios (gerado por scripts/meals/link-foods.ts).",
     "-- DADOS PESSOAIS: não versionar (coberto por supabase/*.private.sql).",
-    "-- Idempotente: só preenche itens sem food_id/free; rodar de novo não muda nada.",
+    "-- Idempotente: alimentos próprios com id determinístico (upsert) e só preenche itens sem food_id/free.",
     "-- Aplicar: npx supabase db query --linked -f supabase/meal-items.private.sql",
-    `-- ${auto} vínculos com a TACO e ${rows.length - auto} itens livres (0 kcal), por nome + quantidade.`,
+    `-- ${plan.ownFoods.length} alimentos próprios; ${auto.length - ownLinks} vínculos com a TACO, ${ownLinks} com alimentos próprios ` +
+      `e ${rows.length - auto.length} itens livres (0 kcal), por nome + quantidade.`,
     "",
     "do $link$",
     "declare",
@@ -344,10 +412,28 @@ export function buildLinkSql({ ownerEmail, plan }: { ownerEmail: string; plan: L
     "    raise exception 'A TACO não está carregada (% alimentos). Aplique a migration foods_taco antes.', v_taco;",
     "  end if;",
     "",
+    ...(ownRows.length === 0
+      ? []
+      : [
+          "  -- 1) Alimentos próprios do dono (valores por 100 g ou 100 ml).",
+          "  insert into public.foods (id, user_id, name, category, kcal, protein_g, carbs_g, fat_g)",
+          "  select md5(v_uid::text || ':food:' || v.key)::uuid, v_uid, v.name, 'Próprio', v.kcal, v.protein_g, v.carbs_g, v.fat_g",
+          "  from (values",
+          ownRows.join(",\n"),
+          "  ) as v (key, name, kcal, protein_g, carbs_g, fat_g)",
+          "  on conflict (id) do update set",
+          "    name = excluded.name, kcal = excluded.kcal, protein_g = excluded.protein_g,",
+          "    carbs_g = excluded.carbs_g, fat_g = excluded.fat_g",
+          "  where public.foods.user_id = v_uid",
+          "    and (public.foods.name, public.foods.kcal, public.foods.protein_g, public.foods.carbs_g, public.foods.fat_g)",
+          "      is distinct from (excluded.name, excluded.kcal, excluded.protein_g, excluded.carbs_g, excluded.fat_g);",
+          "",
+        ]),
+    "  -- 2) Itens do plano.",
     rows.length === 0
       ? "  v_rows := 0;"
       : [
-          "  with m (name, qty, taco_id, grams, free) as (",
+          "  with m (name, qty, taco_id, own_key, grams, free) as (",
           "    values",
           values.join(",\n"),
           "  ),",
@@ -356,6 +442,8 @@ export function buildLinkSql({ ownerEmail, plan }: { ownerEmail: string; plan: L
           "      case",
           "        when t.e ? 'food_id' or t.e ? 'free' or m.name is null then t.e",
           "        when m.free then t.e || jsonb_build_object('free', true, 'grams', 0)",
+          "        when m.own_key is not null then",
+          "          t.e || jsonb_build_object('food_id', md5(v_uid::text || ':food:' || m.own_key)::uuid, 'grams', m.grams)",
           "        else t.e || jsonb_build_object('food_id', f.id, 'grams', m.grams)",
           "      end order by t.ord) as items",
           "    from public.meal_options o",

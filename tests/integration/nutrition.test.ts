@@ -129,7 +129,12 @@ describe("SQL de auto-vínculo (plano fictício)", () => {
         { name: "Suplemento X", qty: "30 g" },
       ],
     },
-    { meal: "Refeição fictícia", position: 2, title: "B", items: [{ name: "Água", qty: "300 ml" }, { name: "Banana", qty: "80 g" }] },
+    {
+      meal: "Refeição fictícia",
+      position: 2,
+      title: "B",
+      items: [{ name: "Água", qty: "300 ml" }, { name: "Banana", qty: "80 g" }, { name: "Molho secreto", qty: "15 g" }],
+    },
   ];
 
   function applySql() {
@@ -159,10 +164,23 @@ describe("SQL de auto-vínculo (plano fictício)", () => {
             { name: "Suplemento X", qty: "30 g", subs: [] },
           ],
         },
-        { id: opB, meal_id: meal, position: 2, title: "B", items: [{ name: "Água", qty: "300 ml", subs: [] }, { name: "Banana", qty: "80 g", subs: [] }] },
+        {
+          id: opB,
+          meal_id: meal,
+          position: 2,
+          title: "B",
+          items: [
+            { name: "Água", qty: "300 ml", subs: [] },
+            { name: "Banana", qty: "80 g", subs: [] },
+            { name: "Molho secreto", qty: "15 g", subs: [] },
+          ],
+        },
       ]),
     );
-    const plan = planLinks(options, tacoFromMigration());
+    // Suplemento X vira alimento próprio do usuário (valores fictícios por 100 g).
+    const plan = planLinks(options, tacoFromMigration(), { "Suplemento X": "own:suplemento-x" }, [
+      { key: "suplemento-x", name: "Suplemento X (fictício)", kcal: 400, protein_g: 80, carbs_g: 8, fat_g: 5 },
+    ]);
     dir = mkdtempSync(join(tmpdir(), "bctrl-meal-link-"));
     sqlFile = join(dir, "meal-items.sql");
     writeFileSync(sqlFile, buildLinkSql({ ownerEmail: user.email, plan }));
@@ -182,13 +200,26 @@ describe("SQL de auto-vínculo (plano fictício)", () => {
     expect(a1[0]).toMatchObject({ name: "Arroz branco cozido", food_id: await tacoId(3), grams: 120, subs: ["Arroz integral 120 g"] });
     expect(a1[1]).toMatchObject({ food_id: manualFood, grams: 90 }); // manual vence
     expect(a1[2]).toMatchObject({ free: true, grams: 0 });
-    expect(a1[3]).toEqual({ name: "Suplemento X", qty: "30 g", subs: [] }); // pendente: intocado
+    const ownFoods = async () =>
+      (await adminClient().from("foods").select("id, name, kcal, protein_g").eq("user_id", user.id)).data!;
+    const [own] = await ownFoods();
+    expect(own).toMatchObject({ name: "Suplemento X (fictício)", kcal: 400, protein_g: 80 });
+    expect(a1[3]).toMatchObject({ name: "Suplemento X", food_id: own.id, grams: 30 });
     expect(b1[0]).toMatchObject({ name: "Água", free: true });
     expect(b1[1]).toMatchObject({ food_id: await tacoId(182), grams: 80 });
+    expect(b1[2]).toEqual({ name: "Molho secreto", qty: "15 g", subs: [] }); // pendente: intocado
+
+    // O próprio dono lê o alimento próprio pelo RLS e o cálculo da opção A fecha: arroz 120 g + suplemento 30 g.
+    const foods = await fetchFoods(db);
+    const { total, unresolved } = optionMacros(a1 as never, new Map(foods.map((f) => [f.id, f])));
+    expect(unresolved).toBe(1); // o ovo aponta para um alimento manual que não existe
+    // arroz 128,26 × 1,2 = 153,9 + suplemento 400 × 0,3 = 120 (o ovo fica sem valor)
+    expect(roundMacros(total).kcal).toBe(Math.round(128.26 * 1.2 + 120));
 
     applySql();
     expect(await readItems(opA)).toEqual(a1);
     expect(await readItems(opB)).toEqual(b1);
+    expect(await ownFoods()).toHaveLength(1);
   });
 
   it("não toca no plano de outro usuário", async () => {
