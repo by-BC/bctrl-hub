@@ -25,7 +25,7 @@ Carregar a tabela TACO (597 alimentos) no banco e vincular cada item do plano al
 - [x] 4.1 Script de conversão da TACO e migration `…_foods_taco.sql` (aplicar local e remoto) — aplicada no local e no remoto (`db push`), 597 alimentos
 - [x] 4.2 `nutrition.ts` (`itemMacros`, `optionMacros`, parsing de gramas) com testes
 - [x] 4.3 Hooks `useFoods` (busca com cache) e mutações do plano com os campos novos
-- [ ] 4.4 Auto-vínculo dos itens do plano real + relatório; **parar para o dono revisar**; aplicar no remoto — script, relatório e `supabase/meal-items.private.sql` prontos; revisados pelo dono (pendentes viraram alimentos próprios do dono, criados pelo mesmo SQL) e validados no local (usuário descartável, 2 aplicações, 0 pendentes). **Pendente com o dono:** revisar `scripts/meals/out/report.md` e aplicar com `npx supabase db query --linked -f supabase/meal-items.private.sql`
+- [x] 4.4 Auto-vínculo dos itens do plano real + relatório; revisão do dono; aplicado em produção pelo dono em 2026-10-20 — verificado: 65 itens, 55 vinculados, 9 livres, 14 alimentos próprios; 1 item pendente (Banana em "Pão com ovos", adicionado pelo app depois do seed) para o dono vincular no editor
 - [x] 4.5 Editor de vínculo no `/comida/plano`
 - [x] 4.6 Macros por opção em `/comida`
 - [x] 4.7 Escrever e rodar os testes da tarefa
