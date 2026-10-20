@@ -2,7 +2,7 @@
 
 ## Tarefas
 
-- [ ] 1.0 Esquema v2 e tipos de série (Complexidade: HIGH)
+- [x] 1.0 Esquema v2 e tipos de série (Complexidade: HIGH)
 - [ ] 2.0 Importação do Hevy (Complexidade: HIGH)
 - [ ] 3.0 Catálogo de exercícios e instruções próprias (Complexidade: MEDIUM)
 - [ ] 4.0 TACO e macros do plano alimentar (Complexidade: MEDIUM)

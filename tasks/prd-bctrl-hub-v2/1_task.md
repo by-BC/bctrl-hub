@@ -29,14 +29,14 @@ Preparar o banco e a sessão de treino para a v2. Ao final:
 
 ## Subtarefas
 
-- [ ] 1.1 (RED) Testes de integração: RLS de `profiles`, `meal_log_items` e `foods` (outro usuário lê a TACO, mas não os alimentos próprios do dono); views sem aquecimento; `finish_workout` com payload novo e antigo
-- [ ] 1.2 (RED) Testes de unidade de `exercise-types.ts` e dos cenários novos de `workout.ts`
-- [ ] 1.3 (GREEN) Migration `…_v2.sql` (colunas, tabelas, constraints, índices, RLS) e `…_v2_rpcs.sql` (views e `finish_workout`)
-- [ ] 1.4 (GREEN) Atualizar `finishWorkoutSchema` (Zod), o domínio e o store da sessão (campos por tipo, `set_type`)
-- [ ] 1.5 `SetRow` por tipo (carga×reps, reps, duração mm:ss, distância km) e ação "marcar como aquecimento", com selo textual
-- [ ] 1.6 Histórico e evolução exibindo séries de duração e distância corretamente
-- [ ] 1.7 (REFACTOR) `db:types`, `db push` no remoto, `get_advisors` sem alertas novos
-- [ ] 1.8 Rodar a suíte inteira da v1 + v2 (sem regressão)
+- [x] 1.1 (RED) Testes de integração: RLS de `profiles`, `meal_log_items` e `foods` (outro usuário lê a TACO, mas não os alimentos próprios do dono); views sem aquecimento; `finish_workout` com payload novo e antigo
+- [x] 1.2 (RED) Testes de unidade de `exercise-types.ts` e dos cenários novos de `workout.ts`
+- [x] 1.3 (GREEN) Migration `…_v2.sql` (colunas, tabelas, constraints, índices, RLS) e `…_v2_rpcs.sql` (views e `finish_workout`)
+- [x] 1.4 (GREEN) Atualizar `finishWorkoutSchema` (Zod), o domínio e o store da sessão (campos por tipo, `set_type`)
+- [x] 1.5 `SetRow` por tipo (carga×reps, reps, duração mm:ss, distância km) e ação "marcar como aquecimento", com selo textual
+- [x] 1.6 Histórico e evolução exibindo séries de duração e distância corretamente
+- [x] 1.7 (REFACTOR) `db:types`, `db push` no remoto, `get_advisors` sem alertas novos
+- [x] 1.8 Rodar a suíte inteira da v1 + v2 (sem regressão)
 
 ## Detalhes de Implementação
 
@@ -51,8 +51,8 @@ Ver techspec: **Modelos de Dados**, **Endpoints de API** (`finish_workout`), **I
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `exercise-types.ts`; `workout.ts` (aquecimento, séries sem carga, recordes de duração e distância); store com campos por tipo
-- [ ] Testes de integração: RLS das tabelas novas e de `foods`; views; `finish_workout` (novo, antigo, inválido); E2E de uma sessão com prancha e aquecimento
+- [x] Testes de unidade: `exercise-types.ts`; `workout.ts` (aquecimento, séries sem carga, recordes de duração e distância); store com campos por tipo
+- [x] Testes de integração: RLS das tabelas novas e de `foods`; views; `finish_workout` (novo, antigo, inválido); E2E de uma sessão com prancha e aquecimento
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 
