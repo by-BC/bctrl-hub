@@ -15,6 +15,8 @@ export type OwnedRows = {
   habits: string;
   habit_logs: string;
   tasks: string;
+  body_measurements: string;
+  composition_goals: string;
 };
 
 export type TableName = keyof OwnedRows;
@@ -34,6 +36,8 @@ export const TABLES: TableName[] = [
   "habits",
   "habit_logs",
   "tasks",
+  "body_measurements",
+  "composition_goals",
 ];
 
 /** Uma alteração inofensiva por tabela, usada para tentar atualizar dados alheios. */
@@ -51,6 +55,8 @@ export const PATCHES: Record<TableName, Record<string, unknown>> = {
   habits: { name: "alterado" },
   habit_logs: { value: 99 },
   tasks: { title: "alterado" },
+  body_measurements: { note: "alterado" },
+  composition_goals: { target: 99 },
 };
 
 let dayCounter = 0;
@@ -103,10 +109,17 @@ export function validRow(table: TableName, parents: Partial<OwnedRows>): Record<
       return { habit_id: parents.habits, day: "2026-10-13", value: 1 };
     case "tasks":
       return { title: "Comprar whey" };
+    case "body_measurements": {
+      // Dia único (o trigger grava o peso do dia em body_weights); instante coerente com o dia.
+      const day = uniqueDay();
+      return { measured_at: `${day}T07:00:00-03:00`, day, weight_kg: 80.5 };
+    }
+    case "composition_goals":
+      return { metric: "body_fat_pct", target: 15, start_value: 22, start_day: "2026-10-01" };
   }
 }
 
-/** Cria uma linha em cada uma das 13 tabelas para o usuário logado em `client`. */
+/** Cria uma linha em cada uma das tabelas de `TABLES` para o usuário logado em `client`. */
 export async function createOwnedRows(client: SupabaseClient): Promise<OwnedRows> {
   const rows: Partial<OwnedRows> = {};
   for (const table of TABLES) {

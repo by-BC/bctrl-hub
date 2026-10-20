@@ -151,11 +151,13 @@ export async function fetchBodyWeights(client: Client = db()): Promise<BodyWeigh
 /**
  * Um registro por dia: grava ou substitui o peso do dia. A chave natural `(user_id, day)`
  * é a chave de idempotência (reenviar a mesma gravação dá no mesmo registro).
+ * Envia `source: 'manual'`: um peso digitado depois da medição da balança sobrescreve o peso
+ * `scale` do dia (a última gravação vence; ver o trigger `sync_body_weight`).
  */
 export async function upsertBodyWeight(entry: BodyWeight, client: Client = db()) {
   const { error } = await client
     .from("body_weights")
-    .upsert(entry, { onConflict: "user_id,day", defaultToNull: false });
+    .upsert({ ...entry, source: "manual" }, { onConflict: "user_id,day", defaultToNull: false });
   if (error) fail(error, "Não foi possível salvar o peso.");
 }
 

@@ -208,3 +208,94 @@ describe("amountUnits e amountToGrams", () => {
     expect(amountUnits({ unit_grams: null }).map((u) => u.key)).toEqual(["g", "ml"]);
   });
 });
+
+/*
+ * v3: TMB da balança e proteína por massa magra (perfil A, 80 kg, dia de referência 20/10/2026).
+ *   TMB da balança 1900 → gasto 1900 × 1,55 = 2945 = kcal (manter)
+ *   Prot. 2,0 × 80 = 160 g (640 kcal) · Gord. máx(64; 20% · 2945 ÷ 9 = 65,44) = 65,44 g (589 kcal)
+ *   Carb. (2945 − 640 − 589) ÷ 4 = 1716 ÷ 4 = 429 g
+ *   Massa magra 65 kg × 2,5 g/kg = 162,5 g (650 kcal), com a fórmula (kcal 2759, gordura 64 g):
+ *   Carb. (2759 − 650 − 576) ÷ 4 = 1533 ÷ 4 = 383,25 g
+ */
+describe("goalBreakdown — fonte da TMB e base da proteína (v3)", () => {
+  const scale = { measuredKcal: 1900, measuredOn: "2026-10-05" };
+
+  it("sem medição, nada muda: fórmula e base peso (a v2 não regride)", () => {
+    const b = goalBreakdown(male, 80, ON);
+    expect(b).toMatchObject({ bmr: 1780, bmrSource: "formula", proteinBasis: "weight", bmrFallback: false });
+    expect(b.bmrDate).toBeUndefined();
+    expect(goalBreakdown(male, 80, ON, {})).toEqual(b);
+    expect(goalsFromProfile(male, 80, false, ON, {})).toEqual({ kcal: 2759, protein: 160, carbs: 386, fat: 64 });
+  });
+
+  it("auto (padrão) com medição de até 30 dias usa a TMB da balança", () => {
+    const b = goalBreakdown(male, 80, ON, scale);
+    expect(b).toMatchObject({ bmr: 1900, bmrSource: "scale", bmrDate: "2026-10-05", bmrFallback: false });
+    expect(b.kcal).toBeCloseTo(2945, 6);
+    expect(b.fat).toBeCloseTo(65.444, 2);
+    expect(b.carbs).toBeCloseTo(429, 6);
+    expect(goalsFromProfile(male, 80, false, ON, scale)).toEqual({ kcal: 2945, protein: 160, carbs: 429, fat: 65 });
+    expect(goalsFromProfile({ ...male, bmr_source: "auto" }, 80, false, ON, scale)).toEqual({ kcal: 2945, protein: 160, carbs: 429, fat: 65 });
+  });
+
+  it("auto: 30 dias ainda vale; 31 dias volta para a fórmula; sem data, fórmula", () => {
+    expect(goalBreakdown(male, 80, ON, { measuredKcal: 1900, measuredOn: "2026-09-20" }).bmrSource).toBe("scale");
+    const old = goalBreakdown(male, 80, ON, { measuredKcal: 1900, measuredOn: "2026-09-19" });
+    expect(old).toMatchObject({ bmr: 1780, bmrSource: "formula", bmrFallback: false });
+    expect(old.bmrDate).toBeUndefined();
+    expect(goalBreakdown(male, 80, ON, { measuredKcal: 1900 }).bmrSource).toBe("formula");
+  });
+
+  it("scale: usa a balança mesmo com mais de 30 dias; sem medição, cai na fórmula sinalizando a reserva", () => {
+    const p = { ...male, bmr_source: "scale" as const };
+    expect(goalBreakdown(p, 80, ON, { measuredKcal: 1900, measuredOn: "2026-06-01" })).toMatchObject({
+      bmr: 1900,
+      bmrSource: "scale",
+      bmrDate: "2026-06-01",
+      bmrFallback: false,
+    });
+    expect(goalBreakdown(p, 80, ON)).toMatchObject({ bmr: 1780, bmrSource: "formula", bmrFallback: true });
+  });
+
+  it("formula: sempre Mifflin-St Jeor, mesmo com medição recente", () => {
+    const b = goalBreakdown({ ...male, bmr_source: "formula" }, 80, ON, scale);
+    expect(b).toMatchObject({ bmr: 1780, bmrSource: "formula", bmrFallback: false });
+  });
+
+  it("TMB medida inválida é ignorada", () => {
+    expect(goalBreakdown(male, 80, ON, { measuredKcal: 0, measuredOn: "2026-10-05" }).bmrSource).toBe("formula");
+    expect(goalBreakdown(male, 80, ON, { measuredKcal: Number.NaN, measuredOn: "2026-10-05" }).bmrSource).toBe("formula");
+  });
+
+  it("proteína por massa magra: 2,5 g/kg padrão × massa magra", () => {
+    const p = { ...male, protein_basis: "lean_mass" as const };
+    const b = goalBreakdown(p, 80, ON, { leanMassKg: 65 });
+    expect(b).toMatchObject({ proteinBasis: "lean_mass", protein: 162.5, bmrSource: "formula" });
+    expect(b.carbs).toBeCloseTo(383.25, 6);
+    expect(goalsFromProfile(p, 80, false, ON, { leanMassKg: 65 })).toEqual({ kcal: 2759, protein: 163, carbs: 383, fat: 64 });
+  });
+
+  it("proteína por massa magra com g/kg ajustado", () => {
+    const p = { ...male, protein_basis: "lean_mass" as const, protein_g_per_kg_lean: 2.2 };
+    expect(goalBreakdown(p, 80, ON, { leanMassKg: 65 }).protein).toBeCloseTo(143, 6);
+  });
+
+  it("massa magra ausente ou inválida: volta para a base peso", () => {
+    const p = { ...male, protein_basis: "lean_mass" as const };
+    expect(goalBreakdown(p, 80, ON)).toMatchObject({ proteinBasis: "weight", protein: 160 });
+    expect(goalBreakdown(p, 80, ON, { leanMassKg: 0 })).toMatchObject({ proteinBasis: "weight", protein: 160 });
+  });
+
+  it("base peso ignora a massa magra", () => {
+    expect(goalBreakdown(male, 80, ON, { leanMassKg: 65 })).toMatchObject({ proteinBasis: "weight", protein: 160 });
+  });
+
+  it("balança e massa magra juntas, no dia de treino", () => {
+    // kcal 2945; prot. 162,5 (650); gord. 65,44 (589); carb. (2945 − 650 − 589) ÷ 4 = 426,5
+    // Treino: carb. 426,5 × 1,1 = 469,15 → 469; kcal 2945 + 42,65 × 4 = 3115,6 → 3116
+    const p = { ...male, protein_basis: "lean_mass" as const };
+    const m = { ...scale, leanMassKg: 65 };
+    expect(goalsFromProfile(p, 80, false, ON, m)).toEqual({ kcal: 2945, protein: 163, carbs: 427, fat: 65 });
+    expect(goalsFromProfile(p, 80, true, ON, m)).toEqual({ kcal: 3116, protein: 163, carbs: 469, fat: 65 });
+  });
+});

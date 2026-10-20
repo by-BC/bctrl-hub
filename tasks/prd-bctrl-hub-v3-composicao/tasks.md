@@ -2,7 +2,7 @@
 
 ## Tarefas
 
-- [ ] 1.0 Esquema e domínio de composição (Complexidade: HIGH)
+- [x] 1.0 Esquema e domínio de composição (Complexidade: HIGH)
 - [ ] 2.0 Importação da planilha da balança (Complexidade: HIGH)
 - [ ] 3.0 Tela de composição (Complexidade: MEDIUM)
 - [ ] 4.0 Metas de composição e integração com as metas nutricionais (Complexidade: MEDIUM)

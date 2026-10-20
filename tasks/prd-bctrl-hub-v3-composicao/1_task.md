@@ -23,13 +23,13 @@ Base da v3. No banco: as medições (`body_measurements`), as metas de composiç
 
 ## Subtarefas
 
-- [ ] 1.1 (RED) Testes de integração: RLS de `body_measurements` e `composition_goals`; trigger (insert, 2 medições no dia, update, delete da última, manual depois da medição, delete sem apagar manual); índice da meta ativa
-- [ ] 1.2 (RED) Testes de unidade de `composition.ts` (faixas, `deltas`, `projectGoal` com datas calculadas à mão) e do `goalBreakdown` (3 fontes de TMB, 30 dias, proteína por massa magra com fallback)
-- [ ] 1.3 (GREEN) Migrations `…_v3_composition.sql` (tabelas, colunas, índices, RLS, trigger)
-- [ ] 1.4 (GREEN) Domínio: `composition.ts` e a extensão de `nutrition.ts`; atualizar os chamadores existentes sem mudar o comportamento atual
-- [ ] 1.5 Atualizar o upsert de peso manual (progress) para gravar `source: 'manual'` e incluir no `WRITES` as gravações novas (sem nada de offline)
-- [ ] 1.6 (REFACTOR) `db:types`, `db push` no remoto, `get_advisors`
-- [ ] 1.7 Rodar a suíte (unidade, integração, typecheck, lint, build); E2E só dos specs de peso e metas (`progress`, `nutrition-goals`)
+- [x] 1.1 (RED) Testes de integração: RLS de `body_measurements` e `composition_goals`; trigger (insert, 2 medições no dia, update, delete da última, manual depois da medição, delete sem apagar manual); índice da meta ativa
+- [x] 1.2 (RED) Testes de unidade de `composition.ts` (faixas, `deltas`, `projectGoal` com datas calculadas à mão) e do `goalBreakdown` (3 fontes de TMB, 30 dias, proteína por massa magra com fallback)
+- [x] 1.3 (GREEN) Migrations `…_v3_composition.sql` (tabelas, colunas, índices, RLS, trigger)
+- [x] 1.4 (GREEN) Domínio: `composition.ts` e a extensão de `nutrition.ts`; atualizar os chamadores existentes sem mudar o comportamento atual
+- [x] 1.5 Atualizar o upsert de peso manual (progress) para gravar `source: 'manual'` e incluir no `WRITES` as gravações novas (sem nada de offline)
+- [x] 1.6 (REFACTOR) `db:types`, `db push` no remoto, `get_advisors`
+- [x] 1.7 Rodar a suíte (unidade, integração, typecheck, lint, build); E2E só dos specs de peso e metas (`progress`, `nutrition-goals`)
 
 ## Detalhes de Implementação
 
@@ -44,8 +44,8 @@ Ver techspec: **Modelos de Dados** (tabelas, trigger, fonte da TMB, base da prot
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `composition.ts` e `goalBreakdown` com as fontes de TMB e a base da proteína
-- [ ] Testes de integração: RLS, trigger com todos os casos, índice da meta ativa; E2E de peso e metas sem regressão
+- [x] Testes de unidade: `composition.ts` e `goalBreakdown` com as fontes de TMB e a base da proteína
+- [x] Testes de integração: RLS, trigger com todos os casos, índice da meta ativa; E2E de peso e metas sem regressão
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 

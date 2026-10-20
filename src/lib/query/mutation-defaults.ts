@@ -45,6 +45,15 @@ import {
 import { upsertOwnFood, type OwnFoodInsert } from "@/features/nutrition/api";
 import { upsertProfile, type ProfileSave } from "@/features/profile/api";
 import {
+  deleteMeasurement,
+  updateCompositionGoal,
+  upsertCompositionGoal,
+  upsertMeasurement,
+  type CompositionGoalPatch,
+  type CompositionGoalSave,
+  type MeasurementSave,
+} from "@/features/composition/api";
+import {
   deleteHabit,
   deleteHabitLogs,
   updateHabit,
@@ -156,6 +165,16 @@ export const WRITES = {
   // Peso corporal (scope "body-weights")
   upsertBodyWeight: write(["body-weights", "upsert"], (entry: BodyWeight) => upsertBodyWeight(entry)),
   deleteBodyWeight: write(["body-weights", "delete"], (day: string) => deleteBodyWeight(day)),
+
+  // Composição corporal (scope "composition"). Sem requisito de offline: o WRITES é a convenção
+  // de gravação do projeto. O peso do dia vem junto, pelo trigger do banco.
+  addMeasurement: write(["composition", "save-measurement"], (row: MeasurementSave) => upsertMeasurement(row)),
+  deleteMeasurement: write(["composition", "delete-measurement"], (id: string) => deleteMeasurement(id)),
+  saveCompositionGoal: write(["composition", "save-goal"], (row: CompositionGoalSave) => upsertCompositionGoal(row)),
+  updateCompositionGoal: write(
+    ["composition", "update-goal"],
+    ({ id, patch }: { id: string; patch: CompositionGoalPatch }) => updateCompositionGoal(id, patch),
+  ),
 
   // Registro de refeições (scope "meal-logs")
   logMeal: write(["meal-logs", "log"], (log: MealLog) => upsertMealLog(log)),

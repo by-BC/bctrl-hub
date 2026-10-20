@@ -7,6 +7,7 @@
  */
 
 import { normalizeExerciseName as normalizeText } from "./routines";
+import { dayToTime } from "./stats";
 
 export type Macros = { kcal: number; protein: number; carbs: number; fat: number };
 
@@ -266,6 +267,22 @@ export const TRAINING_CARBS_BONUS = 0.1;
 
 export const KCAL_PER_G = { protein: 4, carbs: 4, fat: 9 } as const;
 
+/** Fonte da TMB escolhida no perfil: `auto` (balança se recente, senão fórmula), `scale` ou `formula`. */
+export const BMR_SOURCES = ["auto", "scale", "formula"] as const;
+export type BmrSourceSetting = (typeof BMR_SOURCES)[number];
+/** Base da proteína-alvo: peso total ou massa magra da última medição. */
+export const PROTEIN_BASES = ["weight", "lean_mass"] as const;
+export type ProteinBasis = (typeof PROTEIN_BASES)[number];
+/** No modo `auto`, a TMB da balança vale por até 30 dias. */
+export const BMR_MAX_AGE_DAYS = 30;
+export const PROTEIN_G_PER_KG_LEAN_DEFAULT = 2.5;
+
+/**
+ * O que vem das medições da balança: a TMB da última medição que tem `bmr_kcal` (com o dia) e
+ * a massa magra da última que tem `lean_mass_kg`. Tudo opcional: sem medição, nada muda.
+ */
+export type BmrInput = { measuredKcal?: number; measuredOn?: string; leanMassKg?: number };
+
 /** Ajuste manual por macro: `rest` vale no dia sem treino (e de base no de treino), `training` no de treino. */
 export type GoalOverrides = { rest?: Partial<Macros> | null; training?: Partial<Macros> | null };
 
@@ -277,6 +294,12 @@ export type NutritionProfile = {
   goal: Goal | null;
   protein_g_per_kg: number;
   goal_overrides?: GoalOverrides | null;
+  /** v3: fonte da TMB (padrão `auto`). */
+  bmr_source?: BmrSourceSetting | null;
+  /** v3: base da proteína-alvo (padrão `weight`). */
+  protein_basis?: ProteinBasis | null;
+  /** v3: g de proteína por kg de massa magra (padrão 2,5). */
+  protein_g_per_kg_lean?: number | null;
 };
 
 /** Os campos que o cálculo exige estão preenchidos. */
@@ -301,7 +324,7 @@ export function ageOn(birthDate: string, onDay: string): number {
 /** Cada passo da conta, para mostrar no formulário. Valores sem arredondar. */
 export type GoalBreakdown = {
   age: number;
-  /** TMB (Mifflin-St Jeor). */
+  /** TMB usada: a da balança ou a da fórmula (Mifflin-St Jeor), ver `bmrSource`. */
   bmr: number;
   factor: number;
   /** Gasto diário = TMB × fator. */
@@ -314,26 +337,69 @@ export type GoalBreakdown = {
   fatMin: number;
   fat: number;
   carbs: number;
+  /** TMB usada: a da balança ou a da fórmula. */
+  bmrSource: "scale" | "formula";
+  /** Dia da medição, quando a TMB é a da balança. */
+  bmrDate?: string;
+  /** A fonte escolhida era `scale`, mas não há medição com TMB: caiu na fórmula. */
+  bmrFallback: boolean;
+  /** Base efetiva da proteína (`lean_mass` sem massa magra volta para `weight`). */
+  proteinBasis: ProteinBasis;
 };
+
+const positive = (n: number | undefined): n is number => typeof n === "number" && Number.isFinite(n) && n > 0;
+
+/** Dias de `from` a `to` (AAAA-MM-DD), pelo calendário. */
+const daysBetween = (from: string, to: string) => Math.round((dayToTime(to) - dayToTime(from)) / 86_400_000);
+
+/** Escolhe a TMB: balança (pela regra da fonte) ou Mifflin-St Jeor. */
+function pickBmr(
+  setting: BmrSourceSetting,
+  formula: number,
+  onDay: string,
+  m: BmrInput | undefined,
+): Pick<GoalBreakdown, "bmr" | "bmrSource" | "bmrDate" | "bmrFallback"> {
+  const kcal = m?.measuredKcal;
+  const formulaResult = (fallback: boolean) => ({ bmr: formula, bmrSource: "formula" as const, bmrFallback: fallback });
+  const scaleResult = (bmr: number) => ({
+    bmr,
+    bmrSource: "scale" as const,
+    bmrFallback: false,
+    ...(m?.measuredOn && { bmrDate: m.measuredOn }),
+  });
+  if (setting === "formula") return formulaResult(false);
+  if (setting === "scale") return positive(kcal) ? scaleResult(kcal) : formulaResult(true);
+  const recent = !!m?.measuredOn && daysBetween(m.measuredOn, onDay) <= BMR_MAX_AGE_DAYS;
+  return positive(kcal) && recent ? scaleResult(kcal) : formulaResult(false);
+}
 
 /**
  * Metas calculadas (sem override) para o dia sem treino.
+ * TMB: a da balança quando a fonte permite (`auto`: medição de até 30 dias; `scale`: qualquer
+ * medição; `formula`: nunca); senão Mifflin-St Jeor:
  * TMB = 10·peso + 6,25·altura − 5·idade + 5 (m) ou − 161 (f); kcal = TMB × fator × (1 + ajuste);
- * proteína = g/kg × peso; gordura = máx(0,8 g/kg, 20% das kcal ÷ 9); carboidrato = o restante ÷ 4.
+ * proteína = g/kg × peso (ou g/kg de massa magra × massa magra, com base `lean_mass` e medição);
+ * gordura = máx(0,8 g/kg, 20% das kcal ÷ 9); carboidrato = o restante ÷ 4.
  */
-export function goalBreakdown(p: CompleteProfile, weightKg: number, onDay: string): GoalBreakdown {
+export function goalBreakdown(p: CompleteProfile, weightKg: number, onDay: string, m?: BmrInput): GoalBreakdown {
   const age = ageOn(p.birth_date, onDay);
-  const bmr = 10 * weightKg + 6.25 * Number(p.height_cm) - 5 * age + (p.sex === "m" ? 5 : -161);
+  const formula = 10 * weightKg + 6.25 * Number(p.height_cm) - 5 * age + (p.sex === "m" ? 5 : -161);
+  const source = pickBmr(p.bmr_source ?? "auto", formula, onDay, m);
+  const bmr = source.bmr;
   const factor = ACTIVITY_FACTOR[p.activity_level];
   const tdee = bmr * factor;
   const adjust = GOAL_ADJUST[p.goal];
   const kcal = tdee * (1 + adjust);
-  const protein = Number(p.protein_g_per_kg) * weightKg;
+  const leanKg = m?.leanMassKg;
+  const lean = p.protein_basis === "lean_mass" && positive(leanKg) ? leanKg : null;
+  const proteinBasis: ProteinBasis = lean === null ? "weight" : "lean_mass";
+  const protein =
+    lean === null ? Number(p.protein_g_per_kg) * weightKg : Number(p.protein_g_per_kg_lean ?? PROTEIN_G_PER_KG_LEAN_DEFAULT) * lean;
   const fatPerKg = FAT_G_PER_KG * weightKg;
   const fatMin = (FAT_MIN_SHARE * kcal) / KCAL_PER_G.fat;
   const fat = Math.max(fatPerKg, fatMin);
   const carbs = Math.max(0, (kcal - protein * KCAL_PER_G.protein - fat * KCAL_PER_G.fat) / KCAL_PER_G.carbs);
-  return { age, bmr, factor, tdee, adjust, kcal, protein, fatPerKg, fatMin, fat, carbs };
+  return { age, ...source, factor, tdee, adjust, kcal, protein, fatPerKg, fatMin, fat, carbs, proteinBasis };
 }
 
 const pickOverride = (o: Partial<Macros> | null | undefined, k: MacroKey): number | null => {
@@ -349,8 +415,14 @@ const pickOverride = (o: Partial<Macros> | null | undefined, k: MacroKey): numbe
  * dia sem treino, e o carboidrato ganha +10% (as kcal sobem 4 por grama a mais, se também não
  * tiverem override de treino).
  */
-export function goalsFromProfile(p: CompleteProfile, weightKg: number, trainingDay: boolean, onDay: string): Macros {
-  const b = goalBreakdown(p, weightKg, onDay);
+export function goalsFromProfile(
+  p: CompleteProfile,
+  weightKg: number,
+  trainingDay: boolean,
+  onDay: string,
+  m?: BmrInput,
+): Macros {
+  const b = goalBreakdown(p, weightKg, onDay, m);
   const rest = p.goal_overrides?.rest;
   const base: Macros = {
     kcal: pickOverride(rest, "kcal") ?? b.kcal,

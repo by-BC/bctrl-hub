@@ -23,16 +23,44 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "body_weights": {
+            "body_measurements": {
                   Row: {
-                    "created_at": string,"day": string,"id": string,"user_id": string,"weight_kg": number
+                    "bmi": number | null,"bmr_kcal": number | null,"body_fat_pct": number | null,"bone_kg": number | null,"created_at": string,"day": string,"fat_mass_kg": number | null,"id": string,"lean_mass_kg": number | null,"measured_at": string,"metabolic_age": number | null,"muscle_mass_kg": number | null,"muscle_rate_pct": number | null,"note": string | null,"obesity_pct": number | null,"protein_pct": number | null,"skeletal_muscle_kg": number | null,"skeletal_muscle_pct": number | null,"source": string,"user_id": string,"visceral_fat": number | null,"water_kg": number | null,"water_pct": number | null,"weight_kg": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"day": string,"id"?: string,"user_id"?: string,"weight_kg": number
+                    "bmi"?: number | null,"bmr_kcal"?: number | null,"body_fat_pct"?: number | null,"bone_kg"?: number | null,"created_at"?: string,"day": string,"fat_mass_kg"?: number | null,"id"?: string,"lean_mass_kg"?: number | null,"measured_at": string,"metabolic_age"?: number | null,"muscle_mass_kg"?: number | null,"muscle_rate_pct"?: number | null,"note"?: string | null,"obesity_pct"?: number | null,"protein_pct"?: number | null,"skeletal_muscle_kg"?: number | null,"skeletal_muscle_pct"?: number | null,"source"?: string,"user_id"?: string,"visceral_fat"?: number | null,"water_kg"?: number | null,"water_pct"?: number | null,"weight_kg": number
                   }
                   Update: {
-                    "created_at"?: string,"day"?: string,"id"?: string,"user_id"?: string,"weight_kg"?: number
+                    "bmi"?: number | null,"bmr_kcal"?: number | null,"body_fat_pct"?: number | null,"bone_kg"?: number | null,"created_at"?: string,"day"?: string,"fat_mass_kg"?: number | null,"id"?: string,"lean_mass_kg"?: number | null,"measured_at"?: string,"metabolic_age"?: number | null,"muscle_mass_kg"?: number | null,"muscle_rate_pct"?: number | null,"note"?: string | null,"obesity_pct"?: number | null,"protein_pct"?: number | null,"skeletal_muscle_kg"?: number | null,"skeletal_muscle_pct"?: number | null,"source"?: string,"user_id"?: string,"visceral_fat"?: number | null,"water_kg"?: number | null,"water_pct"?: number | null,"weight_kg"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"body_weights": {
+                  Row: {
+                    "created_at": string,"day": string,"id": string,"source": string,"user_id": string,"weight_kg": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"day": string,"id"?: string,"source"?: string,"user_id"?: string,"weight_kg": number
+                  }
+                  Update: {
+                    "created_at"?: string,"day"?: string,"id"?: string,"source"?: string,"user_id"?: string,"weight_kg"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"composition_goals": {
+                  Row: {
+                    "achieved_on": string | null,"archived_at": string | null,"created_at": string,"id": string,"metric": string,"start_day": string,"start_value": number,"target": number,"target_date": string | null,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "achieved_on"?: string | null,"archived_at"?: string | null,"created_at"?: string,"id"?: string,"metric": string,"start_day": string,"start_value": number,"target": number,"target_date"?: string | null,"user_id"?: string
+                  }
+                  Update: {
+                    "achieved_on"?: string | null,"archived_at"?: string | null,"created_at"?: string,"id"?: string,"metric"?: string,"start_day"?: string,"start_value"?: number,"target"?: number,"target_date"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -187,14 +215,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "activity_level": string | null,"birth_date": string | null,"created_at": string,"display_name": string | null,"goal": string | null,"goal_overrides": NonNullable<Json>,"height_cm": number | null,"protein_g_per_kg": number,"sex": string | null,"updated_at": string,"user_id": string
+                    "activity_level": string | null,"birth_date": string | null,"bmr_source": string,"created_at": string,"display_name": string | null,"goal": string | null,"goal_overrides": NonNullable<Json>,"height_cm": number | null,"protein_basis": string,"protein_g_per_kg": number,"protein_g_per_kg_lean": number,"sex": string | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "activity_level"?: string | null,"birth_date"?: string | null,"created_at"?: string,"display_name"?: string | null,"goal"?: string | null,"goal_overrides"?: NonNullable<Json>,"height_cm"?: number | null,"protein_g_per_kg"?: number,"sex"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "activity_level"?: string | null,"birth_date"?: string | null,"bmr_source"?: string,"created_at"?: string,"display_name"?: string | null,"goal"?: string | null,"goal_overrides"?: NonNullable<Json>,"height_cm"?: number | null,"protein_basis"?: string,"protein_g_per_kg"?: number,"protein_g_per_kg_lean"?: number,"sex"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Update: {
-                    "activity_level"?: string | null,"birth_date"?: string | null,"created_at"?: string,"display_name"?: string | null,"goal"?: string | null,"goal_overrides"?: NonNullable<Json>,"height_cm"?: number | null,"protein_g_per_kg"?: number,"sex"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "activity_level"?: string | null,"birth_date"?: string | null,"bmr_source"?: string,"created_at"?: string,"display_name"?: string | null,"goal"?: string | null,"goal_overrides"?: NonNullable<Json>,"height_cm"?: number | null,"protein_basis"?: string,"protein_g_per_kg"?: number,"protein_g_per_kg_lean"?: number,"sex"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
