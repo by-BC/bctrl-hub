@@ -75,13 +75,13 @@ Persona: **Bruno** (dono do app), que se pesa na balança de bioimpedância e ac
   - O dia nunca aparece duplicado no gráfico de peso.
 - **RF15** — As metas nutricionais (v2) usam a **TMB da última medição** em vez da fórmula Mifflin-St Jeor, quando houver medição nos últimos 30 dias. Sem isso, voltam à fórmula.
 - **RF16** — O formulário de metas mostra **qual TMB foi usada** (balança, com a data, ou fórmula) e permite escolher manualmente a fonte.
-- **RF17** — Opção de calcular a proteína-alvo pela **massa magra** (g por kg de massa magra) em vez do peso total, quando houver medição.
+- **RF17** — Opção de calcular a proteína-alvo pela **massa magra** (padrão: **2,5 g por kg de massa magra**, ajustável) em vez do peso total, quando houver medição.
 
 ### F5. Metas de composição
 
 - **RF18** — Definir metas para % de gordura, massa muscular esquelética (kg), gordura visceral e peso, cada uma com valor-alvo e data-alvo opcional.
 - **RF19** — Mostrar o progresso de cada meta: valor de partida, atual e alvo, em percentual concluído.
-- **RF20** — **Projeção** da data em que a meta será atingida, pela tendência das últimas medições (ex.: média das últimas 4 semanas). Com tendência contrária ou dados insuficientes, mostrar "sem projeção" e o motivo.
+- **RF20** — **Projeção** da data em que a meta será atingida, pela tendência de **todo o histórico** de medições da métrica. Com tendência contrária ou menos de 3 medições, mostrar "sem projeção" e o motivo.
 - **RF21** — Conquistas de composição no catálogo da v2, por exemplo: "−1% de gordura", "meta de composição atingida".
 
 ### F6. Perfil e card do mês
@@ -123,12 +123,16 @@ Persona: **Bruno** (dono do app), que se pesa na balança de bioimpedância e ac
 - Medidas com fita (circunferências) e fotos de progresso.
 - Interpretação clínica ou recomendações médicas a partir das métricas.
 - Story dedicado de "antes × depois" da composição (fica para uma versão futura; a variação entra no card do mês).
+- Lembretes, hábito ou tarefa recorrente de pesagem: a medição é só um registro, feito quando o dono quiser.
 
 ## Questões em Aberto
 
-1. **Marca e modelo da balança:** útil para documentar o formato da planilha e a precisão das métricas.
-2. **Duas medições no mesmo dia:** confirmar que o peso do dia é a medição mais recente (alternativa: a da manhã).
-3. **Janela da TMB:** 30 dias de validade para usar a TMB medida é adequado?
-4. **Proteína por massa magra:** qual valor padrão (ex.: 2,5 g por kg de massa magra)?
-5. **Métricas principais:** confirmar o conjunto peso, % gordura, massa muscular esquelética, visceral e massa magra.
-6. **Projeção:** usar a tendência de 4 semanas ou de todo o histórico?
+**Resolvidas com o dono:**
+- Marca e modelo da balança: indiferentes. O formato de referência é o da planilha exportada.
+- Duas medições no mesmo dia: a medição é só um registro, sem rotina recorrente. No caso raro de duas no mesmo dia, o peso do dia é o da mais recente (RF14).
+- Validade da TMB medida: 30 dias (RF15).
+- Proteína por massa magra: 2,5 g/kg como padrão, ajustável (RF17).
+- Métricas principais: peso, % de gordura, massa muscular esquelética (kg), gordura visceral e massa magra (kg).
+- Projeção: tendência de todo o histórico (RF20).
+
+**Pendentes:** nenhuma.
