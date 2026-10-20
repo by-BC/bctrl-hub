@@ -39,8 +39,8 @@ O script vincula os 26 exercícios atuais aos equivalentes do catálogo, gera um
 - [x] 2.5 `run.ts` com `--dry-run`/`--write` e geração do relatório (contagens, vínculos, pendentes, ignorados com motivo)
 - [x] 2.6 Teste de integração: aplicar no Supabase local o SQL gerado dos fixtures, duas vezes, sem duplicar
 - [x] 2.7 Rodar o dry-run real e **parar para o dono revisar o `report.md`**; ajustar `overrides.json`
-- [ ] 2.8 Após aprovação: `--write`, aplicar no remoto, consulta de verificação (82 treinos; contagem de séries igual à da API)
-- [ ] 2.9 Lembrar o dono de gerar uma nova chave da API no Hevy
+- [x] 2.8 Após aprovação: `--write`, aplicar no remoto, consulta de verificação (82 treinos; contagem de séries igual à da API) — aplicado pelo dono em 2026-10-19 (`supabase db query --linked`); verificado: 82 treinos `source=hevy`, 1.489 séries (11 aquecimentos), 455 exercícios com `hevy_template_id` (4 personalizados), 28/28 itens de rotina vinculados
+- [ ] 2.9 Lembrar o dono de gerar uma nova chave da API no Hevy — **pendente (dono)**: gerar nova chave no Hevy e trocar `HEVY_API_KEY` no `.env.local`
 
 ## Detalhes de Implementação
 
