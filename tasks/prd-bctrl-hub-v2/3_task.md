@@ -30,11 +30,11 @@ O seletor de exercício (rotina e sessão) passa a usar o catálogo com os mesmo
 - [x] 3.3 Detalhe do exercício (sheet ou rota) com mídia, instruções, músculos secundários e link "ver no histórico/evolução"
 - [x] 3.4 Componente `ExerciseMedia` com placeholder em caso de erro
 - [x] 3.5 `exercise-picker` da v1 usando o catálogo e os filtros
-- [ ] 3.6 Escrever as instruções em lotes (primeiro os usados, depois o restante) e aplicá-las (local e remoto) — falta só a aplicação remota, com o dono
+- [x] 3.6 Escrever as instruções em lotes (primeiro os usados, depois o restante) e aplicá-las (local e remoto) — aplicado em produção pelo dono em 2026-10-19; verificado 455/455 com instruções
   - [x] 455/455 textos próprios em `scripts/hevy/instructions/*.json` (01 = rotinas e histórico; 02–09 por grupo), fora do Git
   - [x] `npm run instructions:hevy` gera `supabase/instructions.private.sql` (idempotente, só o dono, por `hevy_template_id`)
   - [x] Validado no Supabase local num usuário descartável: importação + instruções, 455/455, segunda aplicação sem mudança
-  - [ ] **Dono:** aplicar no remoto com `npx supabase db query --linked -f supabase/instructions.private.sql`
+  - [x] **Dono:** aplicar no remoto com `npx supabase db query --linked -f supabase/instructions.private.sql`
 - [x] 3.7 Instruções recolhíveis na sessão de treino
 - [x] 3.8 Escrever e rodar os testes da tarefa
 
