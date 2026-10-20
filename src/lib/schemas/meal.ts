@@ -7,11 +7,28 @@ import { z } from "zod";
 
 export const NOTE_MAX = 500;
 
-/** Item como está gravado. Leitura tolerante: campos faltando viram vazio. */
+/** Macros digitados para o item inteiro (sobrescrevem os calculados). */
+const macroValue = z.number().min(0).max(10000);
+export const macrosOverrideSchema = z
+  .object({ kcal: macroValue, protein: macroValue, carbs: macroValue, fat: macroValue })
+  .partial();
+
+/** Id de `foods` (TACO usa md5 como uuid, então não exige a versão do uuid). */
+const foodId = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+
+/**
+ * Item como está gravado. Leitura tolerante: campos faltando viram vazio.
+ * v2 (nutrição): `food_id` (alimento da TACO ou próprio), `grams`, `macros_override` e
+ * `free` ("à vontade", 0 kcal) são opcionais; itens da v1 continuam válidos sem eles.
+ */
 export const storedMealItemSchema = z.object({
   name: z.string().catch(""),
   qty: z.string().catch(""),
   subs: z.array(z.string()).catch([]),
+  food_id: foodId.nullish().catch(undefined),
+  grams: z.number().min(0).nullish().catch(undefined),
+  macros_override: macrosOverrideSchema.nullish().catch(undefined),
+  free: z.boolean().optional().catch(undefined),
 });
 export const storedMealItemsSchema = z.array(storedMealItemSchema).catch([]);
 
@@ -24,6 +41,19 @@ export const mealItemFormSchema = z.object({
   subs: z
     .array(z.string().trim().max(120, "Use até 120 caracteres por substituição."))
     .transform((subs) => subs.filter(Boolean)),
+  food_id: foodId.nullable().optional(),
+  grams: z.number("Gramas inválidas.").min(0, "Gramas não podem ser negativas.").max(5000, "Use até 5000 g.").nullable().optional(),
+  macros_override: z
+    .object({
+      kcal: z.number().min(0).max(10000, "Valor nutricional acima do limite."),
+      protein: z.number().min(0).max(10000, "Valor nutricional acima do limite."),
+      carbs: z.number().min(0).max(10000, "Valor nutricional acima do limite."),
+      fat: z.number().min(0).max(10000, "Valor nutricional acima do limite."),
+    })
+    .partial()
+    .nullable()
+    .optional(),
+  free: z.boolean().optional(),
 });
 
 export const mealOptionFormSchema = z.object({

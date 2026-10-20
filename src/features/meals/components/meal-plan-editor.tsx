@@ -16,9 +16,12 @@ import { BackLink } from "@/features/routines/components/back-link";
 import { BlurSaveField } from "@/features/routines/components/blur-save-field";
 import { MoveButtons } from "@/features/routines/components/sortable-list";
 import { formatMealTime } from "@/lib/domain/meals";
+import { parseQty } from "@/lib/domain/nutrition";
 import { changedPositions, moveById, nextPosition } from "@/lib/domain/routines";
 import { mealFormSchema, mealOptionFormSchema, type MealItem } from "@/lib/schemas/meal";
 import { firstError } from "@/lib/schemas/routine";
+import { OptionMacros } from "@/features/nutrition/components/macro-summary";
+import { useFoodsById } from "@/features/nutrition/hooks";
 import type { Meal, MealOption } from "../api";
 import {
   MEAL_PLAN_MUTATION_KEY,
@@ -31,6 +34,13 @@ import {
   useUpdateMeal,
   useUpdateMealOption,
 } from "../hooks";
+import {
+  comparableNutrition,
+  ItemNutrition,
+  nutritionFields,
+  toNutritionDraft,
+  type NutritionDraft,
+} from "./item-nutrition";
 import { optionLabel } from "./meal-sheet";
 
 /** Conteúdo de /comida/plano: refeições (nome, horário, só em dia de treino, ordem) e opções. */
@@ -267,7 +277,7 @@ function TimeField({ value, onSave }: { value: string; onSave: (value: string) =
 
 // ── Opção ─────────────────────────────────────────────────────────────────
 
-type DraftItem = { key: string; name: string; qty: string; subs: string };
+type DraftItem = { key: string; name: string; qty: string; subs: string; nutrition: NutritionDraft };
 type Draft = { title: string; items: DraftItem[] };
 
 const toDraft = (option: MealOption): Draft => ({
@@ -277,12 +287,35 @@ const toDraft = (option: MealOption): Draft => ({
     name: item.name,
     qty: item.qty,
     subs: item.subs.join("\n"),
+    nutrition: toNutritionDraft(item),
   })),
 });
 
+const emptyItem = (): DraftItem => ({
+  key: crypto.randomUUID(),
+  name: "",
+  qty: "",
+  subs: "",
+  nutrition: toNutritionDraft({ name: "", qty: "", subs: [] }),
+});
+
+/**
+ * Nova quantidade: se o "à vontade" do item seguia o texto antigo, passa a seguir o novo
+ * (digitar "à vontade" marca; trocar por "100 g" desmarca). Marcação manual é mantida.
+ */
+function withQty(item: DraftItem, qty: string): Partial<DraftItem> {
+  const followed = item.nutrition.free === parseQty(item.qty).free;
+  return { qty, nutrition: followed ? { ...item.nutrition, free: parseQty(qty).free } : item.nutrition };
+}
+
 const draftToForm = (draft: Draft) => ({
   title: draft.title,
-  items: draft.items.map((i) => ({ name: i.name, qty: i.qty, subs: i.subs.split("\n") })),
+  items: draft.items.map((i) => ({
+    name: i.name,
+    qty: i.qty,
+    subs: i.subs.split("\n"),
+    ...nutritionFields(i.qty, i.nutrition),
+  })),
 });
 
 /** Comparação já normalizada (espaços e linhas vazias não contam como mudança). */
@@ -290,7 +323,12 @@ function sameAsSaved(draft: Draft, option: MealOption) {
   const norm = (title: string, items: MealItem[]) =>
     JSON.stringify({
       title: title.trim(),
-      items: items.map((i) => ({ name: i.name.trim(), qty: i.qty.trim(), subs: i.subs.map((s) => s.trim()).filter(Boolean) })),
+      items: items.map((i) => ({
+        name: i.name.trim(),
+        qty: i.qty.trim(),
+        subs: i.subs.map((s) => s.trim()).filter(Boolean),
+        ...comparableNutrition({ ...i, qty: i.qty.trim() }),
+      })),
     });
   const form = draftToForm(draft);
   return norm(form.title, form.items) === norm(option.title, option.items);
@@ -303,6 +341,7 @@ function sameAsSaved(draft: Draft, option: MealOption) {
 function OptionEditor({ option, index }: { option: MealOption; index: number }) {
   const update = useUpdateMealOption();
   const remove = useDeleteMealOption();
+  const foods = useFoodsById();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Draft>(() => toDraft(option));
   const [error, setError] = useState<string | null>(null);
@@ -333,6 +372,7 @@ function OptionEditor({ option, index }: { option: MealOption; index: number }) 
         <ChevronDown aria-hidden className={`size-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
         <span className="sr-only">{open ? "Recolher" : "Editar"}</span>
       </CollapsibleTrigger>
+      <OptionMacros items={option.items} className="px-3 pb-2" />
       <CollapsibleContent>
         <form
           aria-label={`Editar ${label}`}
@@ -389,7 +429,7 @@ function OptionEditor({ option, index }: { option: MealOption; index: number }) 
                     maxLength={60}
                     autoComplete="off"
                     className="num h-11 text-base"
-                    onChange={(e) => setItem(item.key, { qty: e.target.value })}
+                    onChange={(e) => setItem(item.key, withQty(item, e.target.value))}
                   />
                 </div>
                 <Textarea
@@ -400,6 +440,14 @@ function OptionEditor({ option, index }: { option: MealOption; index: number }) 
                   className="min-h-11 text-base"
                   onChange={(e) => setItem(item.key, { subs: e.target.value })}
                 />
+                <ItemNutrition
+                  index={i}
+                  name={item.name}
+                  qty={item.qty}
+                  draft={item.nutrition}
+                  foods={foods}
+                  onChange={(patch) => setItem(item.key, { nutrition: { ...item.nutrition, ...patch } })}
+                />
               </div>
             ))}
             <Button
@@ -407,7 +455,7 @@ function OptionEditor({ option, index }: { option: MealOption; index: number }) 
               variant="outline"
               className="h-11"
               onClick={() =>
-                setDraft((d) => ({ ...d, items: [...d.items, { key: crypto.randomUUID(), name: "", qty: "", subs: "" }] }))
+                setDraft((d) => ({ ...d, items: [...d.items, emptyItem()] }))
               }
             >
               <Plus aria-hidden />

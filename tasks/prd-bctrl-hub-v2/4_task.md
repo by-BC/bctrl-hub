@@ -22,13 +22,13 @@ Carregar a tabela TACO (597 alimentos) no banco e vincular cada item do plano al
 
 ## Subtarefas
 
-- [ ] 4.1 Script de conversão da TACO e migration `…_foods_taco.sql` (aplicar local e remoto)
-- [ ] 4.2 `nutrition.ts` (`itemMacros`, `optionMacros`, parsing de gramas) com testes
-- [ ] 4.3 Hooks `useFoods` (busca com cache) e mutações do plano com os campos novos
-- [ ] 4.4 Auto-vínculo dos itens do plano real + relatório; **parar para o dono revisar**; aplicar no remoto
-- [ ] 4.5 Editor de vínculo no `/comida/plano`
-- [ ] 4.6 Macros por opção em `/comida`
-- [ ] 4.7 Escrever e rodar os testes da tarefa
+- [x] 4.1 Script de conversão da TACO e migration `…_foods_taco.sql` (aplicar local e remoto) — aplicada no local e no remoto (`db push`), 597 alimentos
+- [x] 4.2 `nutrition.ts` (`itemMacros`, `optionMacros`, parsing de gramas) com testes
+- [x] 4.3 Hooks `useFoods` (busca com cache) e mutações do plano com os campos novos
+- [ ] 4.4 Auto-vínculo dos itens do plano real + relatório; **parar para o dono revisar**; aplicar no remoto — script, relatório e `supabase/meal-items.private.sql` prontos e validados no local (usuário descartável, 2 aplicações). **Pendente com o dono:** revisar `scripts/meals/out/report.md` e aplicar com `npx supabase db query --linked -f supabase/meal-items.private.sql`
+- [x] 4.5 Editor de vínculo no `/comida/plano`
+- [x] 4.6 Macros por opção em `/comida`
+- [x] 4.7 Escrever e rodar os testes da tarefa
 
 ## Detalhes de Implementação
 
@@ -43,8 +43,8 @@ Ver techspec: **Modelos de Dados**, **Interfaces Principais** (`nutrition.ts`), 
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `itemMacros` (gramas, unidade, override, "à vontade", sem alimento); parsing de quantidade ("1 fatia média (170 g)", "à vontade", "5 ml (5g)"); `optionMacros` com `unresolved`
-- [ ] Testes de integração: busca na TACO via RLS (usuário comum lê); E2E vincula um item no editor e vê os macros da opção mudarem em `/comida`
+- [x] Testes de unidade: `itemMacros` (gramas, unidade, override, "à vontade", sem alimento); parsing de quantidade ("1 fatia média (170 g)", "à vontade", "5 ml (5g)"); `optionMacros` com `unresolved`
+- [x] Testes de integração: busca na TACO via RLS (usuário comum lê); E2E vincula um item no editor e vê os macros da opção mudarem em `/comida`
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 

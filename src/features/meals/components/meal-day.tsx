@@ -14,6 +14,7 @@ import { formatDay } from "@/lib/format";
 import type { Meal, MealLog } from "../api";
 import { useWeekSummary } from "@/features/week/hooks";
 import { weekStart } from "@/lib/domain/week";
+import { OptionMacros } from "@/features/nutrition/components/macro-summary";
 import { useMealDay } from "../hooks";
 import { optionLabel, MealSheet } from "./meal-sheet";
 import { MealStatusBadge } from "./meal-status";
@@ -157,6 +158,9 @@ export function MealCard({ meal, log, onOpen }: { meal: Meal; log: MealLog | und
       <span className="min-w-0 flex-1">
         <span className="block truncate font-semibold">{meal.name}</span>
         <MealStatusBadge status={status} detail={detail} />
+        {status === "done" && optionIndex >= 0 && (
+          <OptionMacros items={meal.meal_options[optionIndex].items} className="mt-1" />
+        )}
       </span>
       <ChevronRight
         aria-hidden

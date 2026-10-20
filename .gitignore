@@ -58,3 +58,7 @@ scripts/hevy/out/
 # Instruções próprias: o texto é nosso, mas é indexado pelo id do catálogo do Hevy e inclui os
 # exercícios personalizados do dono. Ficam só na máquina (ver task 3.0 da v2).
 scripts/hevy/instructions/
+
+# ── Vínculo do plano alimentar com a TACO (task 4.0 v2: dados pessoais) ──
+scripts/meals/data/
+scripts/meals/out/

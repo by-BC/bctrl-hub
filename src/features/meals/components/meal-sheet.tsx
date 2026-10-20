@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { formatMealTime, mealStatus } from "@/lib/domain/meals";
 import { NOTE_MAX, offPlanNoteSchema, type MealItem } from "@/lib/schemas/meal";
+import { OptionMacros } from "@/features/nutrition/components/macro-summary";
 import type { Meal, MealLog, MealOption } from "../api";
 import { buildMealLog, useLogMeal, useUnlogMeal } from "../hooks";
 import { MealStatusBadge } from "./meal-status";
@@ -133,6 +134,7 @@ function OptionCard({
       <header>
         <p className="num text-xs tracking-[0.15em] text-muted-foreground uppercase">{label}</p>
         <h3 className="font-semibold">{option.title}</h3>
+        <OptionMacros items={option.items} className="mt-1" />
       </header>
       {option.items.length > 0 && (
         <ul className="space-y-1">
