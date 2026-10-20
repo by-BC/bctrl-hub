@@ -395,3 +395,68 @@ export function amountToGrams(amount: number | null, unit: AmountUnit): number |
   const grams = Math.round(amount * unit.grams * 10) / 10;
   return grams > 0 && grams <= 99999 ? grams : null;
 }
+
+// ── Média do mês × meta ───────────────────────────────────────────────────
+
+/** Parte `nutrition` do `month_summary`: o que foi marcado nos dias com registro do mês. */
+export type MonthNutritionFacts = {
+  /** Dias com algum registro de refeição prevista (dentro ou fora do plano). */
+  logged_days: number;
+  /** Quantos desses dias tiveram treino finalizado. */
+  training_days: number;
+  /** Quantas vezes cada opção do plano foi marcada. */
+  options: readonly { option_id: string; count: number }[];
+  /** Soma dos itens fora do plano (snapshot). */
+  off_plan: Macros;
+};
+
+export type MonthNutrition = {
+  /** Dias da média (os com registro). */
+  days: number;
+  /** Média consumida por dia registrado; `null` sem dias. */
+  consumed: Macros | null;
+  /** Meta média dos mesmos dias (treino e descanso na proporção do mês); `null` sem meta ou sem dias. */
+  goal: Macros | null;
+  /** Itens sem valor (e opções que saíram do plano) que ficaram fora da média, contando repetições. */
+  unresolved: number;
+};
+
+const scaleMacros = (m: Macros, k: number): Macros => ({
+  kcal: m.kcal * k,
+  protein: m.protein * k,
+  carbs: m.carbs * k,
+  fat: m.fat * k,
+});
+
+/**
+ * kcal e macros médios do mês × meta. As opções valem os macros de hoje do plano (`optionItems`
+ * por id da opção, com `optionMacros`); o fora do plano já vem somado do banco. A meta de cada
+ * dia é a de descanso ou a de treino (`goalsFromProfile`), ponderada pelos dias de treino.
+ */
+export function monthNutrition(
+  facts: MonthNutritionFacts,
+  optionItems: ReadonlyMap<string, readonly PlanItem[]>,
+  foods: ReadonlyMap<string, Food>,
+  goals: { rest: Macros; training: Macros } | null,
+): MonthNutrition {
+  let total: Macros = { ...facts.off_plan };
+  let unresolved = 0;
+  for (const { option_id, count } of facts.options) {
+    const items = optionItems.get(option_id);
+    if (!items) {
+      unresolved += count;
+      continue;
+    }
+    const m = optionMacros(items, foods);
+    total = addMacros(total, scaleMacros(m.total, count));
+    unresolved += m.unresolved * count;
+  }
+
+  const days = facts.logged_days;
+  if (days <= 0) return { days: 0, consumed: null, goal: null, unresolved };
+  const training = Math.min(days, Math.max(0, facts.training_days));
+  const goal = goals
+    ? scaleMacros(addMacros(scaleMacros(goals.rest, days - training), scaleMacros(goals.training, training)), 1 / days)
+    : null;
+  return { days, consumed: scaleMacros(total, 1 / days), goal, unresolved };
+}

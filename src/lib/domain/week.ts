@@ -1,5 +1,5 @@
 /**
- * Dia e semana do app: semana de segunda a domingo em America/Sao_Paulo.
+ * Dia, semana e mês do app: semana de segunda a domingo em America/Sao_Paulo.
  * Toda conta de "dia" e "semana" (hábitos, refeições, resumo) passa por aqui. Sem I/O.
  */
 
@@ -35,4 +35,24 @@ export function weekDays(start: string): string[] {
 /** Segunda-feira `delta` semanas antes (negativo) ou depois (positivo). */
 export function addWeeks(start: string, delta: number): string {
   return toDay(toTime(weekStart(start)) + delta * 7 * DAY_MS);
+}
+
+// ── Mês ───────────────────────────────────────────────────────────────────
+// Mês identificado pelo 1º dia ("AAAA-MM-01"), como o `month` do `month_summary`.
+
+/** 1º dia do mês do dia. */
+export function monthStart(day: string): string {
+  return `${day.slice(0, 7)}-01`;
+}
+
+/** Último dia do mês do dia. */
+export function monthEnd(day: string): string {
+  const [y, m] = day.split("-").map(Number);
+  return toDay(Date.UTC(y, m, 0, 12)); // dia 0 do mês seguinte = último dia deste
+}
+
+/** 1º dia do mês `delta` meses antes (negativo) ou depois (positivo). */
+export function addMonths(day: string, delta: number): string {
+  const [y, m] = day.split("-").map(Number);
+  return toDay(Date.UTC(y, m - 1 + delta, 1, 12));
 }

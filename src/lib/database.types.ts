@@ -373,8 +373,16 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "finish_workout":
+            "daily_scores":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "best_session_kg": number,"day": string,"diet": boolean,"habits": boolean,"meals_done": number,"meals_planned": number,"prs": number,"score": number,"tasks": boolean,"trained": boolean,"volume_kg": number,"workouts": number
+            }[]
+                           },
+"finish_workout":
 { Args: { "payload": Json }; Returns: string
+                           },
+"month_summary":
+{ Args: { "p_month": string }; Returns: Json
                            },
 "week_summary":
 { Args: { "p_week_start": string }; Returns: Json
