@@ -5,6 +5,7 @@ import {
   createDisposableUser,
   deleteDisposableUser,
   seedMealPlan,
+  seedMeasurements,
   seedNutrition,
   seedProfile,
   seedSystemHabits,
@@ -49,6 +50,10 @@ for (const theme of ["dark", "light"] as const) {
       await seedNutrition(user, meals, { weightKg: 80 });
       await seedProfile(user);
       await seedSystemHabits(user);
+      await seedMeasurements(user, [
+        { at: "2026-09-01 07:00", weight_kg: 81, body_fat_pct: 21, fat_mass_kg: 17, skeletal_muscle_kg: 35, visceral_fat: 9, lean_mass_kg: 64 },
+        { at: "2026-10-01 07:00", weight_kg: 80.4, body_fat_pct: 20.2, fat_mass_kg: 16.2, skeletal_muscle_kg: 35.3, visceral_fat: 9, lean_mass_kg: 64.2 },
+      ]);
       const workout = await seedWorkout(user, {
         routine: plan.upper,
         day: dayInSaoPaulo(new Date()),
@@ -64,6 +69,7 @@ for (const theme of ["dark", "light"] as const) {
         `/treino/historico/${workout}/story`,
         "/treino/sessao",
         "/evolucao",
+        "/evolucao/composicao",
         `/evolucao/${plan.exercises.supino}`,
         "/comida",
         "/comida/plano",
@@ -114,6 +120,22 @@ for (const theme of ["dark", "light"] as const) {
         .click();
       await expect(page.getByRole("dialog", { name: "Supino E2E" })).toBeVisible();
       found.push(...(await audit(page, "/treino/exercicios (detalhe do exercício)")));
+
+      // Composição: sheet de nova medição com "Mais métricas" aberto e um erro de faixa, e o detalhe.
+      await page.goto("/evolucao/composicao");
+      await ready(page);
+      await page.getByRole("button", { name: "Nova medição" }).click();
+      const measurement = page.getByRole("form", { name: "Nova medição" });
+      await measurement.getByRole("button", { name: /Mais métricas/ }).click();
+      await measurement.getByLabel("Gordura corporal (%)").fill("85");
+      await measurement.getByRole("button", { name: "Salvar medição" }).click();
+      await expect(measurement.getByRole("alert")).toBeVisible();
+      found.push(...(await audit(page, "/evolucao/composicao (sheet de nova medição)")));
+      await page.keyboard.press("Escape");
+      await expect(measurement).toBeHidden();
+      await page.getByTestId("measurement-item").first().click();
+      await expect(page.getByRole("dialog", { name: "Medição", exact: true })).toBeVisible();
+      found.push(...(await audit(page, "/evolucao/composicao (detalhe da medição)")));
 
       await page.goto("/comida");
       await page.getByTestId("meal-card").first().click();

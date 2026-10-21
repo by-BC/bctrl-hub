@@ -106,7 +106,7 @@ function useBodyWeightMutation<V>(
 export function useUpsertBodyWeight() {
   return useBodyWeightMutation(
     WRITES.upsertBodyWeight,
-    (list, entry) => [...list.filter((w) => w.day !== entry.day), entry],
+    (list, entry) => [...list.filter((w) => w.day !== entry.day), { ...entry, source: "manual" }],
   );
 }
 

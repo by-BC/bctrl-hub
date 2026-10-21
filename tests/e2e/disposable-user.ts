@@ -304,3 +304,32 @@ export async function seedMealLogs(user: DisposableUser, day: string, mealIds: r
     mealIds.map((meal_id) => ({ day, meal_id, option_id: data.find((o) => o.meal_id === meal_id)?.id ?? null })),
   );
 }
+
+/**
+ * v3 (composição): medições da balança direto no banco. `at` é "AAAA-MM-DD HH:mm" em São Paulo
+ * (−03:00); as métricas ausentes ficam nulas. Todas as linhas com as mesmas colunas (insert em lote).
+ */
+export async function seedMeasurements(
+  user: DisposableUser,
+  rows: readonly ({ at: string; weight_kg: number } & Record<string, number | string>)[],
+) {
+  const metrics = [
+    "bmi", "body_fat_pct", "fat_mass_kg", "skeletal_muscle_pct", "skeletal_muscle_kg", "muscle_rate_pct",
+    "muscle_mass_kg", "visceral_fat", "water_pct", "water_kg", "bmr_kcal", "obesity_pct", "bone_kg",
+    "protein_pct", "lean_mass_kg", "metabolic_age",
+  ];
+  await inserter(user)(
+    "body_measurements",
+    rows.map(({ at, ...values }) => {
+      const [day, time] = at.split(" ");
+      return {
+        ...Object.fromEntries(metrics.map((k) => [k, null])),
+        ...values,
+        id: crypto.randomUUID(),
+        measured_at: `${day}T${time}:00-03:00`,
+        day,
+        source: "import",
+      };
+    }),
+  );
+}

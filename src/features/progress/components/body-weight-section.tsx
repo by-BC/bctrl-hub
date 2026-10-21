@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, Scale, Trash2 } from "lucide-react";
+import { ChevronRight, Plus, Scale, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useId, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { NumUnit } from "@/components/num-unit";
@@ -29,10 +30,18 @@ const kg = (n: number) => `${formatKg(n)} kg`;
 export function BodyWeightSection() {
   return (
     <section aria-labelledby="peso-titulo" className="space-y-3">
-      <h2 id="peso-titulo" className="flex items-center gap-2 text-lg font-semibold">
-        <Scale aria-hidden className="size-5 text-primary-text" />
-        Peso corporal
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <h2 id="peso-titulo" className="flex items-center gap-2 text-lg font-semibold">
+          <Scale aria-hidden className="size-5 text-primary-text" />
+          Peso corporal
+        </h2>
+        <Button asChild variant="outline" className="h-11">
+          <Link href="/evolucao/composicao">
+            Composição corporal
+            <ChevronRight aria-hidden />
+          </Link>
+        </Button>
+      </div>
       <BodyWeightForm />
       <BodyWeightTrend />
     </section>
@@ -131,7 +140,11 @@ function BodyWeightTrend() {
 
   // A média usa todo o histórico; o período só recorta o que aparece.
   const averaged = useMemo(
-    () => movingAverage((data ?? []).map((w) => ({ day: w.day, value: w.weight_kg })), AVERAGE_WINDOW),
+    () =>
+      movingAverage(
+        (data ?? []).map((w) => ({ day: w.day, value: w.weight_kg, source: w.source ?? "manual" })),
+        AVERAGE_WINDOW,
+      ),
     [data],
   );
   const points = today ? filterByRange(averaged, range, today) : averaged;
@@ -194,23 +207,30 @@ function BodyWeightTrend() {
           table={
             <DataTable
               caption="Peso corporal por dia"
-              columns={[{ label: "Dia" }, { label: "Peso", numeric: true }, { label: "Média 7 dias", numeric: true }, { label: "" }]}
+              columns={[{ label: "Dia · origem" }, { label: "Peso", numeric: true }, { label: "Média 7 dias", numeric: true }, { label: "" }]}
               rows={[...points].reverse().map((p) => ({
                 key: p.day,
                 cells: [
-                  <span key="d" className="num">{formatShortDay(p.day, { year: true })}</span>,
+                  // Origem do peso do dia: medição da balança (trigger) ou digitado.
+                  <span key="d" className="flex flex-col">
+                    <span className="num">{formatShortDay(p.day, { year: true })}</span>
+                    <span className="text-xs text-muted-foreground">{p.source === "scale" ? "Balança" : "Manual"}</span>
+                  </span>,
                   `${formatKg(p.value)} kg`,
                   `${formatKg(p.average)} kg`,
-                  <Button
-                    key="x"
-                    variant="ghost"
-                    size="icon"
-                    className="size-11 text-muted-foreground hover:text-destructive"
-                    aria-label={`Excluir peso de ${formatDay(p.day)}`}
-                    onClick={() => remove.mutate(p.day)}
-                  >
-                    <Trash2 aria-hidden />
-                  </Button>,
+                  // O peso da balança sai excluindo a medição, em Composição.
+                  p.source === "scale" ? null : (
+                    <Button
+                      key="x"
+                      variant="ghost"
+                      size="icon"
+                      className="size-11 text-muted-foreground hover:text-destructive"
+                      aria-label={`Excluir peso de ${formatDay(p.day)}`}
+                      onClick={() => remove.mutate(p.day)}
+                    >
+                      <Trash2 aria-hidden />
+                    </Button>
+                  ),
                 ],
               }))}
             />

@@ -78,22 +78,29 @@ export type MeasurementValues = Partial<Record<MetricKey, number | null>>;
 
 const fmt = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
 
-/** Mensagens de erro da medição, na ordem do catálogo; vazio = válida. O peso é obrigatório. */
-export function validateMeasurement(m: MeasurementValues): string[] {
-  const errors: string[] = [];
+export type MeasurementError = { key: MetricKey; message: string };
+
+/** Erros da medição por métrica, na ordem do catálogo; vazio = válida. O peso é obrigatório. */
+export function measurementErrors(m: MeasurementValues): MeasurementError[] {
+  const errors: MeasurementError[] = [];
   for (const def of METRICS) {
     const v = m[def.key];
     if (v === null || v === undefined) {
-      if (def.key === "weight_kg") errors.push("Informe o peso.");
+      if (def.key === "weight_kg") errors.push({ key: def.key, message: "Informe o peso." });
       continue;
     }
     if (!Number.isFinite(v) || v < def.min || v > def.max) {
-      errors.push(`${def.label} entre ${fmt(def.min)} e ${fmt(def.max)}${def.unit ? ` ${def.unit}` : ""}.`);
+      errors.push({ key: def.key, message: `${def.label} entre ${fmt(def.min)} e ${fmt(def.max)}${def.unit ? ` ${def.unit}` : ""}.` });
     } else if (def.integer && !Number.isInteger(v)) {
-      errors.push(`${def.label} deve ser um número inteiro.`);
+      errors.push({ key: def.key, message: `${def.label} deve ser um número inteiro.` });
     }
   }
   return errors;
+}
+
+/** Mensagens de erro da medição, na ordem do catálogo; vazio = válida. O peso é obrigatório. */
+export function validateMeasurement(m: MeasurementValues): string[] {
+  return measurementErrors(m).map((e) => e.message);
 }
 
 // ── Variações e série ─────────────────────────────────────────────────────

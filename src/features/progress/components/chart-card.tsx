@@ -117,20 +117,25 @@ export function DataTable({
   );
 }
 
-/** Grupo de opções exclusivas (métrica, período), com alvo de toque ≥ 44 px. */
+/**
+ * Grupo de opções exclusivas (métrica, período), com alvo de toque ≥ 44 px.
+ * `stretch` ocupa a largura toda e divide entre as opções (muitas opções em 375 px).
+ */
 export function Segmented<T extends string>({
   label,
   options,
   value,
   onChange,
+  stretch = false,
 }: {
   label: string;
   options: readonly { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
+  stretch?: boolean;
 }) {
   return (
-    <div role="group" aria-label={label} className="inline-flex rounded-lg bg-muted p-1">
+    <div role="group" aria-label={label} className={`${stretch ? "flex w-full" : "inline-flex"} rounded-lg bg-muted p-1`}>
       {options.map((o) => {
         const selected = o.value === value;
         return (
@@ -139,7 +144,7 @@ export function Segmented<T extends string>({
             type="button"
             aria-pressed={selected}
             onClick={() => onChange(o.value)}
-            className={`min-h-11 rounded-md px-3 text-sm font-medium outline-none transition-colors focus-visible:ring-[3px] focus-visible:ring-ring/50 ${
+            className={`min-h-11 rounded-md text-sm ${stretch ? "min-w-0 flex-1 px-1" : "px-3"} font-medium outline-none transition-colors focus-visible:ring-[3px] focus-visible:ring-ring/50 ${
               selected ? "bg-card font-semibold text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             }`}
           >

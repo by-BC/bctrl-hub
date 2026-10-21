@@ -35,13 +35,13 @@ Há um atalho a partir da seção de peso da Evolução.
 
 ## Subtarefas
 
-- [ ] 3.1 `api.ts` e `hooks.ts` de `src/features/composition` + entradas no `WRITES`
-- [ ] 3.2 `LatestMeasurementCard` com variações
-- [ ] 3.3 `CompositionCharts` (principais e gordura × músculo)
-- [ ] 3.4 `MeasurementSheet` (criar e editar) e `MeasurementDetail` (com excluir)
-- [ ] 3.5 Página `/evolucao/composicao` + atalho na seção de peso + origem na tabela do peso
-- [ ] 3.6 Estados vazios ("Nenhuma medição ainda") e skeletons sem deslocar o layout
-- [ ] 3.7 Escrever e rodar os testes da tarefa
+- [x] 3.1 `api.ts` e `hooks.ts` de `src/features/composition` + entradas no `WRITES`
+- [x] 3.2 `LatestMeasurementCard` com variações
+- [x] 3.3 `CompositionCharts` (principais e gordura × músculo)
+- [x] 3.4 `MeasurementSheet` (criar e editar) e `MeasurementDetail` (com excluir)
+- [x] 3.5 Página `/evolucao/composicao` + atalho na seção de peso + origem na tabela do peso
+- [x] 3.6 Estados vazios ("Nenhuma medição ainda") e skeletons sem deslocar o layout
+- [x] 3.7 Escrever e rodar os testes da tarefa
 
 ## Detalhes de Implementação
 
@@ -56,8 +56,8 @@ Ver techspec: **Visão Geral dos Componentes** (feature `composition`, `progress
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: formatação das variações (direção boa ou ruim, sem base); montagem das séries do gráfico; o formulário mostra o erro de faixa
-- [ ] Testes de integração: E2E registra a medição e vê o card e o peso na Evolução; validação; editar e excluir; axe na rota nova (adicionar ao `a11y.spec.ts`)
+- [x] Testes de unidade: formatação das variações (direção boa ou ruim, sem base); montagem das séries do gráfico; o formulário mostra o erro de faixa
+- [x] Testes de integração: E2E registra a medição e vê o card e o peso na Evolução; validação; editar e excluir; axe na rota nova (adicionar ao `a11y.spec.ts`)
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 
@@ -66,3 +66,14 @@ Ver techspec: **Visão Geral dos Componentes** (feature `composition`, `progress
 - `src/app/(app)/evolucao/composicao/page.tsx`
 - `src/features/progress/components/body-weight-section.tsx`
 - `tests/unit/composition-ui.test.tsx`, `tests/e2e/composition.spec.ts`, `tests/e2e/a11y.spec.ts`
+
+## Notas de execução (2026-10-20)
+
+- **Gravações:** `addMeasurement` (upsert pelo id) serve para criar e editar; não foi preciso um `updateMeasurement`. As mensagens de sucesso ficam no `useMutation` do hook (o sheet fecha antes de a gravação voltar). Invalidações: `composition`, `progress/body-weights`, `profile` e `week` (resumo do mês e pontuações).
+- **`fetchBodyWeights`** devolve `source` (`manual` | `scale`), pendência da 1.0. Na tabela "ver dados" do peso a origem aparece sob o dia; linha da balança não tem lixeira (o peso sai excluindo a medição, em Composição).
+- **Data e hora:** `datetime-local` em São Paulo (`saoPauloLocal` / `saoPauloLocalToInstant` em `day.ts`, com o fuso real da data). Data no futuro é recusada.
+- **Validação:** `measurementErrors` (por métrica) no domínio; `validateMeasurement` continua igual. O campo com erro fica `aria-invalid` e "Mais métricas" abre sozinho se o erro estiver lá. Grau de obesidade aceita negativo (teclado de texto); idade metabólica com teclado numérico.
+- **Variação:** seta + número com sinal + unidade ("p.p." para %), cor pela direção desejada (`text-primary-text` = melhora, `text-highlight-text` = piora, neutra no peso e nas métricas sem direção), e o tom em texto para leitores de tela.
+- **Gráficos:** uma métrica principal por vez (seletor) e gordura kg × músculo esquelético kg (só medições com as duas), filtro 3 meses por padrão. Celular: card → gráficos → lista; desktop: card e lista | gráficos.
+- **`Segmented`** ganhou `stretch` (5 opções em 375 px). `movingAverage` ficou genérica (carrega a origem).
+- **Testes:** unidade 502 (inclui `composition-ui.test.tsx`, 12); integração 252; E2E `composition` (4), `progress` e `a11y` (com `/evolucao/composicao`, o sheet de nova medição aberto com erro e o detalhe) nos dois projetos; mobile completo 59/60 + o `routines` instável passou ao repetir; desktop completo 61/61.

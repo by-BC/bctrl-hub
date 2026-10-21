@@ -9,7 +9,7 @@ import {
   upsertMeasurement,
   type MeasurementSave,
 } from "@/features/composition/api";
-import { upsertBodyWeight } from "@/features/progress/api";
+import { fetchBodyWeights, upsertBodyWeight } from "@/features/progress/api";
 import type { Database } from "@/lib/database.types";
 import { anonClient, createTestUser, deleteTestUser, type TestUser } from "../support/test-users";
 
@@ -360,6 +360,14 @@ describe("composição via API (gravações do WRITES)", () => {
     expect(list).toHaveLength(1);
     expect(list[0]).toMatchObject({ id: save.id, day: "2026-08-01", weight_kg: 82.1, visceral_fat: null, body_fat_pct: 21.5 });
     expect(await weightOf(user.client, "2026-08-01")).toEqual({ weight_kg: 82.1, source: "scale" });
+  });
+
+  it("fetchBodyWeights devolve a origem do peso do dia (balança ou manual)", async () => {
+    await upsertBodyWeight({ day: "2026-07-31", weight_kg: 82.9 }, api);
+    expect(await fetchBodyWeights(api)).toEqual([
+      { day: "2026-07-31", weight_kg: 82.9, source: "manual" },
+      { day: "2026-08-01", weight_kg: 82.1, source: "scale" },
+    ]);
   });
 
   it("excluir a medição remove o peso do dia que veio dela", async () => {

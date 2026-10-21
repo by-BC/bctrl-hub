@@ -135,7 +135,7 @@ export type AveragedPoint = DayValue & { t: number; average: number };
  * `window` dias (ele incluso). Dia sem registro não conta como zero, só fica de fora;
  * com menos registros que a janela, a média usa os que existem.
  */
-export function movingAverage(points: readonly DayValue[], window: number): AveragedPoint[] {
+export function movingAverage<P extends DayValue>(points: readonly P[], window: number): (P & AveragedPoint)[] {
   if (!Number.isInteger(window) || window < 1) throw new RangeError("janela deve ser um inteiro ≥ 1");
   const sorted = [...points].sort((a, b) => a.day.localeCompare(b.day));
   return sorted.map((point, i) => {

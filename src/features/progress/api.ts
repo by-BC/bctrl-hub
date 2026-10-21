@@ -140,12 +140,20 @@ export async function fetchExerciseHistory(id: string, client: Client = db()): P
 
 // ── Peso corporal ─────────────────────────────────────────────────────────
 
-export type BodyWeight = { day: string; weight_kg: number };
+/** Origem do peso do dia: digitado (`manual`) ou da medição da balança (`scale`, pelo trigger). */
+export type BodyWeightSource = "manual" | "scale";
+
+/** Peso do dia. `source` vem nas leituras; na gravação manual é sempre `manual`. */
+export type BodyWeight = { day: string; weight_kg: number; source?: BodyWeightSource };
 
 export async function fetchBodyWeights(client: Client = db()): Promise<BodyWeight[]> {
-  const { data, error } = await client.from("body_weights").select("day, weight_kg").order("day");
+  const { data, error } = await client.from("body_weights").select("day, weight_kg, source").order("day");
   if (error) fail(error, "Não foi possível carregar o peso corporal.");
-  return data.map((r) => ({ day: r.day, weight_kg: Number(r.weight_kg) }));
+  return data.map((r) => ({
+    day: r.day,
+    weight_kg: Number(r.weight_kg),
+    source: r.source === "scale" ? "scale" : "manual",
+  }));
 }
 
 /**
@@ -157,7 +165,7 @@ export async function fetchBodyWeights(client: Client = db()): Promise<BodyWeigh
 export async function upsertBodyWeight(entry: BodyWeight, client: Client = db()) {
   const { error } = await client
     .from("body_weights")
-    .upsert({ ...entry, source: "manual" }, { onConflict: "user_id,day", defaultToNull: false });
+    .upsert({ day: entry.day, weight_kg: entry.weight_kg, source: "manual" }, { onConflict: "user_id,day", defaultToNull: false });
   if (error) fail(error, "Não foi possível salvar o peso.");
 }
 

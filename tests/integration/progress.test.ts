@@ -130,8 +130,8 @@ describe("evolução: views → série do gráfico, e peso corporal", () => {
     await upsertBodyWeight({ day: "2026-10-18", weight_kg: 81.95 }, db);
 
     expect(await fetchBodyWeights(db)).toEqual([
-      { day: "2026-10-17", weight_kg: 82.9 },
-      { day: "2026-10-18", weight_kg: 81.95 },
+      { day: "2026-10-17", weight_kg: 82.9, source: "manual" },
+      { day: "2026-10-18", weight_kg: 81.95, source: "manual" },
     ]);
     const { count } = await db.from("body_weights").select("id", { count: "exact", head: true });
     expect(count).toBe(2);
