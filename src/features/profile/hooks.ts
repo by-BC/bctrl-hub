@@ -9,6 +9,9 @@ import { fetchFoods, foodKeys } from "@/features/nutrition/api";
 import { useBodyWeights } from "@/features/progress/hooks";
 import { useToday } from "@/features/progress/use-today";
 import { DataError } from "@/features/routines/api";
+import { useMeasurements } from "@/features/composition/hooks";
+import type { Measurement } from "@/features/composition/api";
+import { bmrInputFrom } from "@/lib/domain/composition";
 import { evaluateAchievements, type AchievementView } from "@/lib/domain/achievements";
 import {
   goalsFromProfile,
@@ -75,12 +78,18 @@ export type MonthNutritionPair = { current: MonthNutrition; previous: MonthNutri
  * Metas de descanso e de treino válidas no mês: perfil + último peso até o fim do mês (ou até
  * hoje, no mês em curso). Sem perfil completo ou sem peso, `null`.
  */
-function monthGoals(profile: Profile | null | undefined, weights: readonly { day: string; weight_kg: number }[], onDay: string) {
+function monthGoals(
+  profile: Profile | null | undefined,
+  weights: readonly { day: string; weight_kg: number }[],
+  measurements: readonly Measurement[],
+  onDay: string,
+) {
   if (!isCompleteProfile(profile) || weights.length === 0) return null;
   const weight = [...weights].reverse().find((w) => w.day <= onDay) ?? weights[0];
+  const bmr = bmrInputFrom(measurements, onDay);
   return {
-    rest: goalsFromProfile(profile, weight.weight_kg, false, onDay),
-    training: goalsFromProfile(profile, weight.weight_kg, true, onDay),
+    rest: goalsFromProfile(profile, weight.weight_kg, false, onDay, bmr),
+    training: goalsFromProfile(profile, weight.weight_kg, true, onDay, bmr),
   };
 }
 
@@ -91,16 +100,17 @@ function monthNutritionPair(
   foods: readonly Food[] | undefined,
   profile: Profile | null | undefined,
   weights: readonly { day: string; weight_kg: number }[] | undefined,
+  measurements: readonly Measurement[] | undefined,
   today: string | null,
 ): MonthNutritionPair | null {
-  if (!summary || !plan || !foods || profile === undefined || !weights || !today) return null;
+  if (!summary || !plan || !foods || profile === undefined || !weights || !measurements || !today) return null;
   const optionItems = new Map<string, readonly PlanItem[]>(
     plan.flatMap((meal) => meal.meal_options.map((o) => [o.id, o.items as PlanItem[]] as const)),
   );
   const foodsById = new Map<string, Food>(foods.map((f) => [f.id, f]));
   const of = (numbers: MonthNumbers) => {
     const end = monthEnd(numbers.month);
-    const goals = monthGoals(profile, weights, end < today ? end : today);
+    const goals = monthGoals(profile, weights, measurements, end < today ? end : today);
     return monthNutrition(numbers.nutrition, optionItems, foodsById, goals);
   };
   return { current: of(summary.current), previous: of(summary.previous) };
@@ -127,15 +137,17 @@ export function useMonthSummary(month: string | null) {
   const foods = useQuery({ queryKey: foodKeys.all, queryFn: () => fetchFoods(), staleTime: 60 * 60 * 1000 });
   const profile = useProfile();
   const weights = useBodyWeights();
+  const measurements = useMeasurements();
 
   const data = summary.data;
   const meals = plan.data;
   const foodList = foods.data;
   const me = profile.data;
   const weightList = weights.data;
+  const measurementList = measurements.data;
   const nutrition = useMemo(
-    () => monthNutritionPair(data, meals, foodList, me, weightList, today),
-    [data, meals, foodList, me, weightList, today],
+    () => monthNutritionPair(data, meals, foodList, me, weightList, measurementList, today),
+    [data, meals, foodList, me, weightList, measurementList, today],
   );
 
   return { ...summary, nutrition };

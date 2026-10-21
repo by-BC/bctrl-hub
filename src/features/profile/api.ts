@@ -3,13 +3,18 @@ import type { Database } from "@/lib/database.types";
 import type { PrKind } from "@/lib/domain/exercise-types";
 import {
   ACTIVITY_LEVELS,
+  BMR_SOURCES,
   GOALS,
+  PROTEIN_BASES,
+  PROTEIN_G_PER_KG_LEAN_DEFAULT,
   SEXES,
   type ActivityLevel,
+  type BmrSourceSetting,
   type Goal,
   type GoalOverrides,
   type MonthNutritionFacts,
   type NutritionProfile,
+  type ProteinBasis,
   type Sex,
 } from "@/lib/domain/nutrition";
 import { MAX_SCORE_DAYS, scoreChunks, toDayFacts, type DayFacts } from "@/lib/domain/score";
@@ -31,7 +36,12 @@ export const profileKeys = {
   me: () => ["profile", "me"] as const,
 };
 
-export type Profile = NutritionProfile & { goal_overrides: GoalOverrides };
+export type Profile = NutritionProfile & {
+  goal_overrides: GoalOverrides;
+  bmr_source: BmrSourceSetting;
+  protein_basis: ProteinBasis;
+  protein_g_per_kg_lean: number;
+};
 
 /** O que o formulário grava (o `user_id` vem do default `auth.uid()`). */
 export type ProfileSave = {
@@ -42,6 +52,10 @@ export type ProfileSave = {
   goal: Goal;
   protein_g_per_kg: number;
   goal_overrides: GoalOverrides;
+  /** v3: fonte da TMB, base da proteína e g/kg de massa magra. */
+  bmr_source: BmrSourceSetting;
+  protein_basis: ProteinBasis;
+  protein_g_per_kg_lean: number;
 };
 
 function fail(error: { message: string; code?: string }, message: string): never {
@@ -56,7 +70,9 @@ const oneOf = <T extends string>(list: readonly T[], v: string | null): T | null
 export async function fetchProfile(client: Client = db()): Promise<Profile | null> {
   const { data, error } = await client
     .from("profiles")
-    .select("sex, birth_date, height_cm, activity_level, goal, protein_g_per_kg, goal_overrides")
+    .select(
+      "sex, birth_date, height_cm, activity_level, goal, protein_g_per_kg, goal_overrides, bmr_source, protein_basis, protein_g_per_kg_lean",
+    )
     .maybeSingle();
   if (error) fail(error, "Não foi possível carregar o perfil.");
   if (!data) return null;
@@ -68,6 +84,9 @@ export async function fetchProfile(client: Client = db()): Promise<Profile | nul
     goal: oneOf(GOALS, data.goal),
     protein_g_per_kg: Number(data.protein_g_per_kg),
     goal_overrides: goalOverridesSchema.parse(data.goal_overrides),
+    bmr_source: oneOf(BMR_SOURCES, data.bmr_source) ?? "auto",
+    protein_basis: oneOf(PROTEIN_BASES, data.protein_basis) ?? "weight",
+    protein_g_per_kg_lean: data.protein_g_per_kg_lean === null ? PROTEIN_G_PER_KG_LEAN_DEFAULT : Number(data.protein_g_per_kg_lean),
   };
 }
 

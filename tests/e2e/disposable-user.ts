@@ -279,10 +279,29 @@ export async function seedNutrition(user: DisposableUser, meals: MealPlanIds, { 
 }
 
 /** Perfil fictício completo (m, 180 cm, moderado, manter, 2 g/kg). */
-export async function seedProfile(user: DisposableUser) {
+export async function seedProfile(user: DisposableUser, overrides: Record<string, unknown> = {}) {
   await inserter(user)("profiles", [
-    { sex: "m", birth_date: "1996-01-01", height_cm: 180, activity_level: "moderate", goal: "maintain", protein_g_per_kg: 2 },
+    { sex: "m", birth_date: "1996-01-01", height_cm: 180, activity_level: "moderate", goal: "maintain", protein_g_per_kg: 2, ...overrides },
   ]);
+}
+
+/** v3 (metas de composição): meta ativa direto no banco. */
+export async function seedCompositionGoal(
+  user: DisposableUser,
+  goal: { metric: string; target: number; start_value: number; start_day: string; target_date?: string | null },
+) {
+  await inserter(user)("composition_goals", [{ id: crypto.randomUUID(), target_date: null, ...goal }]);
+}
+
+/** v3 (metas de composição): metas do usuário, lidas direto no banco (inclusive as arquivadas). */
+export async function compositionGoalRows(user: DisposableUser) {
+  const { data, error } = await admin()
+    .from("composition_goals")
+    .select("metric, target, target_date, start_value, start_day, achieved_on, archived_at")
+    .eq("user_id", user.id)
+    .order("created_at");
+  if (error) throw new Error(`composition_goals: ${error.message}`);
+  return data.map((g) => ({ ...g, target: Number(g.target), start_value: Number(g.start_value) }));
 }
 
 /** v2 (Perfil): tarefa concluída no dia (meio da tarde em São Paulo), para o critério "tarefas". */

@@ -17,7 +17,7 @@ export const QUERY_CACHE_KEY = "bctrl.queryCache";
  * Versão do formato salvo. Trocar quando mudar a forma das variáveis de alguma gravação em
  * `WRITES`: o que estiver salvo com outra versão é descartado em vez de ir errado ao banco.
  */
-const CACHE_BUSTER = "bctrl-v1";
+const CACHE_BUSTER = "bctrl-v2";
 
 /** Pendências mais velhas que isto são descartadas (o Safari apaga o site após ~7 dias sem uso). */
 const CACHE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;

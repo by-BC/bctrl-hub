@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { useHasWorkout, useMealDay, useOffPlanItems } from "@/features/meals/hooks";
+import { useBmrInput } from "@/features/composition/hooks";
 import { useBodyWeights } from "@/features/progress/hooks";
 import { useProfile } from "@/features/profile/hooks";
 import { DataError } from "@/features/routines/api";
@@ -80,14 +81,25 @@ export function useDayNutrition(day: string): DayNutrition {
   const foodsQuery = useFoods();
   const profile = useProfile();
   const weights = useBodyWeights();
+  // TMB e massa magra da balança até o dia (v3): sem medição, a meta segue a v2.
+  const bmr = useBmrInput(day);
 
   {
     const retry = () =>
-      Promise.all([meals.refetch(), items.refetch(), foodsQuery.refetch(), profile.refetch(), weights.refetch()]);
-    if (meals.isError || items.isError || foodsQuery.isError || profile.isError || weights.isError) {
+      Promise.all([
+        meals.refetch(),
+        items.refetch(),
+        foodsQuery.refetch(),
+        profile.refetch(),
+        weights.refetch(),
+        bmr.refetch(),
+      ]);
+    if (meals.isError || items.isError || foodsQuery.isError || profile.isError || weights.isError || bmr.isError) {
       return { state: "error", retry };
     }
-    if (!meals.data || !items.data || !foods || profile.data === undefined || !weights.data) return { state: "loading" };
+    if (!meals.data || !items.data || !foods || profile.data === undefined || !weights.data || bmr.data === undefined) {
+      return { state: "loading" };
+    }
 
     const options: Macros[] = [];
     const logIds = new Set<string>();
@@ -109,7 +121,7 @@ export function useDayNutrition(day: string): DayNutrition {
     const weight = [...weights.data].reverse().find((w) => w.day <= day) ?? weights.data.at(-1);
     const p = profile.data;
     const missing = !isCompleteProfile(p) ? "profile" : !weight ? "weight" : null;
-    const goal = isCompleteProfile(p) && weight ? goalsFromProfile(p, weight.weight_kg, trainingDay, day) : null;
+    const goal = isCompleteProfile(p) && weight ? goalsFromProfile(p, weight.weight_kg, trainingDay, day, bmr.data ?? undefined) : null;
     return { state: "ready", consumed, unresolved, trainingDay, goal, missing };
   }
 }

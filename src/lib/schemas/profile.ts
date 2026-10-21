@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { ACTIVITY_LEVELS, GOALS, SEXES } from "@/lib/domain/nutrition";
+import { ACTIVITY_LEVELS, BMR_SOURCES, GOALS, PROTEIN_BASES, SEXES } from "@/lib/domain/nutrition";
 
 /**
  * Perfil (`profiles`): dados corporais e ajuste manual das metas. Os limites espelham os
- * checks do banco (altura 50–260 cm, proteína 0,5–4 g/kg, nascimento a partir de 1900).
+ * checks do banco (altura 50–260 cm, proteína 0,5–4 g/kg, proteína por massa magra 0,5–5 g/kg com
+ * 1 casa, nascimento a partir de 1900).
  */
 
 const macroOverride = z.number().min(0).max(10000);
@@ -31,6 +32,13 @@ export const profileFormSchema = z.object({
     .min(0.5, "Proteína entre 0,5 e 4 g/kg.")
     .max(4, "Proteína entre 0,5 e 4 g/kg."),
   goal_overrides: z.object({ rest: macrosOverrideSchema.optional(), training: macrosOverrideSchema.optional() }),
+  bmr_source: z.enum(BMR_SOURCES, "Escolha a fonte da TMB."),
+  protein_basis: z.enum(PROTEIN_BASES, "Escolha a base da proteína."),
+  protein_g_per_kg_lean: z
+    .number("Informe a proteína em g por kg de massa magra.")
+    .min(0.5, "Proteína por massa magra entre 0,5 e 5 g/kg.")
+    .max(5, "Proteína por massa magra entre 0,5 e 5 g/kg.")
+    .refine((n) => Math.abs(Math.round(n * 10) - n * 10) < 1e-9, "Proteína por massa magra com no máximo 1 casa decimal."),
 });
 
 export type ProfileForm = z.output<typeof profileFormSchema>;

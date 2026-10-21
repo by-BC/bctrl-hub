@@ -51,6 +51,9 @@ const profile: ProfileSave = {
   goal: "maintain",
   protein_g_per_kg: 2,
   goal_overrides: { training: { carbs: 450 } },
+  bmr_source: "auto",
+  protein_basis: "weight",
+  protein_g_per_kg_lean: 2.5,
 };
 
 describe("profiles via API", () => {
@@ -61,6 +64,12 @@ describe("profiles via API", () => {
     expect(await fetchProfile(db)).toEqual({ ...profile, goal: "gain", protein_g_per_kg: 1.8 });
     const { count } = await db.from("profiles").select("user_id", { count: "exact", head: true });
     expect(count).toBe(1);
+  });
+
+  it("v3: fonte da TMB, base da proteína e g/kg de massa magra são gravados e lidos", async () => {
+    await upsertProfile({ ...profile, bmr_source: "formula", protein_basis: "lean_mass", protein_g_per_kg_lean: 2.2 }, db);
+    expect(await fetchProfile(db)).toMatchObject({ bmr_source: "formula", protein_basis: "lean_mass", protein_g_per_kg_lean: 2.2 });
+    await upsertProfile({ ...profile, goal: "gain", protein_g_per_kg: 1.8 }, db);
   });
 
   it("outro usuário não lê o perfil e grava só o próprio", async () => {

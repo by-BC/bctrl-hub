@@ -11,6 +11,7 @@ import type { Measurement } from "../api";
 import { useMeasurements } from "../hooks";
 import { formatTime } from "../view";
 import { CompositionCharts } from "./composition-charts";
+import { CompositionGoals } from "./composition-goals";
 import { LatestMeasurementCard } from "./latest-measurement-card";
 import { MeasurementDetail } from "./measurement-detail";
 import { MeasurementSheet } from "./measurement-sheet";
@@ -58,17 +59,20 @@ export function CompositionScreen() {
           </p>
         </div>
       ) : (
-        // Celular: card → gráficos → lista. A partir de 1024 px: card e lista | gráficos.
+        // Celular: card → metas → gráficos → lista. A partir de 1024 px: card, metas e lista | gráficos.
         <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
           <div className="contents lg:block lg:space-y-6">
             <div className="order-1">
               <LatestMeasurementCard measurements={data} onOpen={(m) => setDetailId(m.id)} />
             </div>
-            <div className="order-3">
+            <div className="order-2">
+              <CompositionGoals measurements={data} />
+            </div>
+            <div className="order-4">
               <MeasurementList measurements={data} onOpen={(m) => setDetailId(m.id)} />
             </div>
           </div>
-          <div className="order-2 lg:order-none">
+          <div className="order-3 lg:order-none">
             <CompositionCharts measurements={data} refreshing={isFetching} />
           </div>
         </div>

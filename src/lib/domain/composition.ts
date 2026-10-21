@@ -8,6 +8,7 @@
 
 import { dayInSaoPaulo } from "./day";
 import { addDays, dayToTime } from "./stats";
+import type { BmrInput } from "./nutrition";
 
 export type MetricKey =
   | "weight_kg"
@@ -201,4 +202,59 @@ export function projectGoal(points: readonly Point[], target: number, start?: nu
   const x = Math.ceil((target - intercept) / slope - 1e-9);
   const lastX = xs[n - 1];
   return { date: addDays(first, Math.max(x, lastX + 1)) };
+}
+
+/**
+ * O valor atingiu o alvo, na direção da meta (de `start` para `target`)? Partida igual ao alvo
+ * conta como atingida.
+ */
+export function goalReached(start: number, value: number, target: number): boolean {
+  const direction = Math.sign(target - start);
+  return direction === 0 || (direction < 0 ? value <= target : value >= target);
+}
+
+/** Meta como o domínio precisa (as colunas de `composition_goals`). */
+export type GoalLike = {
+  id: string;
+  metric: GoalMetric;
+  target: number;
+  start_value: number;
+  start_day: string;
+  achieved_on: string | null;
+  archived_at: string | null;
+};
+
+/**
+ * Metas que a medição acabou de concluir: ativas, ainda sem `achieved_on`, com a medição no dia
+ * da partida ou depois e o valor da métrica no alvo (ou além). Devolve o dia a gravar em cada uma.
+ * Rodar de novo com a mesma medição não devolve nada para quem já foi marcada (idempotente).
+ */
+export function newlyAchieved(goals: readonly GoalLike[], m: MeasurementLike): { id: string; achieved_on: string }[] {
+  const day = m.day ?? dayInSaoPaulo(m.measured_at);
+  return goals.flatMap((g) => {
+    if (g.archived_at !== null || g.achieved_on !== null || day < g.start_day) return [];
+    const value = valueOf(m, g.metric);
+    return value !== null && goalReached(g.start_value, value, g.target) ? [{ id: g.id, achieved_on: day }] : [];
+  });
+}
+
+/** Valor mais recente da métrica (até `onDay`, se informado), com o dia; `null` sem medição. */
+export function latestValue(ms: readonly MeasurementLike[], key: MetricKey, onDay?: string): Point | null {
+  const pts = metricSeries(ms, key).filter((p) => onDay === undefined || p.day <= onDay);
+  return pts.at(-1) ?? null;
+}
+
+/**
+ * Entrada da TMB das metas nutricionais a partir das medições: a TMB da última medição até
+ * `onDay` que tem `bmr_kcal` (com o dia) e a massa magra da última que tem `lean_mass_kg`.
+ * Sem medição, `undefined` (as metas seguem a v2).
+ */
+export function bmrInputFrom(ms: readonly MeasurementLike[], onDay: string): BmrInput | undefined {
+  const bmr = latestValue(ms, "bmr_kcal", onDay);
+  const lean = latestValue(ms, "lean_mass_kg", onDay);
+  if (!bmr && !lean) return undefined;
+  return {
+    ...(bmr && { measuredKcal: bmr.value, measuredOn: bmr.day }),
+    ...(lean && { leanMassKg: lean.value }),
+  };
 }

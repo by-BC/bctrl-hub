@@ -352,6 +352,30 @@ const positive = (n: number | undefined): n is number => typeof n === "number" &
 /** Dias de `from` a `to` (AAAA-MM-DD), pelo calendário. */
 const daysBetween = (from: string, to: string) => Math.round((dayToTime(to) - dayToTime(from)) / 86_400_000);
 
+/**
+ * Por que a TMB é a que é (para o formulário explicar):
+ * - `scale`: a da balança;
+ * - `formula_chosen`: a fonte escolhida é a fórmula;
+ * - `no_measurement`: `auto` sem medição com TMB;
+ * - `stale`: `auto` com a última TMB medida há mais de 30 dias;
+ * - `fallback`: a fonte escolhida é a balança, mas não há medição com TMB.
+ */
+export type BmrReason = "scale" | "formula_chosen" | "no_measurement" | "stale" | "fallback";
+
+export type BmrChoice = { source: "scale" | "formula"; reason: BmrReason; date?: string };
+
+/** Escolhe a fonte da TMB pela regra do perfil, sem fazer a conta (o formulário mostra o motivo). */
+export function bmrChoice(setting: BmrSourceSetting, onDay: string, m: BmrInput | undefined): BmrChoice {
+  const has = positive(m?.measuredKcal);
+  const scale = (): BmrChoice => ({ source: "scale", reason: "scale", ...(m?.measuredOn && { date: m.measuredOn }) });
+  if (setting === "formula") return { source: "formula", reason: "formula_chosen" };
+  if (setting === "scale") return has ? scale() : { source: "formula", reason: "fallback" };
+  if (!has || !m?.measuredOn) return { source: "formula", reason: "no_measurement" };
+  return daysBetween(m.measuredOn, onDay) <= BMR_MAX_AGE_DAYS
+    ? scale()
+    : { source: "formula", reason: "stale", date: m.measuredOn };
+}
+
 /** Escolhe a TMB: balança (pela regra da fonte) ou Mifflin-St Jeor. */
 function pickBmr(
   setting: BmrSourceSetting,
@@ -359,18 +383,9 @@ function pickBmr(
   onDay: string,
   m: BmrInput | undefined,
 ): Pick<GoalBreakdown, "bmr" | "bmrSource" | "bmrDate" | "bmrFallback"> {
-  const kcal = m?.measuredKcal;
-  const formulaResult = (fallback: boolean) => ({ bmr: formula, bmrSource: "formula" as const, bmrFallback: fallback });
-  const scaleResult = (bmr: number) => ({
-    bmr,
-    bmrSource: "scale" as const,
-    bmrFallback: false,
-    ...(m?.measuredOn && { bmrDate: m.measuredOn }),
-  });
-  if (setting === "formula") return formulaResult(false);
-  if (setting === "scale") return positive(kcal) ? scaleResult(kcal) : formulaResult(true);
-  const recent = !!m?.measuredOn && daysBetween(m.measuredOn, onDay) <= BMR_MAX_AGE_DAYS;
-  return positive(kcal) && recent ? scaleResult(kcal) : formulaResult(false);
+  const choice = bmrChoice(setting, onDay, m);
+  if (choice.source === "formula") return { bmr: formula, bmrSource: "formula", bmrFallback: choice.reason === "fallback" };
+  return { bmr: m!.measuredKcal!, bmrSource: "scale", bmrFallback: false, ...(choice.date && { bmrDate: choice.date }) };
 }
 
 /**

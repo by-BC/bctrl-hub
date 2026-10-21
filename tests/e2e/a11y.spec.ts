@@ -5,6 +5,7 @@ import {
   createDisposableUser,
   deleteDisposableUser,
   seedMealPlan,
+  seedCompositionGoal,
   seedMeasurements,
   seedNutrition,
   seedProfile,
@@ -54,6 +55,8 @@ for (const theme of ["dark", "light"] as const) {
         { at: "2026-09-01 07:00", weight_kg: 81, body_fat_pct: 21, fat_mass_kg: 17, skeletal_muscle_kg: 35, visceral_fat: 9, lean_mass_kg: 64 },
         { at: "2026-10-01 07:00", weight_kg: 80.4, body_fat_pct: 20.2, fat_mass_kg: 16.2, skeletal_muscle_kg: 35.3, visceral_fat: 9, lean_mass_kg: 64.2 },
       ]);
+      // Meta com progresso e "sem projeção" (2 medições), para o card de metas.
+      await seedCompositionGoal(user, { metric: "body_fat_pct", target: 18, start_value: 21, start_day: "2026-09-01", target_date: "2027-03-01" });
       const workout = await seedWorkout(user, {
         routine: plan.upper,
         day: dayInSaoPaulo(new Date()),
@@ -136,6 +139,12 @@ for (const theme of ["dark", "light"] as const) {
       await page.getByTestId("measurement-item").first().click();
       await expect(page.getByRole("dialog", { name: "Medição", exact: true })).toBeVisible();
       found.push(...(await audit(page, "/evolucao/composicao (detalhe da medição)")));
+      await page.keyboard.press("Escape");
+      await page.getByTestId("composition-goals").getByRole("button", { name: "Nova meta" }).click();
+      const goalForm = page.getByRole("form", { name: "Nova meta" });
+      await goalForm.getByRole("button", { name: "Salvar meta" }).click();
+      await expect(goalForm.getByRole("alert")).toBeVisible();
+      found.push(...(await audit(page, "/evolucao/composicao (sheet de nova meta, com erro)")));
 
       await page.goto("/comida");
       await page.getByTestId("meal-card").first().click();

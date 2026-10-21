@@ -386,4 +386,26 @@ describe("composição via API (gravações do WRITES)", () => {
     await updateCompositionGoal(id, { archived_at: "2026-09-01T12:00:00Z" }, api);
     expect(await fetchCompositionGoals(api)).toEqual([]);
   });
+  it("metas (task 4.0): segunda meta ativa da mesma métrica é recusada com mensagem; achieved_on idempotente", async () => {
+    const first = { id: crypto.randomUUID(), metric: "visceral_fat" as const, target: 7, target_date: "2027-01-31", start_value: 9, start_day: "2026-08-01" };
+    await upsertCompositionGoal(first, api);
+    await expect(
+      upsertCompositionGoal({ ...first, id: crypto.randomUUID(), target: 6 }, api),
+    ).rejects.toThrow("Já existe uma meta ativa para essa métrica.");
+
+    // Marcar a conclusão 2 vezes (reenvio) deixa o mesmo dia.
+    await updateCompositionGoal(first.id, { achieved_on: "2026-09-10" }, api);
+    await updateCompositionGoal(first.id, { achieved_on: "2026-09-10" }, api);
+    expect(await fetchCompositionGoals(api)).toEqual([{ ...first, achieved_on: "2026-09-10", archived_at: null }]);
+
+    // Editar o alvo e a data-alvo mantém a mesma linha.
+    await updateCompositionGoal(first.id, { target: 6.5, target_date: null, achieved_on: null }, api);
+    expect(await fetchCompositionGoals(api)).toEqual([{ ...first, target: 6.5, target_date: null, achieved_on: null, archived_at: null }]);
+
+    // Arquivada, libera a métrica para outra meta ativa.
+    await updateCompositionGoal(first.id, { archived_at: "2026-09-11T12:00:00Z" }, api);
+    const next = { ...first, id: crypto.randomUUID(), target: 6 };
+    await upsertCompositionGoal(next, api);
+    expect((await fetchCompositionGoals(api)).map((g) => g.id)).toEqual([next.id]);
+  });
 });
