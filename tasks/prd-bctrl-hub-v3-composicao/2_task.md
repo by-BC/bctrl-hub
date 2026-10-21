@@ -38,7 +38,7 @@ Script local e único (`scripts/scale/`) que lê o `.xlsx` exportado do app da b
 - [x] 2.3 (GREEN) `parse.ts` e `run.ts` com o relatório
 - [x] 2.4 Teste de integração: SQL da planilha fictícia aplicado 2 vezes no Supabase local, sem duplicar, e o trigger preenchendo `body_weights`
 - [x] 2.5 Dry-run real; **parar para o dono revisar o `report.md`**
-- [ ] 2.6 Após a aprovação: `--write`; o dono aplica; verificar no remoto as contagens de `body_measurements` e os dias com `body_weights.source = 'scale'`
+- [x] 2.6 Após a aprovação: `--write`; o dono aplica; verificar no remoto as contagens de `body_measurements` e os dias com `body_weights.source = 'scale'` — aplicado pelo dono em 2026-10-20 (mantida a 1ª medição de 04/08 06:52); verificado no remoto: 30 medições em 25 dias (2026-05-31 a 2026-10-19), 25 dias em `body_weights` com `source = scale`
 
 > **Dry-run real (2026-10-20), aguardando a revisão do dono** em `scripts/scale/out/report.md` (fora do Git):
 > - 32 linhas lidas e 30 medições em 25 dias. As 17 métricas estão presentes, sem coluna desconhecida e sem valor fora da faixa.
