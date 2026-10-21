@@ -62,3 +62,6 @@ scripts/hevy/instructions/
 # ── Vínculo do plano alimentar com a TACO (task 4.0 v2: dados pessoais) ──
 scripts/meals/data/
 scripts/meals/out/
+
+# ── Importação da planilha da balança (task 2.0 v3: dados pessoais) ──
+scripts/scale/out/

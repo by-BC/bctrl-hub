@@ -17,6 +17,7 @@
     "test:all": "npm run typecheck && npm run lint && npm run test && npm run test:integration && npm run test:e2e",
     "import:hevy": "tsx scripts/hevy/run.ts",
     "instructions:hevy": "tsx scripts/hevy/instructions-run.ts",
+    "import:scale": "tsx scripts/scale/run.ts",
     "taco:convert": "tsx scripts/taco/convert.ts",
     "meals:link": "tsx scripts/meals/link-foods.ts"
   },
@@ -58,6 +59,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
+    "exceljs": "^4.4.0",
     "jsdom": "^30.1.3",
     "shadcn": "^4.22.1",
     "supabase": "^2.121.0",

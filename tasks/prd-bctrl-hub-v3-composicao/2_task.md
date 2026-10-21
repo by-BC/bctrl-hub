@@ -33,12 +33,23 @@ Script local e único (`scripts/scale/`) que lê o `.xlsx` exportado do app da b
 
 ## Subtarefas
 
-- [ ] 2.1 `.gitignore`, estrutura de `scripts/scale/` e script `import:scale` (`tsx`)
-- [ ] 2.2 (RED) Testes de `parse.ts` com planilha fictícia (cabeçalho, mapeamento por nome, `：`, números em texto, vazios, "--", linha inválida, fora de faixa) e de `toSql` (determinístico)
-- [ ] 2.3 (GREEN) `parse.ts` e `run.ts` com o relatório
-- [ ] 2.4 Teste de integração: SQL da planilha fictícia aplicado 2 vezes no Supabase local, sem duplicar, e o trigger preenchendo `body_weights`
-- [ ] 2.5 Dry-run real; **parar para o dono revisar o `report.md`**
+- [x] 2.1 `.gitignore`, estrutura de `scripts/scale/` e script `import:scale` (`tsx`)
+- [x] 2.2 (RED) Testes de `parse.ts` com planilha fictícia (cabeçalho, mapeamento por nome, `：`, números em texto, vazios, "--", linha inválida, fora de faixa) e de `toSql` (determinístico)
+- [x] 2.3 (GREEN) `parse.ts` e `run.ts` com o relatório
+- [x] 2.4 Teste de integração: SQL da planilha fictícia aplicado 2 vezes no Supabase local, sem duplicar, e o trigger preenchendo `body_weights`
+- [x] 2.5 Dry-run real; **parar para o dono revisar o `report.md`**
 - [ ] 2.6 Após a aprovação: `--write`; o dono aplica; verificar no remoto as contagens de `body_measurements` e os dias com `body_weights.source = 'scale'`
+
+> **Dry-run real (2026-10-20), aguardando a revisão do dono** em `scripts/scale/out/report.md` (fora do Git):
+> - 32 linhas lidas e 30 medições em 25 dias. As 17 métricas estão presentes, sem coluna desconhecida e sem valor fora da faixa.
+> - **2 linhas ignoradas por data e hora repetidas.** O banco identifica a medição por `(user_id, measured_at)` com precisão de minuto, e o parser mantém a primeira linha da planilha.
+>   - A linha 18 repete a 17 com valores idênticos.
+>   - A linha 10 repete a 9 com **valores diferentes**, e fica a 9. Se preferir a 10, apague a 9 de uma cópia da planilha antes do `--write`.
+>
+> **2.6 (dono), depois da revisão:**
+> 1. `npm run import:scale -- "C:\Users\bruno\Downloads\weight_Bruno_1792511326.xlsx" --write`
+> 2. `npx supabase db query --linked -f supabase/scale.private.sql`
+> 3. No remoto, conferir `body_measurements` com 30 linhas e `body_weights` com `source = 'scale'` nos 25 dias.
 
 ## Detalhes de Implementação
 
@@ -53,8 +64,8 @@ Ver techspec: **Visão Geral → Importação**, **Interfaces Principais** (`scr
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: `parse.ts` e `toSql` com a planilha fictícia
-- [ ] Testes de integração: aplicação idempotente no Supabase local e o efeito do trigger
+- [x] Testes de unidade: `parse.ts` e `toSql` com a planilha fictícia
+- [x] Testes de integração: aplicação idempotente no Supabase local e o efeito do trigger
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 
