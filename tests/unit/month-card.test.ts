@@ -10,6 +10,12 @@ const summary = (over: Partial<MonthCardSummary> = {}): MonthCardSummary => ({
   control_days: 11,
   meals: { planned: 120, done: 98, pct: 82 },
   nutrition: { logged_days: 18 },
+  composition: {
+    count: 2,
+    first: { day: "2026-10-01", weight_kg: 80, body_fat_pct: 20, skeletal_muscle_kg: 35 },
+    last: { day: "2026-10-20", weight_kg: 79.2, body_fat_pct: 19.2, skeletal_muscle_kg: 35.6 },
+    change: { weight_kg: -0.8, body_fat_pct: -0.8, skeletal_muscle_kg: 0.6 },
+  },
   ...over,
 });
 
@@ -66,6 +72,11 @@ describe("buildMonthCardData", () => {
   it("mês sem registro de refeição: adesão nula (\"sem registros\"), nunca 0%", () => {
     const data = buildMonthCardData(input({ summary: summary({ meals: { planned: 124, done: 0, pct: 0 }, nutrition: { logged_days: 0 } }) }));
     expect(data.adherence).toBeNull();
+  });
+
+  it("leva gordura e músculo para a linha de composição; sem medição fica nula", () => {
+    expect(buildMonthCardData(input()).composition).toEqual({ bodyFatPct: -0.8, skeletalMuscleKg: 0.6 });
+    expect(buildMonthCardData(input({ summary: summary({ composition: null }) })).composition).toBeNull();
   });
 
   it("mês fechado não é parcial", () => {

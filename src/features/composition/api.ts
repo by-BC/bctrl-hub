@@ -18,6 +18,7 @@ export const compositionKeys = {
   all: ["composition"] as const,
   measurements: () => ["composition", "measurements"] as const,
   goals: () => ["composition", "goals"] as const,
+  goalAchievements: () => ["composition", "goal-achievements"] as const,
 };
 
 function fail(error: { message: string; code?: string }, message: string): never {
@@ -113,6 +114,17 @@ export async function fetchCompositionGoals(client: Client = db()): Promise<Comp
     target: Number(g.target),
     start_value: Number(g.start_value),
   }));
+}
+
+/** Todas as conclusões históricas, inclusive de metas depois arquivadas. */
+export async function fetchCompositionGoalAchievements(client: Client = db()): Promise<{ achievedOn: string | null }[]> {
+  const { data, error } = await client
+    .from("composition_goals")
+    .select("achieved_on")
+    .not("achieved_on", "is", null)
+    .order("achieved_on");
+  if (error) fail(error, "Não foi possível carregar as conquistas de composição.");
+  return data.map((goal) => ({ achievedOn: goal.achieved_on }));
 }
 
 /** Cria ou substitui a meta pelo id. Já existir outra meta ativa para a métrica é recusado. */

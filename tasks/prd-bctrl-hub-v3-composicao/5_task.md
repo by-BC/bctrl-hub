@@ -30,12 +30,12 @@ Fechar a v3:
 
 ## Subtarefas
 
-- [ ] 5.1 (RED) Teste de integração do `month_summary.composition` (mês com medições, sem medições, comparação com o anterior, virada de mês)
-- [ ] 5.2 (GREEN) Migration do `month_summary` + `db push`
-- [ ] 5.3 `MonthSummary` com a composição e o atalho "Nova medição"
-- [ ] 5.4 `MonthCard` com a linha de composição (pior caso dentro das áreas seguras)
-- [ ] 5.5 Conquistas novas em `achievements.ts`
-- [ ] 5.6 Axe, documentação e `get_advisors`
+- [x] 5.1 (RED) Teste de integração do `month_summary.composition` (mês com medições, sem medições, comparação com o anterior, virada de mês)
+- [x] 5.2 (GREEN) Migration do `month_summary` + `db push`
+- [x] 5.3 `MonthSummary` com a composição e o atalho "Nova medição"
+- [x] 5.4 `MonthCard` com a linha de composição (pior caso dentro das áreas seguras)
+- [x] 5.5 Conquistas novas em `achievements.ts`
+- [x] 5.6 Axe, documentação e `get_advisors`
 - [ ] 5.7 Smoke test do dono no celular (Composição, nova medição, metas, Perfil e card do mês)
 
 ## Detalhes de Implementação
@@ -51,8 +51,18 @@ Ver techspec: **Endpoints de API**, **Modelos de Dados → bloco `composition`**
 
 ## Testes da Tarefa
 
-- [ ] Testes de unidade: dados do card com e sem composição; as conquistas novas (bloqueada, progresso, desbloqueada)
-- [ ] Testes de integração: `month_summary.composition` com dados conhecidos; E2E do resumo e do card do mês (dimensões e áreas seguras); axe nas rotas novas
+- [x] Testes de unidade: dados do card com e sem composição; as conquistas novas (bloqueada, progresso, desbloqueada)
+- [x] Testes de integração: `month_summary.composition` com dados conhecidos; E2E do resumo e do card do mês (dimensões e áreas seguras); axe nas rotas novas
+
+## Execução (2026-10-22)
+
+- RED confirmado nos testes de `achievements` e `month-card`; GREEN com 522 testes de unidade e 254 de integração.
+- Migration `20261022230000_v3_rpcs.sql` aplicada no Supabase local e remoto; `db:types` regenerado sem alteração de contrato gerado.
+- E2E do card: 4 cenários verdes (mobile e desktop), PNG 1080×1920 e nenhum texto fora de y = 250–1670.
+- Axe: temas claro e escuro, mobile e desktop, 0 violações serious/critical; teste de teclado desktop verde.
+- `typecheck`, `lint`, `git diff --check` e build de produção verdes.
+- Advisors remoto: 0 erros; permanece 1 aviso de configuração do Auth (`auth_leaked_password_protection`), sem relação com a migration.
+- Pendente apenas 5.7: smoke test do dono no celular depois do deploy.
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 

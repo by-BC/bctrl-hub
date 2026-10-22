@@ -11,6 +11,7 @@ import {
   seedExercise,
   seedMealLogs,
   seedMealPlan,
+  seedMeasurements,
   seedWorkout,
   type DisposableUser,
 } from "./disposable-user";
@@ -68,6 +69,11 @@ test.beforeAll(async () => {
     seedWorkout(user, { day: `${previous.slice(0, 7)}-10`, sets: [[supino, [[40, 10]]]] }),
     seedDoneTask(user, today),
     seedMealLogs(user, today, [meals.cafe, meals.almoco, meals.pos, meals.jantar]),
+    seedMeasurements(user, [
+      { at: `${previous.slice(0, 7)}-10 07:00`, weight_kg: 81, body_fat_pct: 21, skeletal_muscle_kg: 34.8 },
+      { at: `${current} 07:00`, weight_kg: 80, body_fat_pct: 20, skeletal_muscle_kg: 35 },
+      { at: `${today} 08:00`, weight_kg: 79, body_fat_pct: 19, skeletal_muscle_kg: 35.6 },
+    ]),
   ]);
 });
 
@@ -84,6 +90,16 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("atalho do Perfil abre o card do mês, com os números e o PNG em 1080×1920", async ({ page }) => {
+  await page.goto("/perfil");
+  const composition = page.getByRole("list", { name: "Variações de composição no mês" });
+  await expect(composition.getByTestId("composition-stat-weight")).toContainText("−1 kg");
+  await expect(composition.getByTestId("composition-stat-fat")).toContainText("−1 p.p.");
+  await expect(composition.getByTestId("composition-stat-muscle")).toContainText("+0,6 kg");
+
+  await page.getByRole("link", { name: "Nova medição" }).click();
+  await expect(page).toHaveURL(/\/evolucao\/composicao\?nova=1$/);
+  await expect(page.getByRole("form", { name: "Nova medição" })).toBeVisible();
+  await page.keyboard.press("Escape");
   await page.goto("/perfil");
   await page.getByRole("link", { name: "Compartilhar mês" }).click();
   await expect(page).toHaveURL(new RegExp(`/perfil/mes/${current.slice(0, 7)}/story$`));
@@ -106,6 +122,8 @@ test("atalho do Perfil abre o card do mês, com os números e o PNG em 1080×192
   await expect(stats.getByText("Volume · kg").locator("..")).toContainText("980"); // 480 + 500
   await expect(stats.getByText("Recordes").locator("..")).toContainText("1");
   await expect(card.getByTestId("month-card-adherence")).toContainText("%");
+  await expect(card.getByTestId("month-card-composition")).toContainText("Gordura −1 p.p.");
+  await expect(card.getByTestId("month-card-composition")).toContainText("Músculo +0,6 kg");
   await expect(card.getByTestId("month-card-achievements")).toContainText("Primeiro recorde");
 
   expect(await outsideSafeArea(page)).toEqual([]);

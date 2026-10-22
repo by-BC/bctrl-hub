@@ -20,9 +20,9 @@ import { MetricValue } from "./metric-value";
 const LIST_STEP = 10;
 
 /** Conteúdo de /evolucao/composicao: última medição, gráficos, lista e os sheets. */
-export function CompositionScreen() {
+export function CompositionScreen({ initiallyOpen = false }: { initiallyOpen?: boolean }) {
   const { data, isPending, isError, isFetching, refetch } = useMeasurements();
-  const [form, setForm] = useState<{ open: boolean; measurement: Measurement | null }>({ open: false, measurement: null });
+  const [form, setForm] = useState<{ open: boolean; measurement: Measurement | null }>({ open: initiallyOpen, measurement: null });
   const [detailId, setDetailId] = useState<string | null>(null);
   // O detalhe acompanha a lista (a medição editada aparece atualizada; a excluída fecha o sheet).
   const detail = data?.find((m) => m.id === detailId) ?? null;

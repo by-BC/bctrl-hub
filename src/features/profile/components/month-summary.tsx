@@ -1,13 +1,14 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Equal, Minus, Share2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Equal, Minus, Plus, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToday } from "@/features/progress/use-today";
 import { monthParam } from "@/lib/domain/month-card";
-import { canGoNextMonth, monthLabel, type MonthDelta } from "@/lib/domain/month-view";
+import { canGoNextMonth, monthDelta, monthLabel, monthShort, type MonthDelta } from "@/lib/domain/month-view";
+import { formatKg } from "@/lib/format";
 import { isCompleteProfile } from "@/lib/domain/nutrition";
 import { addMonths, monthStart } from "@/lib/domain/week";
 import { cn } from "@/lib/utils";
@@ -125,13 +126,72 @@ export function MonthSummary({
           <StatCard key={s.key} stat={s} needsProfile={needsProfile} />
         ))}
       </ul>
-      <Button asChild variant="outline" className="h-11 w-full font-semibold sm:w-auto">
-        <Link href={`/perfil/mes/${monthParam(data.current.month)}/story`}>
-          <Share2 aria-hidden />
-          Compartilhar mês
-        </Link>
-      </Button>
+      <CompositionSummary data={data} refreshing={refreshing} />
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button asChild variant="outline" className="h-11 w-full font-semibold sm:w-auto">
+          <Link href="/evolucao/composicao?nova=1">
+            <Plus aria-hidden />
+            Nova medição
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-11 w-full font-semibold sm:w-auto">
+          <Link href={`/perfil/mes/${monthParam(data.current.month)}/story`}>
+            <Share2 aria-hidden />
+            Compartilhar mês
+          </Link>
+        </Button>
+      </div>
     </>
+  );
+}
+
+const signed = (value: number) => {
+  if (Math.abs(value) < 0.005) return "0";
+  return `${value > 0 ? "+" : "−"}${formatKg(Math.abs(value))}`;
+};
+
+function CompositionSummary({ data, refreshing }: { data: MonthSummaryData; refreshing: boolean }) {
+  const current = data.current.composition;
+  const previous = data.previous.composition;
+  const prev = monthShort(data.previous.month);
+  const cards = [
+    { key: "weight", label: "Peso", unit: "kg", value: current?.change.weight_kg ?? null, old: previous?.change.weight_kg ?? null, better: "neutral" },
+    { key: "fat", label: "Gordura corporal", unit: "p.p.", value: current?.change.body_fat_pct ?? null, old: previous?.change.body_fat_pct ?? null, better: "down" },
+    { key: "muscle", label: "Músculo esquelético", unit: "kg", value: current?.change.skeletal_muscle_kg ?? null, old: previous?.change.skeletal_muscle_kg ?? null, better: "up" },
+  ] as const;
+
+  return (
+    <section aria-labelledby="composition-summary-title" className="space-y-2">
+      <h3 id="composition-summary-title" className="text-sm font-semibold">Composição corporal</h3>
+      {current === null ? (
+        <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground" data-testid="composition-summary-empty">
+          Sem medições neste mês.
+        </div>
+      ) : (
+        <ul className={cn("grid gap-3 sm:grid-cols-3", refreshing && "opacity-60 transition-opacity")} aria-label="Variações de composição no mês">
+          {cards.map((card) => {
+            const good = card.value !== null && card.better !== "neutral"
+              && (card.better === "up" ? card.value > 0 : card.value < 0);
+            const bad = card.value !== null && card.better !== "neutral"
+              && (card.better === "up" ? card.value < 0 : card.value > 0);
+            return (
+              <li key={card.key} data-testid={`composition-stat-${card.key}`} className="flex min-h-28 flex-col rounded-xl border bg-card p-3">
+                <p className="text-xs font-medium text-muted-foreground">{card.label}</p>
+                {card.value === null ? (
+                  <p className="mt-2 text-sm font-medium text-muted-foreground">Sem dado</p>
+                ) : (
+                  <p className={cn("mt-1 text-2xl font-semibold", good && "text-primary-text", bad && "text-destructive")}>
+                    <span className="num">{signed(card.value)}</span>
+                    <span className="ml-1 text-sm font-medium">{card.unit}</span>
+                  </p>
+                )}
+                <DeltaLine delta={monthDelta(card.value, card.old, prev, (n) => `${formatKg(n)} ${card.unit}`)} />
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }
 

@@ -23,6 +23,7 @@ App pessoal (usuário único) de treino, alimentação, hábitos e tarefas. Docs
 | `npm run db:types` | Regenera `src/lib/database.types.ts` |
 | `npm run instructions:hevy` | Valida `scripts/hevy/instructions/*.json` (fora do Git) e gera `supabase/instructions.private.sql` |
 | `npm run import:hevy` | Importação única do Hevy: dry-run gera `scripts/hevy/out/report.md`; `-- --write` gera `supabase/import.private.sql` (ver `scripts/hevy/run.ts`) |
+| `npm run import:scale -- <planilha.xlsx>` | Importação única da balança: dry-run gera `scripts/scale/out/report.md`; `--write` gera `supabase/scale.private.sql` |
 | `npm run meals:link` | Vincula o plano alimentar (seed privado) à TACO: dry-run gera `scripts/meals/out/report.md`; `-- --write` gera `supabase/meal-items.private.sql` |
 | `npm run taco:convert` | Regenera a migration pública `…_foods_taco.sql` (597 alimentos, NEPA/Unicamp) |
 
@@ -47,6 +48,7 @@ App pessoal (usuário único) de treino, alimentação, hábitos e tarefas. Docs
 - **Fila de gravações** (`src/components/providers/query-provider.tsx` + `src/lib/query/mutation-defaults.ts`): toda gravação usa uma entrada de `WRITES` (chave `[grupo, ação]` + função de envio), espalhada no `useMutation` do hook; nunca `mutationFn` inline num hook (um teste de unidade barra). As variáveis levam tudo o que o envio usa (nada de closure: a mutação pode ser reenviada depois de reabrir o app, sem o hook). `networkMode: 'offlineFirst'`, erro de rede repete até 8 vezes; sem rede, pausa. As gravações pendentes (só elas, nenhuma leitura) ficam no `localStorage` (`bctrl.queryCache`, `buster` + `maxAge` de 7 dias) e são reenviadas no `onSuccess` do provider e no evento `online`. Mudou a forma das variáveis de alguma gravação? Suba o `CACHE_BUSTER`. Sair limpa a fila. `SyncStatus` (shell) mostra offline / sincronizando / N pendentes. O treino ativo tem fila própria (`pendingSync` no store), fora disso.
 - **Nada pessoal no Git** (repo público): `supabase/seed.sql`, o anexo de dados iniciais, PDFs e `.env*` estão no `.gitignore`.
 - **Arquivos privados** (ignorados): `supabase/*.private.sql` (seed real e saídas de `import:hevy`, `instructions:hevy`, `meals:link`), `scripts/hevy/{data,out,instructions}/` e `scripts/meals/{data,out}/`. Sempre dry-run + relatório; aplicar no remoto só depois da revisão do dono, com `npx supabase db query --linked -f supabase/<arquivo>.private.sql`. `HEVY_API_KEY` só no `.env.local`, nunca impressa.
+- **Composição privada**: a planilha da balança e o relatório ficam em `scripts/scale/{data,out}/`; o SQL real fica em `supabase/scale.private.sql`. Nenhum deles entra no Git.
 - **Seeds**: `supabase/seed.example.sql` (fictício, versionado) roda no `npx supabase db reset` local e cria o usuário de E2E (`e2e@bctrl.test`) com 4 rotinas, 6 refeições e os hábitos do sistema. O seed real fica em `supabase/seed.private.sql` (ignorado, idempotente) e vai ao remoto com `npx supabase db query --linked -f supabase/seed.private.sql`. Migrations no remoto: `npx supabase db push` (nunca `--include-seed` nem `db reset --linked`).
 - **Banco**: FKs entre tabelas do app são compostas com `user_id` (nada aponta para linha de outro usuário). Em insert em lote pelo supabase-js, passe `{ defaultToNull: false }` ou envie todas as colunas (colunas ausentes viram `null`). Hábitos com `system_key` não podem ser excluídos (trigger). `finish_workout` recebe o payload validado por `finishWorkoutSchema` (`src/lib/schemas/workout.ts`).
 
@@ -59,6 +61,14 @@ App pessoal (usuário único) de treino, alimentação, hábitos e tarefas. Docs
 - **Foto**: lida no aparelho (`loadPhoto` → dataURL reduzido), nunca enviada; o E2E confere que nenhuma requisição leva a imagem.
 - **Validado no iPhone real (9.10, 2026-10-19)**: os 4 layouts, o menu nativo de compartilhar com a opção Instagram e o PNG saíram corretos. Android ainda não testado.
 - **Card do mês (v2, task 8.0)**: `/perfil/mes/[month]/story` (`month` = `AAAA-MM`; `params` dentro de `<Suspense>`), atalho "Compartilhar mês" no resumo do Perfil. Dados em `buildMonthCardData` (`src/lib/domain/month-card.ts`, puro) a partir do `month_summary`, do `daily_scores` do mês e das conquistas; layout `MonthCard` no tom `.story-ink`, mesma exportação e mesmo compartilhar. O calendário usa `--heat-0…4`, que dentro de `.story-ink` apontam para a escala fixa `--heat-ink-*` (a mesma do tema escuro). Mês futuro ou inválido: "Mês não encontrado". Ainda sem validação no iPhone real.
+
+## Composição corporal (v3)
+
+- **Fonte dos dados**: `body_measurements` guarda as 17 métricas e tem RLS de dono. O trigger `sync_body_weight` mantém um único peso por dia em `body_weights`; entre medições do mesmo dia, vence a mais recente. Registro manual posterior pode substituir o peso do dia.
+- **Importação**: `npm run import:scale -- <planilha.xlsx>` sempre começa em dry-run. A planilha e o SQL derivado são privados; o dono revisa o relatório antes de aplicar `supabase/scale.private.sql`.
+- **Resumo mensal**: `month_summary` devolve `composition` em `current` e `previous`, ou `null` sem medição. Cada bloco contém primeira e última medição do mês, contagem e variações de peso, gordura em pontos percentuais e músculo esquelético em kg.
+- **Conquistas**: “−1 ponto de gordura” usa a primeira data em que a queda desde a primeira medição chega a 1 p.p.; “Meta de composição atingida” considera qualquer `achieved_on`, inclusive de meta arquivada.
+- **Card do mês**: mostra gordura e músculo dentro da área segura do story; mantém exportação PNG em 1080×1920.
 
 ## Perfil, pontuação e metas (v2)
 

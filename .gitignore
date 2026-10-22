@@ -64,4 +64,5 @@ scripts/meals/data/
 scripts/meals/out/
 
 # ── Importação da planilha da balança (task 2.0 v3: dados pessoais) ──
+scripts/scale/data/
 scripts/scale/out/

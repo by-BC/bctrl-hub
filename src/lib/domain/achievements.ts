@@ -15,6 +15,10 @@ export type AchievementCtx = {
   days: readonly DayFacts[];
   /** Hoje (AAAA-MM-DD, São Paulo). */
   today: string;
+  /** Medições em ordem livre; só % de gordura é necessária para a conquista. */
+  measurements?: readonly { day: string; measuredAt: string; bodyFatPct: number | null }[];
+  /** Metas ativas ou arquivadas; qualquer conclusão histórica mantém a conquista. */
+  goals?: readonly { achievedOn: string | null }[];
 };
 
 export type AchievementStatus = {
@@ -109,6 +113,31 @@ function dietMonth(ctx: AchievementCtx): AchievementStatus {
   return status(null, best, target);
 }
 
+/** Queda acumulada de 1 ponto percentual desde a primeira medição com % de gordura. */
+function bodyFatDown(ctx: AchievementCtx): AchievementStatus {
+  const target = 1;
+  const measurements = [...(ctx.measurements ?? [])]
+    .filter((m) => m.bodyFatPct !== null && m.day <= ctx.today)
+    .sort((a, b) => a.measuredAt.localeCompare(b.measuredAt));
+  const first = measurements[0]?.bodyFatPct;
+  if (first === null || first === undefined) return status(null, 0, target);
+
+  let best = 0;
+  for (const measurement of measurements) {
+    const decrease = Math.round((first - measurement.bodyFatPct!) * 100) / 100;
+    best = Math.max(best, decrease);
+    if (decrease >= target) return status(measurement.day, target, target);
+  }
+  return status(null, best, target);
+}
+
+function compositionGoal(ctx: AchievementCtx): AchievementStatus {
+  const achievedOn = (ctx.goals ?? [])
+    .flatMap((goal) => goal.achievedOn && goal.achievedOn <= ctx.today ? [goal.achievedOn] : [])
+    .sort()[0] ?? null;
+  return status(achievedOn, achievedOn ? 1 : 0, 1);
+}
+
 export const ACHIEVEMENTS: readonly Achievement[] = [
   {
     key: "first_pr",
@@ -150,6 +179,18 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
     title: "Mês no plano",
     rule: "Feche um mês inteiro com adesão alimentar de 80% ou mais.",
     evaluate: dietMonth,
+  },
+  {
+    key: "body_fat_down_1",
+    title: "−1 ponto de gordura",
+    rule: "Reduza 1 ponto percentual de gordura corporal desde a primeira medição.",
+    evaluate: bodyFatDown,
+  },
+  {
+    key: "composition_goal",
+    title: "Meta de composição atingida",
+    rule: "Atinja qualquer meta de peso, gordura, músculo ou gordura visceral.",
+    evaluate: compositionGoal,
   },
 ];
 

@@ -39,6 +39,7 @@ Os testes que gravam dados usam usuários descartáveis (`tests/e2e/disposable-u
 - **Treino**: rotinas, sessão com timer e fila própria, histórico, evolução por exercício, catálogo de exercícios (`/treino/exercicios`) com mídia por link e instruções próprias, tipos de série (carga, peso corporal, duração, distância).
 - **Comida**: plano alimentar com macros pela **TACO** (597 alimentos, NEPA/Unicamp), refeição "fora do plano" e **consumido × meta**.
 - **Perfil** (`/perfil`): heatmap de "dias no controle" (pontuação 0–4 por dia), resumo do mês, recordes e conquistas. Dados corporais e metas em `/perfil/dados`: Mifflin-St Jeor × fator de atividade, ajuste pelo objetivo, proteína em g/kg; cada meta aceita ajuste manual e pode ser diferente em dia de treino.
+- **Composição corporal** (`/evolucao/composicao`): histórico e registro das 17 métricas da balança, gráficos, metas com projeção, TMB medida e proteína por massa magra. O peso da medição alimenta a Evolução sem duplicar o dia; Perfil e card do mês mostram as variações de peso, gordura e músculo.
 - **Story Studio**: story do treino (4 layouts) e card do mês (`/perfil/mes/AAAA-MM/story`), gerados no aparelho e compartilhados pelo menu nativo ou baixados em PNG.
 
 ## Dados privados (fora do Git)
@@ -52,6 +53,7 @@ O repositório é público. Nada pessoal é versionado:
 | `supabase/*.private.sql` | saídas dos scripts abaixo, aplicadas no remoto à mão |
 | `scripts/hevy/data/`, `scripts/hevy/out/`, `scripts/hevy/instructions/` | catálogo PT do Hevy, relatório da importação, instruções próprias |
 | `scripts/meals/data/`, `scripts/meals/out/` | ajustes do vínculo com a TACO e o relatório |
+| `scripts/scale/data/`, `scripts/scale/out/` | planilha da balança e relatório da importação de composição corporal |
 
 Scripts (todos com dry-run e relatório antes de gerar SQL):
 
@@ -60,6 +62,8 @@ npm run import:hevy                  # relatório em scripts/hevy/out/report.md
 npm run import:hevy -- --write       # gera supabase/import.private.sql
 npm run instructions:hevy            # gera supabase/instructions.private.sql
 npm run meals:link [-- --write]      # vincula o plano à TACO → supabase/meal-items.private.sql
+npm run import:scale -- planilha.xlsx # dry-run → scripts/scale/out/report.md
+npm run import:scale -- planilha.xlsx --write # gera supabase/scale.private.sql
 npm run taco:convert                 # regenera a migration pública da TACO
 ```
 
@@ -67,5 +71,5 @@ Aplicar no remoto só depois de revisar o relatório: `npx supabase db query --l
 
 ## Documentação
 
-- `tasks/prd-bctrl-hub/` (v1) e `tasks/prd-bctrl-hub-v2/` (v2): `prd.md` (requisitos), `techspec.md` (arquitetura), `tasks.md` (plano)
+- `tasks/prd-bctrl-hub/` (v1), `tasks/prd-bctrl-hub-v2/` (v2) e `tasks/prd-bctrl-hub-v3-composicao/` (v3): `prd.md` (requisitos), `techspec.md` (arquitetura), `tasks.md` (plano)
 - `CLAUDE.md`: padrões do código

@@ -8,6 +8,24 @@ import { heatmapLevel, type ScoreValue } from "./score";
 import { addDays } from "./stats";
 import { monthEnd, monthStart, weekStart } from "./week";
 
+export type MonthCompositionPoint = {
+  day: string;
+  weight_kg: number;
+  body_fat_pct: number | null;
+  skeletal_muscle_kg: number | null;
+};
+
+export type MonthComposition = {
+  count: number;
+  first: MonthCompositionPoint;
+  last: MonthCompositionPoint;
+  change: {
+    weight_kg: number;
+    body_fat_pct: number | null;
+    skeletal_muscle_kg: number | null;
+  };
+};
+
 /** O que o card usa do `month_summary` (mês corrente da resposta). */
 export type MonthCardSummary = {
   /** 1º dia do mês. */
@@ -20,6 +38,7 @@ export type MonthCardSummary = {
   control_days: number;
   meals: { planned: number; done: number; pct: number };
   nutrition: { logged_days: number };
+  composition: MonthComposition | null;
 };
 
 export type MonthCardInput = {
@@ -55,6 +74,8 @@ export type MonthCardData = {
   prs: number;
   /** `null` = mês sem registro de refeição ("sem registros", como no Perfil). */
   adherence: { pct: number; done: number; planned: number } | null;
+  /** Variação dentro do mês; `null` quando não houve medição. */
+  composition: { bodyFatPct: number | null; skeletalMuscleKg: number | null } | null;
   /** Semanas de segunda a domingo; `null` = dia de outro mês (célula vazia). */
   weeks: (MonthCardDay | null)[][];
   /** Conquistas desbloqueadas no mês, na ordem em que aconteceram. */
@@ -110,6 +131,12 @@ export function buildMonthCardData({ summary, scores, achievements, today }: Mon
     volumeKg: Number(summary.volume_kg),
     prs: summary.prs.count,
     adherence: hasMeals ? { pct: summary.meals.pct, done: summary.meals.done, planned: summary.meals.planned } : null,
+    composition: summary.composition ? {
+      bodyFatPct: summary.composition.change.body_fat_pct === null ? null : Number(summary.composition.change.body_fat_pct),
+      skeletalMuscleKg: summary.composition.change.skeletal_muscle_kg === null
+        ? null
+        : Number(summary.composition.change.skeletal_muscle_kg),
+    } : null,
     // O futuro nunca aparece preenchido (mesma regra do heatmap do Perfil).
     weeks: calendar(month, (day) => (day > today ? null : heatmapLevel(byDay.get(day) ?? 0))),
     achievements: achievements

@@ -4,7 +4,7 @@ import { Award, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AchievementView } from "@/lib/domain/achievements";
-import { formatInt, formatShortDay } from "@/lib/format";
+import { formatInt, formatKg, formatShortDay } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useAchievements } from "../hooks";
 
@@ -16,12 +16,14 @@ const PROGRESS_UNIT: Record<string, (n: number) => string> = {
   session_1000kg: () => "kg",
   workouts_100: (n) => (n === 1 ? "treino" : "treinos"),
   diet_month_80: () => "%",
+  body_fat_down_1: () => "p.p.",
+  composition_goal: (n) => (n === 1 ? "meta" : "metas"),
 };
 
 /** "82 de 100 treinos", "640 de 1.000 kg", "62% de 80%". */
 export function progressText(a: Pick<AchievementView, "key" | "current" | "target">): string {
   const unit = PROGRESS_UNIT[a.key]?.(a.target) ?? "";
-  const current = formatInt(Math.floor(a.current));
+  const current = a.key === "body_fat_down_1" ? formatKg(a.current) : formatInt(Math.floor(a.current));
   const target = formatInt(a.target);
   if (unit === "%") return `${current}% de ${target}%`;
   return `${current} de ${target}${unit ? ` ${unit}` : ""}`;
@@ -54,7 +56,7 @@ export function AchievementsSection() {
         <Achievements items={achievements} />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1" role="status" aria-busy="true" aria-label="Carregando as conquistas">
-          {Array.from({ length: 6 }, (_, i) => (
+          {Array.from({ length: 8 }, (_, i) => (
             <Skeleton key={i} className="h-[6.5rem] rounded-xl" />
           ))}
         </div>

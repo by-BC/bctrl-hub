@@ -138,6 +138,25 @@ beforeAll(async () => {
     ], { defaultToNull: false }),
   );
 
+  // Composicao corporal: uma medicao no mes anterior e duas no mes consultado.
+  // A ultima fica em 30/09 23h30 de Sao Paulo (01/10 UTC), cobrindo a virada de mes.
+  await exec(
+    db.from("body_measurements").insert([
+      {
+        id: crypto.randomUUID(), measured_at: "2026-08-31T10:00:00-03:00", day: "2026-08-31",
+        weight_kg: 82, body_fat_pct: 22, skeletal_muscle_kg: 34, source: "manual",
+      },
+      {
+        id: crypto.randomUUID(), measured_at: "2026-09-01T07:00:00-03:00", day: "2026-09-01",
+        weight_kg: 81.5, body_fat_pct: 21.5, skeletal_muscle_kg: 34.2, source: "manual",
+      },
+      {
+        id: crypto.randomUUID(), measured_at: "2026-09-30T23:30:00-03:00", day: "2026-09-30",
+        weight_kg: 80, body_fat_pct: 20.5, skeletal_muscle_kg: 35, source: "manual",
+      },
+    ], { defaultToNull: false }),
+  );
+
   // ── Agosto ──
   // Treino de 31/08 às 23h30 em São Paulo (01/09 02h30 UTC): é de agosto.
   await workout("2026-08-31", [[80, 10, "normal", ["weight"]]], { startedAt: "2026-09-01T02:30:00Z", hevy: true });
@@ -289,6 +308,12 @@ describe("month_summary", () => {
         ]),
         off_plan: { kcal: 185, protein: 3.9, carbs: 38.6, fat: 1.5 },
       },
+      composition: {
+        count: 2,
+        first: { day: "2026-09-01", weight_kg: 81.5, body_fat_pct: 21.5, skeletal_muscle_kg: 34.2 },
+        last: { day: "2026-09-30", weight_kg: 80, body_fat_pct: 20.5, skeletal_muscle_kg: 35 },
+        change: { weight_kg: -1.5, body_fat_pct: -1, skeletal_muscle_kg: 0.8 },
+      },
     });
     expect(s.current.nutrition.options).toHaveLength(5);
 
@@ -307,6 +332,12 @@ describe("month_summary", () => {
       meals: { planned: 125, done: 0, pct: 0 },
       cardio: { minutes: 30, distance_km: 4.5, sessions: 1 },
       nutrition: { logged_days: 0, training_days: 0, options: [], off_plan: { kcal: 0, protein: 0, carbs: 0, fat: 0 } },
+      composition: {
+        count: 1,
+        first: { day: "2026-08-31", weight_kg: 82, body_fat_pct: 22, skeletal_muscle_kg: 34 },
+        last: { day: "2026-08-31", weight_kg: 82, body_fat_pct: 22, skeletal_muscle_kg: 34 },
+        change: { weight_kg: 0, body_fat_pct: 0, skeletal_muscle_kg: 0 },
+      },
     });
   });
 
@@ -337,6 +368,7 @@ describe("month_summary", () => {
       control_days: 0,
       meals: { planned: 124, done: 0, pct: 0 },
       cardio: { minutes: 0, distance_km: 0, sessions: 0 },
+      composition: null,
     });
     expect(s.previous).toMatchObject({ month: "2024-12-01", days: 31, workouts: 0, control_days: 0 });
   });
@@ -369,6 +401,7 @@ describe("RLS", () => {
         meals: { planned: 0, done: 0, pct: 0 },
         cardio: { minutes: 0, distance_km: 0, sessions: 0 },
         nutrition: { logged_days: 0, options: [] },
+        composition: null,
       });
     } finally {
       await deleteTestUser(other);

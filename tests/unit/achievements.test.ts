@@ -32,7 +32,7 @@ function evaluate(key: string, ctx: AchievementCtx) {
 }
 
 describe("catálogo", () => {
-  it("6 conquistas, cada uma com título e regra em texto", () => {
+  it("8 conquistas, cada uma com título e regra em texto", () => {
     expect(ACHIEVEMENTS.map((a) => a.key)).toEqual([
       "first_pr",
       "training_weeks_4",
@@ -40,6 +40,8 @@ describe("catálogo", () => {
       "session_1000kg",
       "workouts_100",
       "diet_month_80",
+      "body_fat_down_1",
+      "composition_goal",
     ]);
     for (const a of ACHIEVEMENTS) {
       expect(a.title.length).toBeGreaterThan(0);
@@ -49,8 +51,44 @@ describe("catálogo", () => {
 
   it("sem histórico: tudo bloqueado, com progresso 0", () => {
     const all = evaluateAchievements({ days: [], today: "2026-10-20" });
-    expect(all).toHaveLength(6);
+    expect(all).toHaveLength(8);
     for (const a of all) expect(a).toMatchObject({ unlockedOn: null, progress: 0, current: 0 });
+  });
+});
+
+describe("composição corporal", () => {
+  it("queda de gordura: bloqueada sem medição e progresso pela maior queda desde a primeira", () => {
+    expect(evaluate("body_fat_down_1", { days: [], today: "2026-10-20" })).toEqual({
+      unlockedOn: null, progress: 0, current: 0, target: 1,
+    });
+    expect(evaluate("body_fat_down_1", {
+      days: [],
+      today: "2026-10-20",
+      measurements: [
+        { day: "2026-09-01", measuredAt: "2026-09-01T10:00:00Z", bodyFatPct: 21 },
+        { day: "2026-10-01", measuredAt: "2026-10-01T10:00:00Z", bodyFatPct: 20.4 },
+      ],
+    })).toEqual({ unlockedOn: null, progress: 0.6, current: 0.6, target: 1 });
+  });
+
+  it("queda de gordura desbloqueia na primeira medição que chega a 1 ponto percentual", () => {
+    expect(evaluate("body_fat_down_1", {
+      days: [],
+      today: "2026-10-20",
+      measurements: [
+        { day: "2026-10-10", measuredAt: "2026-10-10T10:00:00Z", bodyFatPct: 19.7 },
+        { day: "2026-08-01", measuredAt: "2026-08-01T10:00:00Z", bodyFatPct: 21 },
+        { day: "2026-09-01", measuredAt: "2026-09-01T10:00:00Z", bodyFatPct: 20.2 },
+      ],
+    })).toEqual({ unlockedOn: "2026-10-10", progress: 1, current: 1, target: 1 });
+  });
+
+  it("meta de composição usa a primeira data de conclusão", () => {
+    expect(evaluate("composition_goal", { days: [], today: "2026-10-20", goals: [{ achievedOn: null }] }))
+      .toEqual({ unlockedOn: null, progress: 0, current: 0, target: 1 });
+    expect(evaluate("composition_goal", {
+      days: [], today: "2026-10-20", goals: [{ achievedOn: "2026-10-18" }, { achievedOn: "2026-09-03" }],
+    })).toEqual({ unlockedOn: "2026-09-03", progress: 1, current: 1, target: 1 });
   });
 });
 

@@ -19,6 +19,7 @@ import {
 } from "@/lib/domain/nutrition";
 import { MAX_SCORE_DAYS, scoreChunks, toDayFacts, type DayFacts } from "@/lib/domain/score";
 import { addDays } from "@/lib/domain/stats";
+import type { MonthComposition } from "@/lib/domain/month-card";
 import { goalOverridesSchema } from "@/lib/schemas/profile";
 import { createClient } from "@/lib/supabase/client";
 import { DataError } from "@/features/routines/api";
@@ -169,6 +170,8 @@ export type MonthNumbers = {
   meals: { planned: number; done: number; pct: number };
   cardio: { minutes: number; distance_km: number; sessions: number };
   nutrition: MonthNutritionFacts;
+  /** v3: primeira/última medição e variação dentro do mês; `null` sem medições. */
+  composition: MonthComposition | null;
 };
 
 export type MonthSummary = { month: string; current: MonthNumbers; previous: MonthNumbers };
@@ -177,5 +180,11 @@ export type MonthSummary = { month: string; current: MonthNumbers; previous: Mon
 export async function fetchMonthSummary(month: string, client: Client = db()): Promise<MonthSummary> {
   const { data, error } = await client.rpc("month_summary", { p_month: month });
   if (error) fail(error, "Não foi possível carregar o resumo do mês.");
-  return data as unknown as MonthSummary;
+  const summary = data as unknown as MonthSummary;
+  // Compatibilidade durante rollout: a versão anterior da RPC não tinha o campo opcional.
+  return {
+    ...summary,
+    current: { ...summary.current, composition: summary.current.composition ?? null },
+    previous: { ...summary.previous, composition: summary.previous.composition ?? null },
+  };
 }

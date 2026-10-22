@@ -139,6 +139,7 @@ function numbers(month: string, extra: Partial<MonthNumbers> = {}): MonthNumbers
     meals: { planned: 90, done: 0, pct: 0 },
     cardio: { minutes: 0, distance_km: 0, sessions: 0 },
     nutrition: { logged_days: 0, training_days: 0, options: [], off_plan: { kcal: 0, protein: 0, carbs: 0, fat: 0 } },
+    composition: null,
     ...extra,
   };
 }
@@ -233,6 +234,7 @@ describe("recordes e conquistas", () => {
     expect(progressText({ key: "workouts_100", current: 82, target: 100 })).toBe("82 de 100 treinos");
     expect(progressText({ key: "session_1000kg", current: 640.5, target: 1000 })).toBe("640 de 1.000 kg");
     expect(progressText({ key: "diet_month_80", current: 62, target: 80 })).toBe("62% de 80%");
+    expect(progressText({ key: "body_fat_down_1", current: 0.6, target: 1 })).toBe("0,6 de 1 p.p.");
   });
 
   it("desbloqueada (ícone + data) e bloqueada (regra + barra) com rótulos distintos", () => {

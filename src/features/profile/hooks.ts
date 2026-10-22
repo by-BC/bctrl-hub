@@ -10,6 +10,7 @@ import { useBodyWeights } from "@/features/progress/hooks";
 import { useToday } from "@/features/progress/use-today";
 import { DataError } from "@/features/routines/api";
 import { useMeasurements } from "@/features/composition/hooks";
+import { compositionKeys, fetchCompositionGoalAchievements } from "@/features/composition/api";
 import type { Measurement } from "@/features/composition/api";
 import { bmrInputFrom } from "@/lib/domain/composition";
 import { evaluateAchievements, type AchievementView } from "@/lib/domain/achievements";
@@ -159,6 +160,11 @@ export function useMonthSummary(month: string | null) {
  */
 export function useAchievements() {
   const today = useToday();
+  const measurements = useMeasurements();
+  const goals = useQuery({
+    queryKey: compositionKeys.goalAchievements(),
+    queryFn: () => fetchCompositionGoalAchievements(),
+  });
   const history = useQuery({
     queryKey: scoreKeys.history(today ?? ""),
     queryFn: () => fetchScoreHistory(today!),
@@ -166,8 +172,25 @@ export function useAchievements() {
   });
   const achievements = useMemo(
     (): AchievementView[] | null =>
-      history.data && today ? evaluateAchievements({ days: history.data, today }) : null,
-    [history.data, today],
+      history.data && measurements.data && goals.data && today
+        ? evaluateAchievements({
+            days: history.data,
+            today,
+            measurements: measurements.data.map((measurement) => ({
+              day: measurement.day,
+              measuredAt: measurement.measured_at,
+              bodyFatPct: measurement.body_fat_pct,
+            })),
+            goals: goals.data,
+          })
+        : null,
+    [goals.data, history.data, measurements.data, today],
   );
-  return { ...history, achievements };
+  return {
+    ...history,
+    isPending: history.isPending || measurements.isPending || goals.isPending,
+    isError: history.isError || measurements.isError || goals.isError,
+    refetch: () => Promise.all([history.refetch(), measurements.refetch(), goals.refetch()]),
+    achievements,
+  };
 }

@@ -1,7 +1,7 @@
 import { BrandSymbol, BrandWordmark } from "@/components/brand/brand-symbol";
 import { heatColor } from "@/lib/domain/month-view";
 import type { MonthCardData, MonthCardDay } from "@/lib/domain/month-card";
-import { formatInt, formatShortDay } from "@/lib/format";
+import { formatInt, formatKg, formatShortDay } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /**
@@ -80,6 +80,8 @@ export function MonthCard({ data }: { data: MonthCardData }) {
           )}
         </div>
 
+        {data.composition && <CompositionLine data={data.composition} />}
+
         <Achievements data={data} />
 
         {/* Com a lista de conquistas cheia, o mote sai para não encostar na faixa de baixo. */}
@@ -88,6 +90,21 @@ export function MonthCard({ data }: { data: MonthCardData }) {
         )}
       </div>
     </div>
+  );
+}
+
+function CompositionLine({ data }: { data: NonNullable<MonthCardData["composition"]> }) {
+  const value = (n: number | null, unit: string) => n === null
+    ? "sem dado"
+    : `${Math.abs(n) < 0.005 ? "" : n > 0 ? "+" : "−"}${formatKg(Math.abs(n))} ${unit}`;
+  return (
+    <section className="mt-[18px] flex items-baseline justify-between gap-[28px] border-y border-brand-paper/25 py-[12px]" data-testid="month-card-composition">
+      <h3 className="num shrink-0 text-[22px] tracking-[0.2em] uppercase opacity-85">Composição</h3>
+      <p className="flex flex-wrap justify-end gap-x-[28px] text-[28px] font-semibold">
+        <span>Gordura <span className="num">{value(data.bodyFatPct, "p.p.")}</span></span>
+        <span>Músculo <span className="num">{value(data.skeletalMuscleKg, "kg")}</span></span>
+      </p>
+    </section>
   );
 }
 
@@ -197,7 +214,7 @@ function Achievements({ data }: { data: MonthCardData }) {
   // O total vai no título; a lista mostra as primeiras.
   const shown = data.achievements.slice(0, ACHIEVEMENTS_SHOWN);
   return (
-    <section className="mt-[28px]" data-testid="month-card-achievements">
+    <section className="mt-[20px]" data-testid="month-card-achievements">
       <h3 className="num text-[24px] tracking-[0.24em] uppercase opacity-85">
         Conquistas do mês{data.achievements.length > 0 && ` · ${data.achievements.length}`}
       </h3>
