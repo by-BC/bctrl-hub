@@ -7,6 +7,7 @@
  */
 
 import { normalizeExerciseName as normalizeText } from "./routines";
+import { selectedMealItems } from "./meals";
 import { dayToTime } from "./stats";
 
 export type Macros = { kcal: number; protein: number; carbs: number; fat: number };
@@ -492,7 +493,12 @@ export type MonthNutritionFacts = {
   /** Quantos desses dias tiveram treino finalizado. */
   training_days: number;
   /** Quantas vezes cada opção do plano foi marcada. */
-  options: readonly { option_id: string; count: number }[];
+  options: readonly {
+    option_id: string;
+    count: number;
+    /** Ausente/nulo = opção inteira (compatível com registros anteriores). */
+    selected_item_indices?: readonly number[] | null;
+  }[];
   /** Soma dos itens fora do plano (snapshot). */
   off_plan: Macros;
 };
@@ -528,13 +534,13 @@ export function monthNutrition(
 ): MonthNutrition {
   let total: Macros = { ...facts.off_plan };
   let unresolved = 0;
-  for (const { option_id, count } of facts.options) {
+  for (const { option_id, count, selected_item_indices } of facts.options) {
     const items = optionItems.get(option_id);
     if (!items) {
       unresolved += count;
       continue;
     }
-    const m = optionMacros(items, foods);
+    const m = optionMacros(selectedMealItems(items, selected_item_indices), foods);
     total = addMacros(total, scaleMacros(m.total, count));
     unresolved += m.unresolved * count;
   }

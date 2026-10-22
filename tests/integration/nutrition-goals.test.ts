@@ -82,7 +82,15 @@ describe("profiles via API", () => {
 
 describe("meal_log_items (fora do plano) via API", () => {
   const meal = crypto.randomUUID();
-  const log: MealLog = { id: crypto.randomUUID(), day: DAY, meal_id: meal, option_id: null, off_plan: true, note: null };
+  const log: MealLog = {
+    id: crypto.randomUUID(),
+    day: DAY,
+    meal_id: meal,
+    option_id: null,
+    off_plan: true,
+    note: null,
+    selected_item_indices: null,
+  };
 
   beforeAll(async () => {
     await exec(db.from("meals").insert({ id: meal, name: "Lanche", time: "16:00", position: 1 }));
@@ -139,7 +147,15 @@ describe("meal_log_items (fora do plano) via API", () => {
     await upsertOwnFood(own, db);
     const otherMeal = crypto.randomUUID();
     await exec(otherDb.from("meals").insert({ id: otherMeal, name: "Ceia", time: "22:00", position: 1 }));
-    const otherLog: MealLog = { id: crypto.randomUUID(), day: DAY, meal_id: otherMeal, option_id: null, off_plan: true, note: null };
+    const otherLog: MealLog = {
+      id: crypto.randomUUID(),
+      day: DAY,
+      meal_id: otherMeal,
+      option_id: null,
+      off_plan: true,
+      note: null,
+      selected_item_indices: null,
+    };
     await upsertMealLog(otherLog, otherDb);
     await expect(
       upsertOffPlanItem(

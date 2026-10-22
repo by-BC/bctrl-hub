@@ -155,14 +155,14 @@ isOneToOne: false
                   ]
                 },"meal_logs": {
                   Row: {
-                    "created_at": string,"day": string,"id": string,"meal_id": string,"note": string | null,"off_plan": boolean,"option_id": string | null,"user_id": string
+                    "created_at": string,"day": string,"id": string,"meal_id": string,"note": string | null,"off_plan": boolean,"option_id": string | null,"selected_item_indices": (number)[] | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"day": string,"id"?: string,"meal_id": string,"note"?: string | null,"off_plan"?: boolean,"option_id"?: string | null,"user_id"?: string
+                    "created_at"?: string,"day": string,"id"?: string,"meal_id": string,"note"?: string | null,"off_plan"?: boolean,"option_id"?: string | null,"selected_item_indices"?: (number)[] | null,"user_id"?: string
                   }
                   Update: {
-                    "created_at"?: string,"day"?: string,"id"?: string,"meal_id"?: string,"note"?: string | null,"off_plan"?: boolean,"option_id"?: string | null,"user_id"?: string
+                    "created_at"?: string,"day"?: string,"id"?: string,"meal_id"?: string,"note"?: string | null,"off_plan"?: boolean,"option_id"?: string | null,"selected_item_indices"?: (number)[] | null,"user_id"?: string
                   }
                   Relationships: [
                     {

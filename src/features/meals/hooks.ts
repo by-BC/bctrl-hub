@@ -221,12 +221,21 @@ export function buildOffPlanAdd(
 export function buildMealLog(
   existing: MealLog | undefined,
   base: { day: string; meal_id: string },
-  choice: { option_id: string } | { off_plan: true; note: string | null },
+  choice:
+    | { option_id: string; selected_item_indices?: number[] | null }
+    | { off_plan: true; note: string | null },
 ): MealLog {
   const id = existing?.id ?? crypto.randomUUID();
   return "option_id" in choice
-    ? { id, ...base, option_id: choice.option_id, off_plan: false, note: null }
-    : { id, ...base, option_id: null, off_plan: true, note: choice.note };
+    ? {
+        id,
+        ...base,
+        option_id: choice.option_id,
+        selected_item_indices: choice.selected_item_indices ?? null,
+        off_plan: false,
+        note: null,
+      }
+    : { id, ...base, option_id: null, selected_item_indices: null, off_plan: true, note: choice.note };
 }
 
 // ── Plano ─────────────────────────────────────────────────────────────────

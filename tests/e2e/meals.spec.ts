@@ -98,6 +98,26 @@ test.describe("refeições do dia e plano alimentar", () => {
     await expect(mealCard(page, "Jantar")).toContainText("Pendente");
   });
 
+  test("registra somente os alimentos consumidos de uma opção", async ({ page }) => {
+    await page.goto("/comida");
+    await mealCard(page, "Café da manhã").click();
+    const option = sheet(page).getByRole("article", { name: "Opção 2: Iogurte" });
+
+    await option.getByRole("checkbox", { name: "Comi Iogurte natural" }).check();
+    await option.getByRole("button", { name: "Salvar 1 de 2 itens da Opção 2" }).click();
+
+    const card = mealCard(page, "Café da manhã");
+    await expect(card).toContainText("Feita");
+    await expect(card).toContainText("1 de 2 itens");
+    await page.reload();
+    await expect(card).toContainText("1 de 2 itens");
+
+    await card.click();
+    const reopened = sheet(page).getByRole("article", { name: "Opção 2: Iogurte" });
+    await expect(reopened.getByRole("checkbox", { name: "Comi Iogurte natural" })).toBeChecked();
+    await expect(reopened.getByRole("checkbox", { name: "Comi Granola" })).not.toBeChecked();
+  });
+
   test("com treino gravado no dia, o pós-treino aparece e conta na adesão", async ({ page }) => {
     const exercise = await seedExercise(user, "Supino E2E");
     await seedWorkout(user, { day: today, sets: [[exercise, [[40, 10]]]] });

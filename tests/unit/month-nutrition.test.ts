@@ -51,4 +51,20 @@ describe("monthNutrition: médias do mês × meta", () => {
     const one = { ...empty, logged_days: 1, options: [{ option_id: "cafe", count: 1 }] };
     expect(monthNutrition(one, items, foods, null)).toMatchObject({ consumed: { kcal: 300, protein: 20 }, goal: null });
   });
+
+  it("soma apenas os itens escolhidos quando a refeição foi parcial", () => {
+    const out = monthNutrition(
+      {
+        logged_days: 1,
+        training_days: 0,
+        options: [{ option_id: "almoco", count: 1, selected_item_indices: [0] }],
+        off_plan: { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+      },
+      items,
+      foods,
+      null,
+    );
+    expect(out.consumed).toMatchObject({ kcal: 248, protein: 5.2 });
+    expect(out.unresolved).toBe(0);
+  });
 });

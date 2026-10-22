@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Segmented } from "@/features/progress/components/chart-card";
 import { useToday } from "@/features/progress/use-today";
-import { formatMealTime, mealStatus, type Adherence } from "@/lib/domain/meals";
+import { formatMealTime, mealStatus, selectedMealItems, type Adherence } from "@/lib/domain/meals";
 import { addDays } from "@/lib/domain/stats";
 import { formatDay } from "@/lib/format";
 import type { Meal, MealLog } from "../api";
@@ -136,10 +136,13 @@ export function MealCard({ meal, log, onOpen }: { meal: Meal; log: MealLog | und
   const status = mealStatus(log);
   const time = formatMealTime(meal.time);
   const optionIndex = log?.option_id ? meal.meal_options.findIndex((o) => o.id === log.option_id) : -1;
+  const option = optionIndex >= 0 ? meal.meal_options[optionIndex] : null;
+  const consumedItems = option ? selectedMealItems(option.items, log?.selected_item_indices) : [];
+  const partial = option !== null && consumedItems.length < option.items.length;
   const detail =
     status === "done"
-      ? optionIndex >= 0
-        ? `${optionLabel(optionIndex)}: ${meal.meal_options[optionIndex].title}`
+      ? option
+        ? `${optionLabel(optionIndex)}: ${option.title}${partial ? ` · ${consumedItems.length} de ${option.items.length} itens` : ""}`
         : "opção removida do plano"
       : status === "off_plan"
         ? log?.note
@@ -165,8 +168,8 @@ export function MealCard({ meal, log, onOpen }: { meal: Meal; log: MealLog | und
       <span className="min-w-0 flex-1">
         <span className="block truncate font-semibold">{meal.name}</span>
         <MealStatusBadge status={status} detail={detail} />
-        {status === "done" && optionIndex >= 0 && (
-          <OptionMacros items={meal.meal_options[optionIndex].items} className="mt-1" />
+        {status === "done" && option && (
+          <OptionMacros items={consumedItems} className="mt-1" />
         )}
       </span>
       <ChevronRight

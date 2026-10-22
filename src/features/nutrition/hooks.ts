@@ -8,6 +8,7 @@ import { useBmrInput } from "@/features/composition/hooks";
 import { useBodyWeights } from "@/features/progress/hooks";
 import { useProfile } from "@/features/profile/hooks";
 import { DataError } from "@/features/routines/api";
+import { selectedMealItems } from "@/lib/domain/meals";
 import {
   dayTotals,
   goalsFromProfile,
@@ -110,7 +111,7 @@ export function useDayNutrition(day: string): DayNutrition {
       logIds.add(log.id);
       const option = !log.off_plan && log.option_id ? meal.meal_options.find((o) => o.id === log.option_id) : null;
       if (!option) continue;
-      const m = optionMacros(option.items, foods);
+      const m = optionMacros(selectedMealItems(option.items, log.selected_item_indices), foods);
       options.push(m.total);
       unresolved += m.unresolved;
     }

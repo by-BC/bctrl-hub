@@ -27,7 +27,10 @@ export const workoutDayKey = (day: string) => [...workoutKeys.all, "on-day", day
 export type MealRow = Tables<"meals">;
 export type MealOption = Omit<Tables<"meal_options">, "items"> & { items: MealItem[] };
 export type Meal = MealRow & { meal_options: MealOption[] };
-export type MealLog = Pick<Tables<"meal_logs">, "id" | "day" | "meal_id" | "option_id" | "off_plan" | "note">;
+export type MealLog = Pick<
+  Tables<"meal_logs">,
+  "id" | "day" | "meal_id" | "option_id" | "off_plan" | "note" | "selected_item_indices"
+>;
 
 function fail(error: { message: string; code?: string }, message: string): never {
   console.error("[bctrl]", message, error);
@@ -55,7 +58,7 @@ export async function fetchMealPlan(client: Client = db()): Promise<Meal[]> {
 export async function fetchMealLogs(day: string, client: Client = db()): Promise<MealLog[]> {
   const { data, error } = await client
     .from("meal_logs")
-    .select("id, day, meal_id, option_id, off_plan, note")
+    .select("id, day, meal_id, option_id, off_plan, note, selected_item_indices")
     .eq("day", day);
   if (error) fail(error, "Não foi possível carregar as refeições do dia.");
   return data;

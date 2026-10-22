@@ -37,6 +37,7 @@ describe("refeições: registro idempotente e plano", () => {
     option_id: op1,
     off_plan: false,
     note: null,
+    selected_item_indices: null,
     ...patch,
   });
 
@@ -81,6 +82,19 @@ describe("refeições: registro idempotente e plano", () => {
     const logs = await fetchMealLogs(DAY, db);
     expect(logs).toHaveLength(1);
     expect(logs[0]).toMatchObject({ meal_id: cafe, option_id: op2, off_plan: false, note: null });
+  });
+
+  it("salva somente os itens consumidos e permite voltar para a opção completa", async () => {
+    await upsertMealLog(log({ option_id: op1, selected_item_indices: [0] }), db);
+    expect(await fetchMealLogs(DAY, db)).toEqual([
+      expect.objectContaining({ option_id: op1, selected_item_indices: [0] }),
+    ]);
+
+    const [current] = await fetchMealLogs(DAY, db);
+    await upsertMealLog({ ...current, selected_item_indices: null }, db);
+    expect(await fetchMealLogs(DAY, db)).toEqual([
+      expect.objectContaining({ option_id: op1, selected_item_indices: null }),
+    ]);
   });
 
   it("fora do plano grava a nota e não conta como feita na semana", async () => {

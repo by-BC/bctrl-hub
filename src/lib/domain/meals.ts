@@ -63,6 +63,22 @@ export function mealStatus(log: MealLogEntry | null | undefined): MealStatus {
   return log.off_plan ? "off_plan" : "done";
 }
 
+/**
+ * Itens efetivamente consumidos de uma opção. `null`/`undefined` preserva o comportamento
+ * dos registros antigos: a opção inteira foi consumida. Índices inválidos e repetidos são
+ * ignorados, e a ordem visual continua sendo a ordem do plano.
+ */
+export function selectedMealItems<T>(
+  items: readonly T[],
+  selectedItemIndices: readonly number[] | null | undefined,
+): T[] {
+  if (selectedItemIndices == null) return [...items];
+  const selected = new Set(
+    selectedItemIndices.filter((index) => Number.isInteger(index) && index >= 0 && index < items.length),
+  );
+  return items.filter((_item, index) => selected.has(index));
+}
+
 /** Adesão do dia. Registros de refeições fora de `visible` (ex.: pós-treino sem treino) são ignorados. */
 export function adherence(logs: readonly MealLogEntry[], visible: readonly Pick<PlanMeal, "id">[]): Adherence {
   const ids = new Set(visible.map((m) => m.id));

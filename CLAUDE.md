@@ -73,6 +73,7 @@ App pessoal (usuário único) de treino, alimentação, hábitos e tarefas. Docs
 ## Perfil, pontuação e metas (v2)
 
 - **Pontuação do dia** (`daily_scores`, `src/lib/domain/score.ts`): 1 ponto por critério (treino ou cardio, dieta ≥ 80%, todos os hábitos diários ativos, ≥ 1 tarefa); "dia no controle" = 3 ou 4. Sem hábito diário ativo, o critério de hábitos não conta.
+- **Itens consumidos da refeição**: `meal_logs.selected_item_indices` guarda os índices, a partir de zero, dos itens realmente consumidos. `null` significa opção inteira e mantém compatibilidade com os registros antigos. A refeição continua contando como feita quando há ao menos um item; macros diários, card e média mensal usam somente a seleção. Nunca grave array vazio.
 - **Resumo do mês** (`month_summary`, `summary-stats.ts`): mês sem registro de refeição (`nutrition.logged_days = 0`, época do Hevy) mostra "Sem registros", nunca 0%.
 - **Conquistas** (`src/lib/domain/achievements.ts`): derivadas do histórico inteiro (inclui o Hevy), sem tabela.
 - **Metas** (`goalsFromProfile`, `src/lib/domain/nutrition.ts`): Mifflin-St Jeor × fator de atividade × ajuste do objetivo; proteína em g/kg; gordura máx(0,8 g/kg, 20% das kcal); carboidrato o restante. Peso = último registro até o dia. Ajuste manual em `goal_overrides`.

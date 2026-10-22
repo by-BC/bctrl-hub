@@ -5,6 +5,7 @@ import {
   hasWorkoutOn,
   mealStatus,
   orderMeals,
+  selectedMealItems,
   visibleMeals,
   type PlanMeal,
 } from "@/lib/domain/meals";
@@ -99,6 +100,19 @@ describe("mealStatus", () => {
     expect(mealStatus(undefined)).toBe("pending");
     expect(mealStatus({ meal_id: "a", option_id: "op", off_plan: false })).toBe("done");
     expect(mealStatus({ meal_id: "a", option_id: null, off_plan: true })).toBe("off_plan");
+  });
+});
+
+describe("selectedMealItems", () => {
+  const items = ["arroz", "feijão", "frango"];
+
+  it("mantém todos os itens nos registros antigos e na escolha da opção completa", () => {
+    expect(selectedMealItems(items, null)).toEqual(items);
+    expect(selectedMealItems(items, undefined)).toEqual(items);
+  });
+
+  it("mantém apenas os índices escolhidos, na ordem do plano", () => {
+    expect(selectedMealItems(items, [2, 0, 2, 99, -1])).toEqual(["arroz", "frango"]);
   });
 });
 

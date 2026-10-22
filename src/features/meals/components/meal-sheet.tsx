@@ -3,6 +3,7 @@
 import { Check, ChevronDown, CircleSlash2, Plus, Trash2, Undo2 } from "lucide-react";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,7 +15,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { formatMealTime, mealStatus } from "@/lib/domain/meals";
+import { formatMealTime, mealStatus, selectedMealItems } from "@/lib/domain/meals";
 import { NOTE_MAX, offPlanNoteSchema, type MealItem } from "@/lib/schemas/meal";
 import { formatMacros, OptionMacros } from "@/features/nutrition/components/macro-summary";
 import { OffPlanSheet } from "@/features/nutrition/components/off-plan-sheet";
@@ -58,9 +59,18 @@ function MealSheetBody({ day, meal, log, close }: { day: string; meal: Meal; log
   const time = formatMealTime(meal.time);
   const base = { day, meal_id: meal.id };
 
-  const choose = (option: MealOption) => {
-    if (log && !log.off_plan && log.option_id === option.id) return close();
-    logMeal.mutate(buildMealLog(log, base, { option_id: option.id }));
+  const choose = (option: MealOption, selectedItemIndices: number[] | null) => {
+    const current = log?.selected_item_indices ?? null;
+    const sameSelection =
+      current === selectedItemIndices ||
+      (current !== null &&
+        selectedItemIndices !== null &&
+        current.length === selectedItemIndices.length &&
+        current.every((value, index) => value === selectedItemIndices[index]));
+    if (log && !log.off_plan && log.option_id === option.id && sameSelection) return close();
+    logMeal.mutate(
+      buildMealLog(log, base, { option_id: option.id, selected_item_indices: selectedItemIndices }),
+    );
     close();
   };
 
@@ -80,18 +90,26 @@ function MealSheetBody({ day, meal, log, close }: { day: string; meal: Meal; log
             Esta refeição ainda não tem opções. Cadastre no plano alimentar.
           </p>
         ) : (
-          <ul className="space-y-3" aria-label="Opções">
-            {meal.meal_options.map((option, index) => (
-              <li key={option.id}>
-                <OptionCard
-                  option={option}
-                  index={index}
-                  selected={!!log && !log.off_plan && log.option_id === option.id}
-                  onChoose={() => choose(option)}
-                />
-              </li>
-            ))}
-          </ul>
+          <>
+            <p className="text-sm text-muted-foreground">
+              Marque apenas os alimentos que comeu. Sem marcar nenhum, o botão registra a opção inteira.
+            </p>
+            <ul className="space-y-3" aria-label="Opções">
+              {meal.meal_options.map((option, index) => (
+                <li key={option.id}>
+                  <OptionCard
+                    option={option}
+                    index={index}
+                    selected={!!log && !log.off_plan && log.option_id === option.id}
+                    selectedItemIndices={
+                      !!log && !log.off_plan && log.option_id === option.id ? log.selected_item_indices : undefined
+                    }
+                    onChoose={(indices) => choose(option, indices)}
+                  />
+                </li>
+              ))}
+            </ul>
+          </>
         )}
 
         <OffPlanItems day={day} meal={meal} log={log} />
@@ -126,18 +144,56 @@ function MealSheetBody({ day, meal, log, close }: { day: string; meal: Meal; log
 
 export const optionLabel = (index: number) => `Opção ${index + 1}`;
 
+function normalizeSelection(indices: readonly number[] | null | undefined, total: number): number[] | null {
+  if (indices == null) return null;
+  const valid = [...new Set(indices.filter((value) => Number.isInteger(value) && value >= 0 && value < total))].sort(
+    (a, b) => a - b,
+  );
+  return valid.length === total ? null : valid;
+}
+
 function OptionCard({
   option,
   index,
   selected,
+  selectedItemIndices,
   onChoose,
 }: {
   option: MealOption;
   index: number;
   selected: boolean;
-  onChoose: () => void;
+  selectedItemIndices: number[] | null | undefined;
+  onChoose: (selectedItemIndices: number[] | null) => void;
 }) {
   const label = optionLabel(index);
+  const inputId = useId();
+  const all = option.items.map((_item, itemIndex) => itemIndex);
+  const total = option.items.length;
+  const current = normalizeSelection(selectedItemIndices, total);
+  const [checked, setChecked] = useState<number[]>(selected ? (current ?? all) : []);
+  const partial = checked.length > 0 && checked.length < total;
+  const displayedItems = checked.length > 0 ? selectedMealItems(option.items, checked) : option.items;
+  const selection = checked.length === total ? null : checked;
+  const unchanged =
+    selected &&
+    (current === selection ||
+      (current !== null &&
+        selection !== null &&
+        current.length === selection.length &&
+        current.every((value, itemIndex) => value === selection[itemIndex])));
+  const buttonLabel = unchanged
+    ? `${label} escolhida`
+    : partial
+      ? `Salvar ${checked.length} de ${total} itens da ${label}`
+      : `Comi a ${label}: ${option.title}`;
+
+  const toggle = (itemIndex: number, value: boolean) =>
+    setChecked((currentIndices) =>
+      value
+        ? [...new Set([...currentIndices, itemIndex])].sort((a, b) => a - b)
+        : currentIndices.filter((value) => value !== itemIndex),
+    );
+
   return (
     <article
       aria-label={`${label}: ${option.title}`}
@@ -146,35 +202,67 @@ function OptionCard({
       <header>
         <p className="num text-xs tracking-[0.15em] text-muted-foreground uppercase">{label}</p>
         <h3 className="font-semibold">{option.title}</h3>
-        <OptionMacros items={option.items} className="mt-1" />
+        <OptionMacros items={displayedItems} className="mt-1" />
       </header>
       {option.items.length > 0 && (
-        <ul className="space-y-1">
+        <ul className="space-y-2" aria-label={`Alimentos da ${label}`}>
           {option.items.map((item, i) => (
-            <ItemRow key={i} item={item} />
+            <ItemRow
+              key={i}
+              id={`${inputId}-${i}`}
+              item={item}
+              checked={checked.includes(i)}
+              onCheckedChange={(value) => toggle(i, value)}
+            />
           ))}
         </ul>
       )}
       <Button
         className="h-11 w-full font-semibold"
         variant={selected ? "secondary" : "default"}
-        aria-label={selected ? `${label} escolhida` : `Comi a ${label}: ${option.title}`}
-        onClick={onChoose}
+        aria-label={buttonLabel}
+        disabled={selected && checked.length === 0 && total > 0}
+        onClick={() => onChoose(!selected && checked.length === 0 ? null : selection)}
       >
         <Check aria-hidden />
-        {selected ? `${label} escolhida` : `Comi a ${label}`}
+        {unchanged
+          ? `${label} escolhida`
+          : partial
+            ? `Salvar ${checked.length} de ${total} itens`
+            : `Comi a ${label}`}
       </Button>
+      {selected && checked.length === 0 && total > 0 && (
+        <p className="text-xs text-muted-foreground">Selecione pelo menos um item ou desmarque a refeição.</p>
+      )}
     </article>
   );
 }
 
-function ItemRow({ item }: { item: MealItem }) {
+function ItemRow({
+  id,
+  item,
+  checked,
+  onCheckedChange,
+}: {
+  id: string;
+  item: MealItem;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
   const [open, setOpen] = useState(false);
   return (
-    <li className="text-sm">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="min-w-0">{item.name}</span>
-        {item.qty && <span className="num shrink-0 text-muted-foreground">{item.qty}</span>}
+    <li className="rounded-lg border bg-background/50 px-3 py-2 text-sm">
+      <div className="flex min-h-8 items-center gap-3">
+        <Checkbox
+          id={id}
+          checked={checked}
+          aria-label={`Comi ${item.name}`}
+          onCheckedChange={(value) => onCheckedChange(value === true)}
+        />
+        <Label htmlFor={id} className="flex min-w-0 flex-1 cursor-pointer items-baseline justify-between gap-3 font-normal">
+          <span className="min-w-0">{item.name}</span>
+          {item.qty && <span className="num shrink-0 text-muted-foreground">{item.qty}</span>}
+        </Label>
       </div>
       {item.subs.length > 0 && (
         <Collapsible open={open} onOpenChange={setOpen}>

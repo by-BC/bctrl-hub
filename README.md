@@ -37,7 +37,7 @@ Os testes que gravam dados usam usuários descartáveis (`tests/e2e/disposable-u
 ## O que o app faz
 
 - **Treino**: rotinas, sessão com timer e fila própria, histórico, evolução por exercício, catálogo de exercícios (`/treino/exercicios`) com mídia por link e instruções próprias, tipos de série (carga, peso corporal, duração, distância).
-- **Comida**: plano alimentar com macros pela **TACO** (597 alimentos, NEPA/Unicamp), refeição "fora do plano" e **consumido × meta**.
+- **Comida**: plano alimentar com macros pela **TACO** (597 alimentos, NEPA/Unicamp), seleção dos alimentos realmente consumidos em cada refeição, refeição "fora do plano" e **consumido × meta**.
 - **Perfil** (`/perfil`): heatmap de "dias no controle" (pontuação 0–4 por dia), resumo do mês, recordes e conquistas. Dados corporais e metas em `/perfil/dados`: Mifflin-St Jeor × fator de atividade, ajuste pelo objetivo, proteína em g/kg; cada meta aceita ajuste manual e pode ser diferente em dia de treino.
 - **Composição corporal** (`/evolucao/composicao`): histórico e registro das 17 métricas da balança, gráficos, metas com projeção, TMB medida e proteína por massa magra. O peso da medição alimenta a Evolução sem duplicar o dia; Perfil e card do mês mostram as variações de peso, gordura e músculo.
 - **Story Studio**: story do treino (4 layouts) e card do mês (`/perfil/mes/AAAA-MM/story`), gerados no aparelho e compartilhados pelo menu nativo ou baixados em PNG.

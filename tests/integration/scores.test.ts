@@ -300,11 +300,11 @@ describe("month_summary", () => {
         logged_days: 5,
         training_days: 2,
         options: expect.arrayContaining([
-          { option_id: option[ids.cafe], count: 4 },
-          { option_id: option[ids.almoco], count: 4 },
-          { option_id: option[ids.jantar], count: 4 },
-          { option_id: option[ids.lanche], count: 3 },
-          { option_id: option[ids.pos], count: 1 },
+          { option_id: option[ids.cafe], count: 4, selected_item_indices: null },
+          { option_id: option[ids.almoco], count: 4, selected_item_indices: null },
+          { option_id: option[ids.jantar], count: 4, selected_item_indices: null },
+          { option_id: option[ids.lanche], count: 3, selected_item_indices: null },
+          { option_id: option[ids.pos], count: 1, selected_item_indices: null },
         ]),
         off_plan: { kcal: 185, protein: 3.9, carbs: 38.6, fat: 1.5 },
       },
@@ -339,6 +339,22 @@ describe("month_summary", () => {
         change: { weight_kg: 0, body_fat_pct: 0, skeletal_muscle_kg: 0 },
       },
     });
+  });
+
+  it("separa no resumo mensal uma seleção parcial da opção completa", async () => {
+    const query = db.from("meal_logs").update({ selected_item_indices: [0] }).eq("day", "2026-09-08").eq("meal_id", ids.cafe);
+    await exec(query);
+    try {
+      const summary = await fetchMonthSummary("2026-09-01", db);
+      expect(summary.current.nutrition.options).toEqual(
+        expect.arrayContaining([
+          { option_id: option[ids.cafe], count: 3, selected_item_indices: null },
+          { option_id: option[ids.cafe], count: 1, selected_item_indices: [0] },
+        ]),
+      );
+    } finally {
+      await exec(db.from("meal_logs").update({ selected_item_indices: null }).eq("day", "2026-09-08").eq("meal_id", ids.cafe));
+    }
   });
 
   it("médias de kcal e proteína do mês saem do domínio com o plano", async () => {
