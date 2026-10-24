@@ -69,21 +69,24 @@ function MuscleMapPoster({ data, date }: { data: StoryData; date: string }) {
   ];
 
   return (
-    <div className="flex h-full flex-col overflow-hidden px-[76px] pb-[270px] pt-[270px] text-brand-paper">
-      <p className="text-[24px] font-bold uppercase tracking-[.24em] text-brand-orange">MAPA DE TREINO · {date}</p>
-      <h2 className="mt-7 text-[88px] font-black leading-[.88] tracking-[-.06em]">MÚSCULOS<br />ATIVADOS<span className="text-brand-orange">.</span></h2>
-      <p className="mt-7 line-clamp-2 text-[34px] font-semibold text-brand-paper/75">{data.routineName}</p>
-      <div className="mt-12 grid grid-cols-2 gap-7">
-        {views.map((view) => <div key={view.name} className="rounded-[28px] border border-brand-paper/20 bg-brand-paper/5 px-4 pb-4 pt-5 text-center">
-          <p className="text-[21px] font-bold tracking-[.2em] text-brand-paper/70">{view.name}</p>
+    <div className="relative flex h-full flex-col overflow-hidden px-[64px] pb-[260px] pt-[270px] text-brand-paper">
+      <div aria-hidden className="absolute left-1/2 top-[820px] size-[780px] -translate-x-1/2 rounded-full bg-brand-orange/10 blur-[120px]" />
+      <div className="relative">
+        <p className="text-[23px] font-bold uppercase tracking-[.24em] text-brand-orange">SESSÃO · {date}</p>
+        <h2 className="mt-4 text-[76px] font-black leading-[.9] tracking-[-.055em]">MAPA MUSCULAR<span className="text-brand-orange">.</span></h2>
+        <p className="mt-4 line-clamp-1 text-[34px] font-semibold text-brand-paper/70">{data.routineName}</p>
+      </div>
+      <div className="relative mt-7 grid grid-cols-2 gap-2 border-y border-brand-paper/15 py-4">
+        {views.map((view) => <div key={view.name} className="flex min-w-0 flex-col items-center text-center">
+          <div className="flex items-center gap-3 text-[22px] font-black tracking-[.22em] text-brand-paper/65"><span className="h-[3px] w-8 bg-brand-orange" />{view.name}<span className="h-[3px] w-8 bg-brand-orange" /></div>
           <MuscleFigure view={view.view} active={keys} />
         </div>)}
       </div>
-      <div className="mt-8 border-t border-brand-paper/25 pt-6">
-        <p className="text-[21px] font-bold uppercase tracking-[.2em] text-brand-paper/60">GRUPOS CADASTRADOS</p>
-        {data.muscles.length > 0 ? <div className="mt-4 flex flex-wrap gap-3">{data.muscles.slice(0, 8).map((name) => <span key={name} className="rounded-full border border-brand-orange/70 bg-brand-orange/15 px-4 py-2 text-[22px] font-bold">{name}</span>)}</div> : <p className="mt-4 text-[25px] text-brand-paper/70">Adicione os grupos musculares aos exercícios para ver o mapa.</p>}
+      <div className="relative mt-6 border-t border-brand-paper/25 pt-5">
+        <p className="text-[22px] font-bold uppercase tracking-[.2em] text-brand-paper/55">GRUPOS TRABALHADOS</p>
+        {data.muscles.length > 0 ? <div className="mt-3 flex flex-wrap gap-3">{data.muscles.slice(0, 8).map((name) => <span key={name} className="rounded-full border border-brand-orange/55 bg-brand-orange/10 px-4 py-2 text-[27px] font-bold">{name}</span>)}</div> : <p className="mt-3 text-[25px] text-brand-paper/70">Adicione os grupos musculares aos exercícios para ver o mapa.</p>}
       </div>
-      <p className="num mt-auto border-t border-brand-paper/25 pt-5 text-[22px] font-bold uppercase tracking-[.18em] text-brand-paper/65">{data.setsCount} SÉRIES · {date}</p>
+      <p className="num relative mt-auto border-t border-brand-paper/25 pt-5 text-[22px] font-bold uppercase tracking-[.18em] text-brand-paper/55">{data.setsCount} SÉRIES · TREINO CONCLUÍDO</p>
     </div>
   );
 }
