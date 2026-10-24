@@ -17,13 +17,13 @@ export default function PerfilPage() {
     <>
       <PageHeader title="Perfil" eyebrow="Você" />
       <div className="space-y-8">
-        <ProfileStories />
         <ProfileCard />
         <ControlHeatmap />
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
           <MonthSection />
           <AchievementsSection />
         </div>
+        <ProfileStories />
       </div>
     </>
   );

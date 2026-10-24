@@ -129,7 +129,7 @@ test.describe("story studio", () => {
 
     await page.goto(`/treino/historico/${workoutId}/story`);
     await expect(page.getByRole("heading", { level: 1, name: "Story do treino" })).toBeVisible();
-    await expect(page.getByRole("group", { name: "Modelos de story do treino" })).toContainText("Resumo da sessão");
-    await expect(page.getByRole("button", { name: "Destaques" })).toBeVisible();
+    await expect(page.getByRole("group", { name: "Modelos de story do treino" })).toContainText("Pôster");
+    await expect(page.getByRole("button", { name: "Replay" })).toBeVisible();
   });
 });

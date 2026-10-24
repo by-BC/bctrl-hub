@@ -80,6 +80,7 @@ for (const theme of ["dark", "light"] as const) {
         "/tarefas",
         "/perfil",
         "/perfil/story",
+        "/perfil/stories",
         `/perfil/stories/${workout}`,
         "/perfil/dados",
         `/perfil/mes/${dayInSaoPaulo(new Date()).slice(0, 7)}/story`,
