@@ -40,7 +40,7 @@ Os testes que gravam dados usam usuários descartáveis (`tests/e2e/disposable-u
 - **Comida**: plano alimentar com macros pela **TACO** (597 alimentos, NEPA/Unicamp), seleção dos alimentos realmente consumidos em cada refeição, refeição "fora do plano" e **consumido × meta**.
 - **Perfil** (`/perfil`): heatmap de "dias no controle" (pontuação 0–4 por dia), resumo do mês, recordes e conquistas. Dados corporais e metas em `/perfil/dados`: Mifflin-St Jeor × fator de atividade, ajuste pelo objetivo, proteína em g/kg; cada meta aceita ajuste manual e pode ser diferente em dia de treino.
 - **Composição corporal** (`/evolucao/composicao`): histórico e registro das 17 métricas da balança, gráficos, metas com projeção, TMB medida e proteína por massa magra. O peso da medição alimenta a Evolução sem duplicar o dia; Perfil e card do mês mostram as variações de peso, gordura e músculo.
-- **Stories por módulo**: Treino oferece 4 layouts específicos da sessão concluída; Perfil reúne treino, alimentação, hábitos e tarefas no story diário (`/perfil/story`) e mantém o card do mês (`/perfil/mes/AAAA-MM/story`). Imagens geradas no aparelho e compartilhadas pelo menu nativo ou baixadas em PNG.
+- **Stories por módulo**: Treino tem dois modelos exclusivos para a sessão concluída (`/treino/historico/[id]/story`). Perfil reúne o story diário com treino, alimentação, hábitos e tarefas (`/perfil/story`), os quatro layouts gerais aplicados a qualquer treino salvo (`/perfil/stories/[id]`) e o card do mês (`/perfil/mes/AAAA-MM/story`). Imagens geradas no aparelho e compartilhadas pelo menu nativo ou baixadas em PNG.
 
 ## Dados privados (fora do Git)
 

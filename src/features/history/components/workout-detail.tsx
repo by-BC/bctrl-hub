@@ -103,9 +103,9 @@ function Detail({ workout }: { workout: HistoryDetail }) {
         <SummaryGrid summary={summary} />
 
         <Button asChild className="h-12 w-full font-semibold sm:w-auto">
-          <Link href={`/treino/historico/${workout.id}/story`}>
+          <Link href={`/perfil/stories/${workout.id}`}>
             <Share2 aria-hidden />
-            Gerar story do treino
+            Criar stories no Perfil
           </Link>
         </Button>
 

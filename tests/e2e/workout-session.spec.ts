@@ -57,7 +57,7 @@ test.describe("sessão de treino", () => {
   test("shows an exercise thumbnail in the active workout without loading its video", async ({ page }) => {
     await startSuggested(page);
     const supino = exerciseCard(page, "Supino E2E");
-    const image = supino.getByTestId("exercise-image");
+    const image = supino.getByTestId("exercise-thumb");
     await expect(image).toHaveAttribute("src", CATALOG_MEDIA.thumb("session-supino"));
     await expect(image).toHaveJSProperty("naturalWidth", 1);
     await expect(supino.getByTestId("exercise-video")).toHaveCount(0);

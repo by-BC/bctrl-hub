@@ -17,19 +17,19 @@ import { StoryStudio } from "./StoryStudio";
 
 const uuid = z.guid();
 
-function BackLink({ id }: { id: string | null }) {
+function BackLink() {
   return (
     <Link
-      href={id ? `/treino/historico/${id}` : "/treino/historico"}
+      href="/perfil"
       className="-ml-2 mb-3 inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
     >
       <ArrowLeft aria-hidden className="size-4" />
-      {id ? "Treino" : "Histórico"}
+      Perfil
     </Link>
   );
 }
 
-/** Conteúdo de /treino/historico/[id]/story: carrega o treino e a semana dele. */
+/** Conteúdo dos layouts de treino acessados pelo Perfil. */
 export function StoryScreen({ id }: { id: string }) {
   const validId = uuid.safeParse(id).success;
   const detail = useWorkoutDetail(id, validId);
@@ -41,7 +41,7 @@ export function StoryScreen({ id }: { id: string }) {
   if (validId && detail.isError) {
     return (
       <>
-        <BackLink id={null} />
+        <BackLink />
         <div role="alert" className="space-y-3 rounded-xl border p-5 text-sm">
           <p>Não foi possível carregar o treino.</p>
           <Button variant="outline" className="h-11" onClick={() => detail.refetch()}>
@@ -54,7 +54,7 @@ export function StoryScreen({ id }: { id: string }) {
   if (!workout) {
     return (
       <>
-        <BackLink id={null} />
+        <BackLink />
         <PageHeader title="Treino não encontrado" />
         <p className="text-sm text-muted-foreground">Ele pode ter sido excluído.</p>
       </>
@@ -68,8 +68,8 @@ function Studio({ workout, week }: { workout: HistoryDetail; week: WeekSummary |
   const data = useMemo(() => storyDataFrom(workout, week), [workout, week]);
   return (
     <>
-      <BackLink id={workout.id} />
-      <PageHeader title="Story do treino" />
+      <BackLink />
+      <PageHeader title="Stories do treino" eyebrow="Perfil" />
       <StoryStudio data={data} />
     </>
   );

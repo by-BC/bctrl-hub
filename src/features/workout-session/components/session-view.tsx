@@ -8,7 +8,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ExerciseMedia } from "@/features/exercises/components/exercise-media";
+import { ExerciseThumb } from "@/features/exercises/components/exercise-media";
 import { ExercisePicker } from "@/features/routines/components/exercise-picker";
 import { BackLink } from "@/features/routines/components/back-link";
 import { useCatalogExercise } from "@/features/exercises/hooks";
@@ -171,8 +171,12 @@ function ExerciseCard({ exercise, exIdx }: { exercise: SessionExercise; exIdx: n
   return (
     <li>
       <article aria-label={exercise.name} data-testid="session-exercise" className="rounded-xl border bg-card p-3">
-        <header className="mb-2 flex items-start gap-2">
-          <h2 className="min-w-0 flex-1 pt-2 pl-1 font-semibold">{exercise.name}</h2>
+        <header className="mb-2 flex items-center gap-2">
+          <ExerciseThumb
+            muscleGroup={catalogExercise?.muscle_group ?? null}
+            thumbnailUrl={catalogExercise?.thumbnail_url ?? null}
+          />
+          <h2 className="min-w-0 flex-1 py-2 pl-1 font-semibold">{exercise.name}</h2>
           <Button
             variant="ghost"
             size="icon"
@@ -185,14 +189,6 @@ function ExerciseCard({ exercise, exIdx }: { exercise: SessionExercise; exIdx: n
         </header>
 
         {exercise.notes && <Collapsed title="Observações técnicas" text={exercise.notes} />}
-        <ExerciseMedia
-          name={exercise.name}
-          muscleGroup={catalogExercise?.muscle_group ?? null}
-          thumbnailUrl={catalogExercise?.thumbnail_url ?? null}
-          mediaUrl={null}
-          className="mx-auto mb-3 max-w-[180px]"
-        />
-
         {instructions && <Collapsed title="Como executar" text={instructions} testId="session-instructions" />}
 
         <div
@@ -329,7 +325,7 @@ function FinishedSession({ finished }: { finished: Finished }) {
           <Button asChild className="h-12 font-semibold">
             <Link href={`/treino/historico/${finished.workoutId}/story`}>
               <Share2 aria-hidden />
-              Gerar story do treino
+              Story do treino
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-12">

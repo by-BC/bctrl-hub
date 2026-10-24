@@ -60,9 +60,9 @@ test.describe("story studio", () => {
     test.setTimeout(120_000);
 
     await page.goto(`/treino/historico/${workoutId}`);
-    await page.getByRole("link", { name: "Gerar story do treino" }).click();
-    await expect(page).toHaveURL(new RegExp(`/treino/historico/${workoutId}/story$`));
-    await expect(page.getByRole("heading", { level: 1, name: "Story do treino" })).toBeVisible();
+    await page.getByRole("link", { name: "Criar stories no Perfil" }).click();
+    await expect(page).toHaveURL(new RegExp(`/perfil/stories/${workoutId}$`));
+    await expect(page.getByRole("heading", { level: 1, name: "Stories do treino" })).toBeVisible();
 
     const carousel = page.getByRole("region", { name: "Layouts do story" });
     const slide = (name: string) => carousel.getByRole("group", { name: new RegExp(`^${name.replace("+", "\\+")}, `) });
@@ -126,5 +126,10 @@ test.describe("story studio", () => {
       expect(body?.length ?? 0, r.url()).toBeLessThan(10_000);
       expect(body?.toString("latin1") ?? "", r.url()).not.toContain("data:image");
     }
+
+    await page.goto(`/treino/historico/${workoutId}/story`);
+    await expect(page.getByRole("heading", { level: 1, name: "Story do treino" })).toBeVisible();
+    await expect(page.getByRole("group", { name: "Modelos de story do treino" })).toContainText("Resumo da sessão");
+    await expect(page.getByRole("button", { name: "Destaques" })).toBeVisible();
   });
 });

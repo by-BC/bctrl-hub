@@ -47,7 +47,7 @@ function outsideSafeArea(page: Page) {
 
 test("Perfil combines today's criteria in a shareable daily story", async ({ page }) => {
   await page.goto("/perfil");
-  await page.getByRole("link", { name: "Gerar story de hoje" }).click();
+  await page.getByRole("link", { name: /Story de hoje/ }).click();
   await expect(page).toHaveURL(/\/perfil\/story$/);
   await expect(page.getByRole("heading", { level: 1, name: "Story do dia" })).toBeVisible();
 
