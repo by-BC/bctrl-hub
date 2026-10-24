@@ -205,4 +205,4 @@ end
 $$;
 
 comment on function public.finish_workout(jsonb) is
-  'Grava um treino finalizado de forma transacional e idempotente (pelo id). Aceita séries v2 (set_type, distance_m, duration_s) e o payload da v1. Ver src/lib/schemas/workout.ts.';
+  'Grava um treino finalizado de forma transacional e idempotente (pelo id). Aceita séries v2 (set_type, distance_m, duration_s) e o payload da v1. Ver src/features/workout-session/schemas/workout.ts.';

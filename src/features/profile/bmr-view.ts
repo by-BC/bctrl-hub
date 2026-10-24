@@ -1,4 +1,4 @@
-import type { BmrChoice } from "@/lib/domain/nutrition";
+import type { BmrChoice } from "@/features/nutrition/domain/nutrition";
 
 /**
  * Textos da fonte da TMB no formulário de metas (sem I/O): o título curto ("TMB: balança (19/10)"

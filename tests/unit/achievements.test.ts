@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ACHIEVEMENTS, evaluateAchievements, type AchievementCtx } from "@/lib/domain/achievements";
+import { ACHIEVEMENTS, evaluateAchievements, type AchievementCtx } from "@/features/profile/domain/achievements";
 import type { DayFacts } from "@/lib/domain/score";
 import { addDays } from "@/lib/domain/stats";
 

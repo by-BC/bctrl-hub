@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Segmented } from "@/features/progress/components/chart-card";
-import type { HabitKind, HabitPeriod } from "@/lib/domain/habits";
+import type { HabitKind, HabitPeriod } from "@/features/habits/domain/habits";
 import { kgInputValue } from "@/lib/format";
-import { habitFormSchema } from "@/lib/schemas/habit";
+import { habitFormSchema } from "@/features/habits/schemas/habit";
 import type { Habit } from "../api";
 import { useCreateHabit, useDeleteHabit, useUpdateHabit } from "../hooks";
 

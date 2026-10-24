@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { METRICS } from "@/lib/domain/composition";
+import { METRICS } from "@/features/composition/domain/composition";
 import { formatDay } from "@/lib/format";
 import type { Measurement } from "../api";
 import { useDeleteMeasurement } from "../hooks";

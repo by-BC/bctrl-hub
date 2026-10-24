@@ -3,9 +3,9 @@
  * o resumo por mês (alternativa textual) e a variação contra o mês anterior. Sem I/O.
  */
 
-import { CONTROL_MIN_SCORE, heatmapLevel, metCriteria, type DayScore, type ScoreValue } from "./score";
-import { addDays } from "./stats";
-import { addMonths, monthStart } from "./week";
+import { CONTROL_MIN_SCORE, heatmapLevel, metCriteria, type DayScore, type ScoreValue } from "@/lib/domain/score";
+import { addDays } from "@/lib/domain/stats";
+import { addMonths, monthStart } from "@/lib/domain/week";
 
 // ── Heatmap ───────────────────────────────────────────────────────────────
 

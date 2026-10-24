@@ -8,7 +8,7 @@ import { useBmrInput } from "@/features/composition/hooks";
 import { useBodyWeights } from "@/features/progress/hooks";
 import { useProfile } from "@/features/profile/hooks";
 import { DataError } from "@/features/routines/api";
-import { selectedMealItems } from "@/lib/domain/meals";
+import { selectedMealItems } from "@/features/meals/domain/meals";
 import {
   dayTotals,
   goalsFromProfile,
@@ -17,7 +17,7 @@ import {
   snapshotMacros,
   type Food,
   type Macros,
-} from "@/lib/domain/nutrition";
+} from "@/features/nutrition/domain/nutrition";
 import { WRITES } from "@/lib/query/mutation-defaults";
 import { fetchFoods, foodKeys, type OwnFoodInsert } from "./api";
 

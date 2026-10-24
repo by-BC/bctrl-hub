@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { cardioLabel, groupByWeek, habitProgress, streak, weekTarget, type HabitLogLike } from "@/lib/domain/habits";
+import { cardioLabel, groupByWeek, habitProgress, streak, weekTarget, type HabitLogLike } from "@/features/habits/domain/habits";
 import { weekStart } from "@/lib/domain/week";
-import { cardioLogFormSchema, habitFormSchema, taskTitleSchema } from "@/lib/schemas/habit";
+import { cardioLogFormSchema, habitFormSchema, taskTitleSchema } from "@/features/habits/schemas/habit";
 
 const WEEK = "2026-10-19"; // segunda; domingo = 2026-10-25
 

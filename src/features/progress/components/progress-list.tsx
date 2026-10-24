@@ -6,7 +6,7 @@ import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { filterExercises } from "@/lib/domain/routines";
+import { filterExercises } from "@/features/routines/domain/routines";
 import { formatDistance, formatKg, formatSeconds, formatShortDay } from "@/lib/format";
 import type { ProgressOverviewItem } from "../api";
 import { useProgressOverview } from "../hooks";

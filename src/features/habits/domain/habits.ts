@@ -7,7 +7,7 @@
  * - meta da semana: `target` se o período é semanal, `target × 7` se é diário.
  */
 
-import { addWeeks, weekDays } from "./week";
+import { addWeeks, weekDays } from "@/lib/domain/week";
 
 export type HabitKind = "check" | "quantity" | "cardio";
 export type HabitPeriod = "day" | "week";

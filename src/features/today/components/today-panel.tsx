@@ -21,7 +21,7 @@ import { useWeekSummary } from "@/features/week/hooks";
 import { StartWorkoutCard, WORKOUT_CARD_SKELETON } from "@/features/workout-session/components/start-workout-card";
 import { useLastFinishedRoutineId, useWorkoutHydrated } from "@/features/workout-session/hooks";
 import { useActiveWorkout } from "@/features/workout-session/store";
-import { dayMet, habitProgress } from "@/lib/domain/habits";
+import { dayMet, habitProgress } from "@/features/habits/domain/habits";
 import { weekStart } from "@/lib/domain/week";
 import { nextRoutineId } from "@/lib/domain/workout";
 import { formatDay, formatKg } from "@/lib/format";

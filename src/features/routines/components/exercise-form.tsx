@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { exerciseFormSchema, firstError } from "@/lib/schemas/routine";
+import { exerciseFormSchema, firstError } from "@/features/routines/schemas/routine";
 import type { Exercise, ExerciseSummary } from "../api";
 import { mutationErrorMessage, useCreateExercise, useExercises, useUpdateExercise } from "../hooks";
 

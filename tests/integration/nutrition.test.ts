@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { fetchMealPlan, updateMealOption } from "@/features/meals/api";
 import { fetchFoods } from "@/features/nutrition/api";
 import type { Database } from "@/lib/database.types";
-import { optionMacros, roundMacros, searchFoods } from "@/lib/domain/nutrition";
+import { optionMacros, roundMacros, searchFoods } from "@/features/nutrition/domain/nutrition";
 import { buildLinkSql, planLinks, type SeedOption } from "../../scripts/meals/link";
 import { parseTacoMigration } from "../../scripts/taco/taco";
 import { adminClient, createTestUser, deleteTestUser, type TestUser } from "../support/test-users";

@@ -9,7 +9,7 @@
  */
 
 import ExcelJS from "exceljs";
-import { METRIC, METRICS, type MetricKey } from "../../src/lib/domain/composition";
+import { METRIC, METRICS, type MetricKey } from "../../src/features/composition/domain/composition";
 import { APP_TIME_ZONE } from "../../src/lib/domain/day";
 
 export type ScaleProfile = { sex?: string; age?: number; heightCm?: number };

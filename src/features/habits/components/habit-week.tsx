@@ -31,7 +31,7 @@ import {
   streak,
   type HabitLogLike,
   type HabitProgress,
-} from "@/lib/domain/habits";
+} from "@/features/habits/domain/habits";
 import { weekDays, weekStart } from "@/lib/domain/week";
 import { formatKg, formatShortDay } from "@/lib/format";
 import { cn } from "@/lib/utils";

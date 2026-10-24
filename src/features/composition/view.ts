@@ -1,10 +1,10 @@
-import { METRIC, type MeasurementLike, type MetricDef, type MetricKey } from "@/lib/domain/composition";
+import { METRIC, type MeasurementLike, type MetricDef, type MetricKey } from "@/features/composition/domain/composition";
 import { dayToTime } from "@/lib/domain/stats";
 import { APP_TIME_ZONE, dayInSaoPaulo } from "@/lib/domain/day";
 
 /**
  * Formatação da tela de composição (sem I/O): valores, variações e séries dos gráficos.
- * As contas ficam em `src/lib/domain/composition.ts`; aqui só o que a tela mostra.
+ * As contas ficam em `src/features/composition/domain/composition.ts`; aqui só o que a tela mostra.
  */
 
 const twoDecimals = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 });

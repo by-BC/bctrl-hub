@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ACTIVITY_LEVELS, BMR_SOURCES, GOALS, PROTEIN_BASES, SEXES } from "@/lib/domain/nutrition";
+import { ACTIVITY_LEVELS, BMR_SOURCES, GOALS, PROTEIN_BASES, SEXES } from "@/features/nutrition/domain/nutrition";
 
 /**
  * Perfil (`profiles`): dados corporais e ajuste manual das metas. Os limites espelham os

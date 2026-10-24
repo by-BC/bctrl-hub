@@ -8,8 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CatalogFilters } from "@/features/exercises/components/catalog-filters";
 import { CatalogRowContent, LoadMore } from "@/features/exercises/components/catalog-list";
 import { useCatalogView } from "@/features/exercises/hooks";
-import { hasActiveFilters } from "@/lib/domain/catalog";
-import { findDuplicateExercise } from "@/lib/domain/routines";
+import { hasActiveFilters } from "@/features/exercises/domain/catalog";
+import { findDuplicateExercise } from "@/features/routines/domain/routines";
 import type { ExerciseSummary } from "../api";
 import { ExerciseForm } from "./exercise-form";
 

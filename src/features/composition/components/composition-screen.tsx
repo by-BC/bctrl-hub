@@ -5,7 +5,7 @@ import { useState } from "react";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { METRIC } from "@/lib/domain/composition";
+import { METRIC } from "@/features/composition/domain/composition";
 import { formatShortDay } from "@/lib/format";
 import type { Measurement } from "../api";
 import { useMeasurements } from "../hooks";

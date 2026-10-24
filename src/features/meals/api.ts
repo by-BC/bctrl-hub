@@ -3,7 +3,7 @@ import type { Database, Tables } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/client";
 import { DataError } from "@/features/routines/api";
 import { workoutKeys } from "@/features/workout-session/api";
-import { storedMealItemsSchema, type MealItem } from "@/lib/schemas/meal";
+import { storedMealItemsSchema, type MealItem } from "@/features/meals/schemas/meal";
 
 /**
  * Plano alimentar e registro do dia (supabase-js direto, protegido por RLS).

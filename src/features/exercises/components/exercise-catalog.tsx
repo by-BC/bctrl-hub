@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ExerciseSummary } from "@/features/routines/api";
 import { ExerciseForm } from "@/features/routines/components/exercise-form";
-import { hasActiveFilters } from "@/lib/domain/catalog";
+import { hasActiveFilters } from "@/features/exercises/domain/catalog";
 import { useCatalogExercise, useCatalogView } from "../hooks";
 import { CatalogFilters } from "./catalog-filters";
 import { CatalogRowContent, LoadMore } from "./catalog-list";

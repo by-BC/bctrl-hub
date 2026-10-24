@@ -33,9 +33,9 @@ import {
   type Macros,
   type ProteinBasis,
   type Sex,
-} from "@/lib/domain/nutrition";
+} from "@/features/nutrition/domain/nutrition";
 import { formatKg, formatShortDay, parseDecimal } from "@/lib/format";
-import { profileFormSchema } from "@/lib/schemas/profile";
+import { profileFormSchema } from "@/features/profile/schemas/profile";
 import type { Profile } from "../api";
 import { bmrSourceText } from "../bmr-view";
 import { useProfile, useSaveProfile } from "../hooks";

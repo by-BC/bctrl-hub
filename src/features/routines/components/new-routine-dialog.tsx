@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { nextPosition } from "@/lib/domain/routines";
-import { firstError, REST_DEFAULT, routineFormSchema } from "@/lib/schemas/routine";
+import { nextPosition } from "@/features/routines/domain/routines";
+import { firstError, REST_DEFAULT, routineFormSchema } from "@/features/routines/schemas/routine";
 import type { RoutineListItem } from "../api";
 import { useCreateRoutine } from "../hooks";
 

@@ -10,11 +10,11 @@ import {
   type MetricDef,
   type Point,
   type Projection,
-} from "@/lib/domain/composition";
+} from "@/features/composition/domain/composition";
 
 /**
  * Metas de composição para a tela (sem I/O): progresso, projeção e os textos. As contas ficam em
- * `src/lib/domain/composition.ts`.
+ * `src/features/composition/domain/composition.ts`.
  */
 
 /** "2026-10-19" → "19/10/2026". */

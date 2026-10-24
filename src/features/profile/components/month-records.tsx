@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PR_LABELS } from "@/features/workout-session/components/pr-badge";
-import { monthName } from "@/lib/domain/month-view";
+import { monthName } from "@/features/profile/domain/month-view";
 import { formatDistance, formatInt, formatKg, formatSeconds, formatShortDay } from "@/lib/format";
 import type { MonthPr, MonthSummary } from "../api";
 

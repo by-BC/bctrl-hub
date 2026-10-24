@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StartRoutineButton } from "@/features/workout-session/components/start-workout-card";
-import { formatRest, moveById, nextPosition, reorder, routineTotals } from "@/lib/domain/routines";
+import { formatRest, moveById, nextPosition, reorder, routineTotals } from "@/features/routines/domain/routines";
 import {
   firstError,
   REST_MAX,
@@ -19,7 +19,7 @@ import {
   routineFormSchema,
   SETS_MAX,
   SETS_MIN,
-} from "@/lib/schemas/routine";
+} from "@/features/routines/schemas/routine";
 import type { RoutineDetail, RoutineItem } from "../api";
 import {
   newRoutineItem,

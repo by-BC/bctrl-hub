@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { dayInSaoPaulo } from "../../src/lib/domain/day";
-import { monthName } from "../../src/lib/domain/month-view";
+import { monthName } from "../../src/features/profile/domain/month-view";
 import { addMonths, monthStart } from "../../src/lib/domain/week";
 import {
   createDisposableUser,

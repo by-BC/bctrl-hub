@@ -11,7 +11,7 @@ import {
 import { sendWorkout } from "@/features/workout-session/api";
 import type { Database } from "@/lib/database.types";
 import { groupExerciseHistory, listPrs, toSessionSeries } from "@/lib/domain/stats";
-import { finishWorkoutSchema, type FinishWorkoutInput, type FinishWorkoutPayload, type PrKind } from "@/lib/schemas/workout";
+import { finishWorkoutSchema, type FinishWorkoutInput, type FinishWorkoutPayload, type PrKind } from "@/features/workout-session/schemas/workout";
 import { createTestUser, deleteTestUser, type TestUser } from "../support/test-users";
 
 async function exec(op: PromiseLike<{ error: unknown }>) {

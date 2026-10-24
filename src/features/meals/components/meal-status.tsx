@@ -1,5 +1,5 @@
 import { CircleCheck, CircleDashed, CircleSlash2 } from "lucide-react";
-import type { MealStatus } from "@/lib/domain/meals";
+import type { MealStatus } from "@/features/meals/domain/meals";
 import { cn } from "@/lib/utils";
 
 const STATUS = {

@@ -3,7 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { equipmentLabel } from "@/lib/domain/catalog";
+import { equipmentLabel } from "@/features/exercises/domain/catalog";
 import type { Exercise } from "@/features/routines/api";
 import { ExerciseThumb } from "./exercise-media";
 

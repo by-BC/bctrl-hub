@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tansta
 import { toast } from "sonner";
 import { DataError } from "@/features/routines/api";
 import { weekKeys } from "@/features/week/api";
-import { STREAK_MAX_WEEKS } from "@/lib/domain/habits";
+import { STREAK_MAX_WEEKS } from "@/features/habits/domain/habits";
 import { addWeeks, weekDays } from "@/lib/domain/week";
 import { WRITES } from "@/lib/query/mutation-defaults";
 import {

@@ -8,7 +8,7 @@ import {
   toggleValue,
   type CatalogFilters as Filters,
   type FacetOption,
-} from "@/lib/domain/catalog";
+} from "@/features/exercises/domain/catalog";
 
 type CatalogFiltersProps = {
   filters: Filters;

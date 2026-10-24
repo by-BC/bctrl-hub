@@ -7,7 +7,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { measurementErrors, METRICS, type MetricDef, type MetricKey } from "@/lib/domain/composition";
+import { measurementErrors, METRICS, type MetricDef, type MetricKey } from "@/features/composition/domain/composition";
 import { dayInSaoPaulo, saoPauloLocal, saoPauloLocalToInstant } from "@/lib/domain/day";
 import type { Measurement, MeasurementSave } from "../api";
 import { useSaveMeasurement } from "../hooks";

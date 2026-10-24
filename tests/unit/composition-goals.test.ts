@@ -11,8 +11,8 @@ import {
   newlyAchieved,
   type GoalLike,
   type MeasurementLike,
-} from "@/lib/domain/composition";
-import { bmrChoice, goalsFromProfile, type CompleteProfile } from "@/lib/domain/nutrition";
+} from "@/features/composition/domain/composition";
+import { bmrChoice, goalsFromProfile, type CompleteProfile } from "@/features/nutrition/domain/nutrition";
 
 /** Task 4.0 v3: metas de composição (progresso, projeção, conclusão) e a fonte da TMB nas metas nutricionais. */
 

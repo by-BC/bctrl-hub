@@ -1,4 +1,4 @@
-import { dayInSaoPaulo } from "./day";
+import { dayInSaoPaulo } from "@/lib/domain/day";
 
 /**
  * Regras puras do plano alimentar (sem I/O).

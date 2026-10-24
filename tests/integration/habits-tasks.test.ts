@@ -15,7 +15,7 @@ import { deleteTask, fetchTasks, setTaskDone, upsertTask, type Task } from "@/fe
 import { DataError } from "@/features/routines/api";
 import { fetchWeekSummary } from "@/features/week/api";
 import type { Database } from "@/lib/database.types";
-import { habitProgress } from "@/lib/domain/habits";
+import { habitProgress } from "@/features/habits/domain/habits";
 import { weekDays } from "@/lib/domain/week";
 import { createTestUser, deleteTestUser, type TestUser } from "../support/test-users";
 

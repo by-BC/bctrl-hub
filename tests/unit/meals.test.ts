@@ -8,7 +8,7 @@ import {
   selectedMealItems,
   visibleMeals,
   type PlanMeal,
-} from "@/lib/domain/meals";
+} from "@/features/meals/domain/meals";
 import { weekStart } from "@/lib/domain/week";
 
 const meal = (id: string, time: string | null, position: number, training_day_only = false): PlanMeal => ({

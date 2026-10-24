@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToday } from "@/features/progress/use-today";
-import { GOAL_METRICS, goalReached, latestValue, METRIC, type GoalMetric } from "@/lib/domain/composition";
+import { GOAL_METRICS, goalReached, latestValue, METRIC, type GoalMetric } from "@/features/composition/domain/composition";
 import { cn } from "@/lib/utils";
 import type { CompositionGoal, Measurement } from "../api";
 import { useCompositionGoals, useSaveCompositionGoal, useUpdateCompositionGoal } from "../hooks";

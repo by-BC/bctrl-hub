@@ -1,6 +1,6 @@
 import { BrandSymbol, BrandWordmark } from "@/components/brand/brand-symbol";
-import { heatColor } from "@/lib/domain/month-view";
-import type { MonthCardData, MonthCardDay } from "@/lib/domain/month-card";
+import { heatColor } from "@/features/profile/domain/month-view";
+import type { MonthCardData, MonthCardDay } from "@/features/profile/domain/month-card";
 import { formatInt, formatKg, formatShortDay } from "@/lib/format";
 import { cn } from "@/lib/utils";
 

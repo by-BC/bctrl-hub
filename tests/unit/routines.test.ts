@@ -10,8 +10,8 @@ import {
   removeById,
   reorder,
   routineTotals,
-} from "@/lib/domain/routines";
-import { exerciseFormSchema, routineExerciseFormSchema, routineFormSchema } from "@/lib/schemas/routine";
+} from "@/features/routines/domain/routines";
+import { exerciseFormSchema, routineExerciseFormSchema, routineFormSchema } from "@/features/routines/schemas/routine";
 
 const items = (...ids: string[]) => ids.map((id, i) => ({ id, position: (i + 1) * 10 }));
 const order = (list: { id: string }[]) => list.map((i) => i.id).join("");

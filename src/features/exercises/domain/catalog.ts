@@ -8,7 +8,7 @@
  * - a busca exige todas as palavras no nome, no músculo ou no equipamento.
  */
 
-import { normalizeExerciseName } from "./routines";
+import { normalizeText as normalize } from "@/lib/domain/text";
 
 export type CatalogItem = {
   id: string;
@@ -28,7 +28,7 @@ export const EMPTY_FILTERS: CatalogFilters = { query: "", muscles: [], equipment
 export type FacetOption = { value: string; label: string; count: number };
 
 /** Texto comparável: sem acento, sem diferença de caixa e espaços repetidos. */
-export const normalizeText = normalizeExerciseName;
+export const normalizeText = normalize;
 
 /** Rótulo do equipamento no chip ("Nenhum" vira "Sem equipamento"). */
 export function equipmentLabel(value: string): string {

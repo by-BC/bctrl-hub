@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMonthCardData, monthParam, parseMonthParam, type MonthCardInput, type MonthCardSummary } from "@/lib/domain/month-card";
+import { buildMonthCardData, monthParam, parseMonthParam, type MonthCardInput, type MonthCardSummary } from "@/features/profile/domain/month-card";
 
 const summary = (over: Partial<MonthCardSummary> = {}): MonthCardSummary => ({
   month: "2026-10-01",

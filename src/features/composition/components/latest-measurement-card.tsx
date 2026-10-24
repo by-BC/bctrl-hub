@@ -1,6 +1,6 @@
 "use client";
 
-import { deltas, METRIC, PRINCIPAL } from "@/lib/domain/composition";
+import { deltas, METRIC, PRINCIPAL } from "@/features/composition/domain/composition";
 import { formatDay } from "@/lib/format";
 import type { Measurement } from "../api";
 import { deltaView, formatTime } from "../view";

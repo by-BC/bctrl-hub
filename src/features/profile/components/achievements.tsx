@@ -3,7 +3,7 @@
 import { Award, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { AchievementView } from "@/lib/domain/achievements";
+import type { AchievementView } from "@/features/profile/domain/achievements";
 import { formatInt, formatKg, formatShortDay } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useAchievements } from "../hooks";

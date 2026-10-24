@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { taskTitleSchema } from "@/lib/schemas/habit";
+import { taskTitleSchema } from "@/features/habits/schemas/habit";
 import type { Task } from "../api";
 import { useDeleteTask, useSaveTask, useTasks, useToggleTask } from "../hooks";
 

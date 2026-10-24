@@ -12,8 +12,8 @@ import { DataError } from "@/features/routines/api";
 import { useMeasurements } from "@/features/composition/hooks";
 import { compositionKeys, fetchCompositionGoalAchievements } from "@/features/composition/api";
 import type { Measurement } from "@/features/composition/api";
-import { bmrInputFrom } from "@/lib/domain/composition";
-import { evaluateAchievements, type AchievementView } from "@/lib/domain/achievements";
+import { bmrInputFrom } from "@/features/composition/domain/composition";
+import { evaluateAchievements, type AchievementView } from "@/features/profile/domain/achievements";
 import {
   goalsFromProfile,
   isCompleteProfile,
@@ -21,7 +21,7 @@ import {
   type Food,
   type MonthNutrition,
   type PlanItem,
-} from "@/lib/domain/nutrition";
+} from "@/features/nutrition/domain/nutrition";
 import { monthEnd } from "@/lib/domain/week";
 import { WRITES } from "@/lib/query/mutation-defaults";
 import {

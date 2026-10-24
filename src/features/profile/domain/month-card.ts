@@ -4,9 +4,9 @@
  * sobre o histórico inteiro. Sem I/O.
  */
 
-import { heatmapLevel, type ScoreValue } from "./score";
-import { addDays } from "./stats";
-import { monthEnd, monthStart, weekStart } from "./week";
+import { heatmapLevel, type ScoreValue } from "@/lib/domain/score";
+import { addDays } from "@/lib/domain/stats";
+import { monthEnd, monthStart, weekStart } from "@/lib/domain/week";
 
 export type MonthCompositionPoint = {
   day: string;

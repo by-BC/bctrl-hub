@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { ChartCard, DataTable, Segmented } from "@/features/progress/components/chart-card";
 import { TrendChart, type TrendSeries } from "@/features/progress/components/trend-chart";
 import { useToday } from "@/features/progress/use-today";
-import { METRIC, PRINCIPAL, type MetricKey } from "@/lib/domain/composition";
+import { METRIC, PRINCIPAL, type MetricKey } from "@/features/composition/domain/composition";
 import { filterByRange, RANGE_LABEL, RANGES, type Range } from "@/lib/domain/stats";
 import { formatDay, formatShortDay } from "@/lib/format";
 import type { Measurement } from "../api";

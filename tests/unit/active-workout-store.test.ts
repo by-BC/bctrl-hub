@@ -8,7 +8,7 @@ import {
   toFinishPayload,
   type SessionSeed,
 } from "@/features/workout-session/store";
-import { finishWorkoutSchema, type FinishWorkoutPayload } from "@/lib/schemas/workout";
+import { finishWorkoutSchema, type FinishWorkoutPayload } from "@/features/workout-session/schemas/workout";
 
 const SEED_ID = "0cc175b9-c0f1-b6a8-31c3-99e269772661"; // formato dos ids do seed (md5)
 const supino = crypto.randomUUID();

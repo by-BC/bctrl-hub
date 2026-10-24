@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { monthNutrition, type Food, type PlanItem } from "@/lib/domain/nutrition";
+import { monthNutrition, type Food, type PlanItem } from "@/features/nutrition/domain/nutrition";
 
 const arroz: Food = { id: "arroz", name: "Arroz", kcal: 124, protein_g: 2.6, carbs_g: 25.8, fat_g: 1 };
 const foods = new Map([[arroz.id, arroz]]);

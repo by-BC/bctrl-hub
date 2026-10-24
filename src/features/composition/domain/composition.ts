@@ -6,9 +6,9 @@
  * (migration `…_v3_composition.sql`): mudou uma, mude a outra.
  */
 
-import { dayInSaoPaulo } from "./day";
-import { addDays, dayToTime } from "./stats";
-import type { BmrInput } from "./nutrition";
+import { dayInSaoPaulo } from "@/lib/domain/day";
+import { addDays, dayToTime } from "@/lib/domain/stats";
+import type { BmrInput } from "@/features/nutrition/domain/nutrition";
 
 export type MetricKey =
   | "weight_kg"

@@ -21,8 +21,8 @@ import {
   type MacroKey,
   type Macros,
   type PlanItem,
-} from "@/lib/domain/nutrition";
-import type { MealItem } from "@/lib/schemas/meal";
+} from "@/features/nutrition/domain/nutrition";
+import type { MealItem } from "@/features/meals/schemas/meal";
 
 /** Campos de nutrição do item no rascunho do editor (texto como digitado). */
 export type NutritionDraft = {

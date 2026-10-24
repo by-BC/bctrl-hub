@@ -1,7 +1,7 @@
 import type { HistoryDetail } from "@/features/history/api";
 import type { WeekSummary } from "@/features/week/api";
 import { countsForRecords } from "@/lib/domain/exercise-types";
-import { buildStoryData, type StoryData } from "@/lib/domain/story";
+import { buildStoryData, type StoryData } from "@/features/story/domain/story";
 
 /**
  * Do treino gravado (detalhe do histórico) + `week_summary` ao `StoryData` dos layouts.

@@ -1,7 +1,7 @@
 import type { MutationKey, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { changedPositions, removeById } from "@/lib/domain/routines";
-import { REST_DEFAULT } from "@/lib/schemas/routine";
+import { changedPositions, removeById } from "@/features/routines/domain/routines";
+import { REST_DEFAULT } from "@/features/routines/schemas/routine";
 import {
   deleteRoutine,
   deleteRoutineExercise,

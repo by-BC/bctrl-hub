@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { formatDateBR } from "../../src/features/composition/goals-view";
-import { projectGoal } from "../../src/lib/domain/composition";
+import { projectGoal } from "../../src/features/composition/domain/composition";
 import { dayInSaoPaulo } from "../../src/lib/domain/day";
 import { addDays } from "../../src/lib/domain/stats";
 import {

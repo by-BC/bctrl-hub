@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Segmented } from "@/features/progress/components/chart-card";
-import { amountToGrams, amountUnits, itemMacros, type Food } from "@/lib/domain/nutrition";
+import { amountToGrams, amountUnits, itemMacros, type Food } from "@/features/nutrition/domain/nutrition";
 import { parseDecimal } from "@/lib/format";
 import { FoodSearch } from "./food-search";
 import { formatMacros } from "./macro-summary";

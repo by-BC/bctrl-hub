@@ -2,7 +2,7 @@
 -- Não altera migrations já aplicadas: só acrescenta. `month_summary` fica em `…_v3_rpcs.sql`.
 
 -- ── body_measurements: uma linha por medição da balança ───────────────────
--- Só o peso é obrigatório. As faixas espelham `METRICS` em src/lib/domain/composition.ts
+-- Só o peso é obrigatório. As faixas espelham `METRICS` em src/features/composition/domain/composition.ts
 -- (mudou uma, mude a outra). `day` vem do cliente, mas precisa ser o dia de São Paulo do instante.
 -- Idempotência da importação: `unique (user_id, measured_at)`.
 

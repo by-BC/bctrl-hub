@@ -15,11 +15,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { formatMealTime, mealStatus, selectedMealItems } from "@/lib/domain/meals";
-import { NOTE_MAX, offPlanNoteSchema, type MealItem } from "@/lib/schemas/meal";
+import { formatMealTime, mealStatus, selectedMealItems } from "@/features/meals/domain/meals";
+import { NOTE_MAX, offPlanNoteSchema, type MealItem } from "@/features/meals/schemas/meal";
 import { formatMacros, OptionMacros } from "@/features/nutrition/components/macro-summary";
 import { OffPlanSheet } from "@/features/nutrition/components/off-plan-sheet";
-import { dayTotals, foodSnapshot, snapshotMacros } from "@/lib/domain/nutrition";
+import { dayTotals, foodSnapshot, snapshotMacros } from "@/features/nutrition/domain/nutrition";
 import type { Meal, MealLog, MealOption, OffPlanItem } from "../api";
 import {
   buildMealLog,

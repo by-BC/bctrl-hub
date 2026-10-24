@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
-import type { Food } from "@/lib/domain/nutrition";
+import type { Food } from "@/features/nutrition/domain/nutrition";
 import { createClient } from "@/lib/supabase/client";
 import { DataError } from "@/features/routines/api";
 

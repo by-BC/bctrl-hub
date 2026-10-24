@@ -3,7 +3,7 @@
  * revisa antes do `--write`. Puro: recebe o resultado do parser e devolve o Markdown.
  */
 
-import { METRIC, METRICS } from "../../src/lib/domain/composition";
+import { METRIC, METRICS } from "../../src/features/composition/domain/composition";
 import type { ScaleSheet } from "./parse";
 
 export type ReportOptions = {

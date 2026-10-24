@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Measurement } from "@/features/composition/api";
 import { MeasurementSheet } from "@/features/composition/components/measurement-sheet";
 import { deltaView, fatMusclePoints, metricPoints, metricText, parseMetricInput } from "@/features/composition/view";
-import { METRIC } from "@/lib/domain/composition";
+import { METRIC } from "@/features/composition/domain/composition";
 import { saoPauloLocal, saoPauloLocalToInstant } from "@/lib/domain/day";
 import { dayToTime } from "@/lib/domain/stats";
 

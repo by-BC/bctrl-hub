@@ -13,7 +13,7 @@ import {
 } from "../../scripts/meals/link";
 import { renderLinkReport } from "../../scripts/meals/report";
 import { buildTacoMigration, parseTacoMigration, tacoNumber, tacoToFoods } from "../../scripts/taco/taco";
-import { storedMealItemsSchema } from "@/lib/schemas/meal";
+import { storedMealItemsSchema } from "@/features/meals/schemas/meal";
 
 // Só dados públicos (TACO) e fictícios (seed de exemplo): nada do plano real do dono.
 const migrationFile = readdirSync(join(process.cwd(), "supabase/migrations")).find((f) => f.endsWith("_foods_taco.sql"))!;

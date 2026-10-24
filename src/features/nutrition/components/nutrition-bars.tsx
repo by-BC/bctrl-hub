@@ -4,7 +4,7 @@ import { CircleAlert, CircleCheck, Dumbbell, TriangleAlert } from "lucide-react"
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { macroProgress, type MacroKey, type MacroProgress, type Macros } from "@/lib/domain/nutrition";
+import { macroProgress, type MacroKey, type MacroProgress, type Macros } from "@/features/nutrition/domain/nutrition";
 import { cn } from "@/lib/utils";
 import { useDayNutrition } from "../hooks";
 import { unresolvedLabel } from "./macro-summary";

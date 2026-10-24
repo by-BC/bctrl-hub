@@ -20,7 +20,7 @@ import {
   type SessionSummary,
   type SetEntry,
 } from "@/lib/domain/workout";
-import { finishWorkoutSchema, type FinishWorkoutPayload } from "@/lib/schemas/workout";
+import { finishWorkoutSchema, type FinishWorkoutPayload } from "@/features/workout-session/schemas/workout";
 
 /**
  * Sessão de treino ativa: vive só no aparelho (localStorage) até o `finish_workout`.

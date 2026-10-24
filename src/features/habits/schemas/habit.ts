@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CARDIO_TYPES } from "@/lib/domain/habits";
+import { CARDIO_TYPES } from "@/features/habits/domain/habits";
 
 /**
  * Formulários de hábitos, registros e tarefas. O banco confere os limites básicos

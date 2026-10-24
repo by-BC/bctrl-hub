@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { searchFoods, type Food } from "@/lib/domain/nutrition";
+import { searchFoods, type Food } from "@/features/nutrition/domain/nutrition";
 import { parseDecimal } from "@/lib/format";
 import { TACO_CREDIT, type OwnFoodInsert } from "../api";
 import { useCreateFood, useFoods } from "../hooks";

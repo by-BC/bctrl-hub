@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowUp, Equal, Minus } from "lucide-react";
 import { NumUnit } from "@/components/num-unit";
-import type { MetricDef } from "@/lib/domain/composition";
+import type { MetricDef } from "@/features/composition/domain/composition";
 import { cn } from "@/lib/utils";
 import { formatMetricNumber, TONE_TEXT, type DeltaView } from "../view";
 

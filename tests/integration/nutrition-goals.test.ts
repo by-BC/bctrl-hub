@@ -11,7 +11,7 @@ import {
 import { fetchFoods, upsertOwnFood } from "@/features/nutrition/api";
 import { fetchProfile, upsertProfile, type ProfileSave } from "@/features/profile/api";
 import type { Database } from "@/lib/database.types";
-import { dayTotals, foodSnapshot, searchFoods, snapshotMacros } from "@/lib/domain/nutrition";
+import { dayTotals, foodSnapshot, searchFoods, snapshotMacros } from "@/features/nutrition/domain/nutrition";
 import { createTestUser, deleteTestUser, type TestUser } from "../support/test-users";
 
 /**

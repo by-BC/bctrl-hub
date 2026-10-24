@@ -4,7 +4,7 @@ import { ChevronRight, UserRound } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBodyWeights } from "@/features/progress/hooks";
-import { isCompleteProfile, type Goal } from "@/lib/domain/nutrition";
+import { isCompleteProfile, type Goal } from "@/features/nutrition/domain/nutrition";
 import { formatKg } from "@/lib/format";
 import { useProfile } from "../hooks";
 

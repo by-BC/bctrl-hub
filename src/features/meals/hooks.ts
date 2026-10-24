@@ -7,7 +7,7 @@ import { DataError } from "@/features/routines/api";
 import { useWorkoutHydrated } from "@/features/workout-session/hooks";
 import { useActiveWorkout } from "@/features/workout-session/store";
 import { weekKeys } from "@/features/week/api";
-import { adherence, hasWorkoutOn, visibleMeals } from "@/lib/domain/meals";
+import { adherence, hasWorkoutOn, visibleMeals } from "@/features/meals/domain/meals";
 import { WRITES } from "@/lib/query/mutation-defaults";
 import {
   fetchHasFinishedWorkout,

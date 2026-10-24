@@ -1,7 +1,7 @@
 import { Scissors } from "lucide-react";
 import type { ReactNode } from "react";
 import { BrandSymbol, BrandWordmark } from "@/components/brand/brand-symbol";
-import type { StoryExercise } from "@/lib/domain/story";
+import type { StoryExercise } from "@/features/story/domain/story";
 import { formatDuration, formatInt, formatKg } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { STORY_PR_LABELS, barcodeBars, prValueText, setText, storyDate } from "../format";

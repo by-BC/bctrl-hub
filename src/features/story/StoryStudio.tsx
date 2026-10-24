@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type Ke
 import { toast } from "sonner";
 import { usePrefersReducedMotion } from "@/components/shell/hex-progress";
 import { Button } from "@/components/ui/button";
-import type { StoryData } from "@/lib/domain/story";
+import type { StoryData } from "@/features/story/domain/story";
 import { cn } from "@/lib/utils";
 import { STORY_HEIGHT, STORY_WIDTH, exportStory, shareOrDownload } from "./export";
 import { STORY_LAYOUTS } from "./layouts";

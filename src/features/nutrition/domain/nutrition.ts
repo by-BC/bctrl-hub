@@ -6,9 +6,9 @@
  * digitados pelo dono). Itens "à vontade" (`free`) valem 0 e não contam como sem valor.
  */
 
-import { normalizeExerciseName as normalizeText } from "./routines";
-import { selectedMealItems } from "./meals";
-import { dayToTime } from "./stats";
+import { normalizeText } from "@/lib/domain/text";
+import { dayToTime } from "@/lib/domain/stats";
+import { selectedMealItems } from "@/features/meals/domain/meals";
 
 export type Macros = { kcal: number; protein: number; carbs: number; fat: number };
 

@@ -26,7 +26,7 @@ import {
   monthLabel,
   scoreText,
   type HeatDay,
-} from "@/lib/domain/month-view";
+} from "@/features/profile/domain/month-view";
 import { addDays } from "@/lib/domain/stats";
 import { formatDay } from "@/lib/format";
 import { useDailyScores } from "../hooks";

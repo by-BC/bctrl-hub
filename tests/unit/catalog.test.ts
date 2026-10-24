@@ -8,7 +8,7 @@ import {
   toggleValue,
   visibleCount,
   type CatalogItem,
-} from "@/lib/domain/catalog";
+} from "@/features/exercises/domain/catalog";
 
 const items: CatalogItem[] = [
   { id: "1", name: "Supino Reto (Halter)", muscle_group: "Peito", equipment: "Halter" },

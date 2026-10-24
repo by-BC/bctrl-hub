@@ -7,7 +7,7 @@
 -- Idempotente pelo `payload.id`: se o treino já existe, devolve o id sem regravar.
 -- Qualquer erro (validação, constraint, FK) desfaz tudo: nunca fica treino pela metade.
 --
--- payload (validado no cliente por `finishWorkoutSchema`, em src/lib/schemas/workout.ts):
+-- payload (validado no cliente por `finishWorkoutSchema`, em src/features/workout-session/schemas/workout.ts):
 -- {
 --   "id": uuid, "routine_id": uuid | null, "started_at": timestamptz, "finished_at": timestamptz,
 --   "day": date, "notes": text | null,
@@ -104,7 +104,7 @@ end
 $$;
 
 comment on function public.finish_workout(jsonb) is
-  'Grava um treino finalizado de forma transacional e idempotente (pelo id). Ver src/lib/schemas/workout.ts.';
+  'Grava um treino finalizado de forma transacional e idempotente (pelo id). Ver src/features/workout-session/schemas/workout.ts.';
 
 -- ── week_summary ──────────────────────────────────────────────────────────
 -- Resumo da semana (segunda a domingo) numa única ida ao banco, para o Hoje e o Hex Week.

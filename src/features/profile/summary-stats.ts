@@ -3,8 +3,8 @@
  * Puro (sem I/O): recebe o `month_summary` e as médias de nutrição já calculadas.
  */
 
-import { monthDelta, monthShort, type MonthDelta } from "@/lib/domain/month-view";
-import type { MonthNutrition } from "@/lib/domain/nutrition";
+import { monthDelta, monthShort, type MonthDelta } from "@/features/profile/domain/month-view";
+import type { MonthNutrition } from "@/features/nutrition/domain/nutrition";
 import { formatInt, formatKg } from "@/lib/format";
 import type { MonthNumbers, MonthSummary } from "./api";
 

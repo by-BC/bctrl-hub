@@ -5,7 +5,7 @@ import { Achievements, progressText } from "@/features/profile/components/achiev
 import { blockStyle, dayDescription } from "@/features/profile/components/control-heatmap";
 import { prValueText } from "@/features/profile/components/month-records";
 import { summaryStats } from "@/features/profile/summary-stats";
-import type { AchievementView } from "@/lib/domain/achievements";
+import type { AchievementView } from "@/features/profile/domain/achievements";
 import {
   canGoNextMonth,
   controlText,
@@ -16,8 +16,8 @@ import {
   monthDelta,
   monthLabel,
   monthShort,
-} from "@/lib/domain/month-view";
-import type { MonthNutrition } from "@/lib/domain/nutrition";
+} from "@/features/profile/domain/month-view";
+import type { MonthNutrition } from "@/features/nutrition/domain/nutrition";
 import type { DayScore } from "@/lib/domain/score";
 
 const score = (day: string, c: Partial<Omit<DayScore, "day" | "score">>): DayScore => {

@@ -11,7 +11,7 @@
  * Alimento da TACO sem valores ("*" = em revisão, viraram 0) também fica pendente.
  */
 
-import { normalizeFoodName, parseQty } from "../../src/lib/domain/nutrition";
+import { normalizeFoodName, parseQty } from "../../src/features/nutrition/domain/nutrition";
 import type { TacoFood } from "../taco/taco";
 
 // ── Sinônimos genéricos (alimentos comuns → id da TACO) ──────────────────

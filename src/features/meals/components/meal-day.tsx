@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Segmented } from "@/features/progress/components/chart-card";
 import { useToday } from "@/features/progress/use-today";
-import { formatMealTime, mealStatus, selectedMealItems, type Adherence } from "@/lib/domain/meals";
+import { formatMealTime, mealStatus, selectedMealItems, type Adherence } from "@/features/meals/domain/meals";
 import { addDays } from "@/lib/domain/stats";
 import { formatDay } from "@/lib/format";
 import type { Meal, MealLog } from "../api";

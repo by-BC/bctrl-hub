@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { finishWorkoutSchema } from "@/lib/schemas/workout";
+import { finishWorkoutSchema } from "@/features/workout-session/schemas/workout";
 
 const uuid = () => crypto.randomUUID();
 

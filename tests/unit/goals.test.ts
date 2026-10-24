@@ -12,7 +12,7 @@ import {
   snapshotMacros,
   type CompleteProfile,
   type Food,
-} from "@/lib/domain/nutrition";
+} from "@/features/nutrition/domain/nutrition";
 
 /** Dia de referência das idades (o cálculo usa a idade em anos completos nesse dia). */
 const ON = "2026-10-20";

@@ -7,8 +7,8 @@ import { progressKeys } from "@/features/progress/api";
 import { profileKeys } from "@/features/profile/api";
 import { weekKeys } from "@/features/week/api";
 import { WRITES } from "@/lib/query/mutation-defaults";
-import { bmrInputFrom, newlyAchieved } from "@/lib/domain/composition";
-import type { BmrInput } from "@/lib/domain/nutrition";
+import { bmrInputFrom, newlyAchieved } from "@/features/composition/domain/composition";
+import type { BmrInput } from "@/features/nutrition/domain/nutrition";
 import {
   compositionKeys,
   fetchCompositionGoals,

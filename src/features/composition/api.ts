@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
-import { METRICS, type GoalMetric, type MetricKey } from "@/lib/domain/composition";
+import { METRICS, type GoalMetric, type MetricKey } from "@/features/composition/domain/composition";
 import { createClient } from "@/lib/supabase/client";
 import { DataError } from "@/features/routines/api";
 

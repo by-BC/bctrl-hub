@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import type { StoryData } from "@/lib/domain/story";
+import type { StoryData } from "@/features/story/domain/story";
 
 export type { StoryData };
 

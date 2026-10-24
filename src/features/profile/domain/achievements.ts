@@ -7,8 +7,8 @@
  * na importação. Cada conquista diz a regra em texto, a data de desbloqueio e o progresso.
  */
 
-import { isControlDay, type DayFacts } from "./score";
-import { addWeeks, monthEnd, monthStart, weekStart } from "./week";
+import { isControlDay, type DayFacts } from "@/lib/domain/score";
+import { addWeeks, monthEnd, monthStart, weekStart } from "@/lib/domain/week";
 
 export type AchievementCtx = {
   /** Dias do histórico (qualquer ordem; dias sem nada podem faltar). */

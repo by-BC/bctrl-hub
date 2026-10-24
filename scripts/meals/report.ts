@@ -3,7 +3,7 @@
  * Puro: recebe o plano de vínculos e devolve o Markdown.
  */
 
-import { optionMacros, roundMacros, type Food, type PlanItem } from "../../src/lib/domain/nutrition";
+import { optionMacros, roundMacros, type Food, type PlanItem } from "../../src/features/nutrition/domain/nutrition";
 import type { TacoFood } from "../taco/taco";
 import type { ItemLink, LinkPlan } from "./link";
 

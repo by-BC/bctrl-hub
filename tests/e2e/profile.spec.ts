@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { dayInSaoPaulo } from "../../src/lib/domain/day";
-import { monthLabel } from "../../src/lib/domain/month-view";
+import { monthLabel } from "../../src/features/profile/domain/month-view";
 import { addDays } from "../../src/lib/domain/stats";
 import { addMonths, monthStart } from "../../src/lib/domain/week";
 import {

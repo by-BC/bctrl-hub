@@ -3,8 +3,8 @@
  * que os layouts do Story Studio desenham em 1080×1920. Puro, sem I/O.
  */
 
-import { toPct, weekHex, type HexSegmentKey, type WeekHexInput } from "./hex";
-import { e1rm, isCountable, summarizeSession, type PrKind } from "./workout";
+import { toPct, weekHex, type HexSegmentKey, type WeekHexInput } from "@/lib/domain/hex";
+import { e1rm, isCountable, summarizeSession, type PrKind } from "@/lib/domain/workout";
 
 /** Vagas de exercício no story. Com mais que isso, a última vaga vira a linha "+N". */
 export const STORY_MAX_EXERCISES = 6;

@@ -3,7 +3,7 @@
 import { Unlink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { Food } from "@/lib/domain/nutrition";
+import type { Food } from "@/features/nutrition/domain/nutrition";
 import { FoodSearch } from "./food-search";
 
 type FoodPickerProps = {

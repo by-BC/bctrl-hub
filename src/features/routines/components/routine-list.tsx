@@ -4,7 +4,7 @@ import { Archive, ChevronRight, Library, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { moveById, nextPosition, reorder, routineTotals } from "@/lib/domain/routines";
+import { moveById, nextPosition, reorder, routineTotals } from "@/features/routines/domain/routines";
 import type { RoutineListItem } from "../api";
 import { useReorderRoutines, useRoutines, useSetRoutineArchived } from "../hooks";
 import { NewRoutineDialog } from "./new-routine-dialog";

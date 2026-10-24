@@ -1,3 +1,7 @@
+import { normalizeText } from "@/lib/domain/text";
+
+export { normalizeText as normalizeExerciseName } from "@/lib/domain/text";
+
 /**
  * Regras puras de rotinas e exercícios (sem I/O).
  * `position` começa em 1 e não tem buracos depois de qualquer operação.
@@ -55,25 +59,15 @@ export function routineTotals(items: readonly { sets: number }[]): { exercises: 
   return { exercises: items.length, sets: items.reduce((sum, item) => sum + item.sets, 0) };
 }
 
-/** Nome comparável: sem espaços sobrando, sem diferença de maiúsculas e acentos. */
-export function normalizeExerciseName(name: string): string {
-  return name
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLocaleLowerCase("pt-BR");
-}
-
 /** Exercício já existente com o mesmo nome (ignorando `exceptId`, usado na edição). */
 export function findDuplicateExercise<T extends { id: string; name: string }>(
   name: string,
   exercises: readonly T[],
   exceptId?: string,
 ): T | undefined {
-  const target = normalizeExerciseName(name);
+  const target = normalizeText(name);
   if (!target) return undefined;
-  return exercises.find((e) => e.id !== exceptId && normalizeExerciseName(e.name) === target);
+  return exercises.find((e) => e.id !== exceptId && normalizeText(e.name) === target);
 }
 
 /** Filtro da busca de exercícios: todas as palavras precisam aparecer no nome ou no grupo. */
@@ -81,11 +75,11 @@ export function filterExercises<T extends { name: string; muscle_group: string |
   exercises: readonly T[],
   query: string,
 ): T[] {
-  const words = normalizeExerciseName(query).split(" ").filter(Boolean);
+  const words = normalizeText(query).split(" ").filter(Boolean);
   const sorted = [...exercises].sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
   if (words.length === 0) return sorted;
   return sorted.filter((e) => {
-    const haystack = normalizeExerciseName(`${e.name} ${e.muscle_group ?? ""}`);
+    const haystack = normalizeText(`${e.name} ${e.muscle_group ?? ""}`);
     return words.every((w) => haystack.includes(w));
   });
 }

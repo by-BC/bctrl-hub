@@ -10,7 +10,7 @@ import {
   projectGoal,
   validateMeasurement,
   type MeasurementValues,
-} from "@/lib/domain/composition";
+} from "@/features/composition/domain/composition";
 
 describe("catálogo de métricas", () => {
   it("tem as 17 métricas, sem chave repetida, e as 5 principais na ordem do PRD", () => {

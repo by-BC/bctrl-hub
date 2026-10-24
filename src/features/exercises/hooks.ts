@@ -9,7 +9,7 @@ import {
   filterCatalog,
   visibleCount,
   type CatalogFilters,
-} from "@/lib/domain/catalog";
+} from "@/features/exercises/domain/catalog";
 
 /**
  * Estado do catálogo (busca, chips e paginação no cliente), igual na tela

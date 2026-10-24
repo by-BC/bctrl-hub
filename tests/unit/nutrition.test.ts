@@ -9,7 +9,7 @@ import {
   searchFoods,
   type Food,
   type PlanItem,
-} from "@/lib/domain/nutrition";
+} from "@/features/nutrition/domain/nutrition";
 
 // Valores reais da TACO (por 100 g), arredondados como na migration.
 const arroz: Food = { id: "arroz", name: "Arroz, integral, cozido", kcal: 123.53, protein_g: 2.59, carbs_g: 25.81, fat_g: 1 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { CircleAlert } from "lucide-react";
-import { optionMacros, roundMacros, type Macros, type PlanItem } from "@/lib/domain/nutrition";
+import { optionMacros, roundMacros, type Macros, type PlanItem } from "@/features/nutrition/domain/nutrition";
 import { cn } from "@/lib/utils";
 import { useFoodsById } from "../hooks";
 

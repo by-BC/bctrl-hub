@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { fetchDailyScores, fetchMonthSummary } from "@/features/profile/api";
 import type { Database } from "@/lib/database.types";
 import { dayInSaoPaulo } from "@/lib/domain/day";
-import { monthNutrition, type PlanItem } from "@/lib/domain/nutrition";
+import { monthNutrition, type PlanItem } from "@/features/nutrition/domain/nutrition";
 import { addDays } from "@/lib/domain/stats";
 import { anonClient, createTestUser, deleteTestUser, type TestUser } from "../support/test-users";
 

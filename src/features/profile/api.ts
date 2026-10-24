@@ -16,11 +16,11 @@ import {
   type NutritionProfile,
   type ProteinBasis,
   type Sex,
-} from "@/lib/domain/nutrition";
+} from "@/features/nutrition/domain/nutrition";
 import { MAX_SCORE_DAYS, scoreChunks, toDayFacts, type DayFacts } from "@/lib/domain/score";
 import { addDays } from "@/lib/domain/stats";
-import type { MonthComposition } from "@/lib/domain/month-card";
-import { goalOverridesSchema } from "@/lib/schemas/profile";
+import type { MonthComposition } from "@/features/profile/domain/month-card";
+import { goalOverridesSchema } from "@/features/profile/schemas/profile";
 import { createClient } from "@/lib/supabase/client";
 import { DataError } from "@/features/routines/api";
 

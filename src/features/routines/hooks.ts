@@ -2,8 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { findDuplicateExercise, nextPosition, removeById } from "@/lib/domain/routines";
-import { REST_DEFAULT } from "@/lib/schemas/routine";
+import { findDuplicateExercise, nextPosition, removeById } from "@/features/routines/domain/routines";
+import { REST_DEFAULT } from "@/features/routines/schemas/routine";
 import { WRITES, type RoutineItemPatch, type RoutinePatch } from "@/lib/query/mutation-defaults";
 import { progressKeys } from "@/features/progress/api";
 import {

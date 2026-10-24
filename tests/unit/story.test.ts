@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { STORY_MAX_EXERCISES, buildStoryData, type StoryWeekInput, type StoryWorkoutInput } from "@/lib/domain/story";
+import { STORY_MAX_EXERCISES, buildStoryData, type StoryWeekInput, type StoryWorkoutInput } from "@/features/story/domain/story";
 
 const set = (weightKg: number, reps: number, prs: string[] = []) => ({ weightKg, reps, prs });
 
