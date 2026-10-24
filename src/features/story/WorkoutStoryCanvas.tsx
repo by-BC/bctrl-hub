@@ -2,6 +2,7 @@ import type { ReactNode, Ref } from "react";
 import type { StoryData, StoryPr } from "@/features/story/domain/story";
 import { StoryFrame } from "./StoryFrame";
 import { STORY_LAYOUTS } from "./layouts";
+import { MuscleFigure } from "./MuscleFigure";
 import type { StoryPhoto } from "./types";
 
 export const WORKOUT_STORY_MODELS = ["Pôster", "Replay", "Recordes", "Adesivo", "Mapa muscular", "Sequência", "PR do dia", "Recibo", "Hex Week", "Blueprint", "Foto + overlay"] as const;
@@ -63,8 +64,8 @@ export function WorkoutStoryCanvas({
 function MuscleMapPoster({ data, date }: { data: StoryData; date: string }) {
   const keys = new Set(data.muscles.map(muscleRegion).filter((key): key is string => key !== null));
   const views = [
-    { name: "FRENTE", regions: ["neck", "shoulders", "chest", "biceps", "forearms", "abdominals", "quadriceps", "adductors", "abductors", "calves"] },
-    { name: "COSTAS", regions: ["neck", "shoulders", "traps", "lats", "lower_back", "triceps", "forearms", "glutes", "hamstrings", "calves"] },
+    { name: "FRENTE", view: "front" as const },
+    { name: "COSTAS", view: "back" as const },
   ];
 
   return (
@@ -73,9 +74,9 @@ function MuscleMapPoster({ data, date }: { data: StoryData; date: string }) {
       <h2 className="mt-7 text-[88px] font-black leading-[.88] tracking-[-.06em]">MÚSCULOS<br />ATIVADOS<span className="text-brand-orange">.</span></h2>
       <p className="mt-7 line-clamp-2 text-[34px] font-semibold text-brand-paper/75">{data.routineName}</p>
       <div className="mt-12 grid grid-cols-2 gap-7">
-        {views.map((view, i) => <div key={view.name} className="rounded-[28px] border border-brand-paper/20 bg-brand-paper/5 px-4 pb-4 pt-5 text-center">
+        {views.map((view) => <div key={view.name} className="rounded-[28px] border border-brand-paper/20 bg-brand-paper/5 px-4 pb-4 pt-5 text-center">
           <p className="text-[21px] font-bold tracking-[.2em] text-brand-paper/70">{view.name}</p>
-          <MuscleFigure view={i === 0 ? "front" : "back"} active={keys} regions={view.regions} />
+          <MuscleFigure view={view.view} active={keys} />
         </div>)}
       </div>
       <div className="mt-8 border-t border-brand-paper/25 pt-6">
@@ -93,56 +94,6 @@ function muscleRegion(value: string): string | null {
     peito: "chest", costas: "lats", lombar: "lower_back", trapezio: "traps", ombros: "shoulders", biceps: "biceps", triceps: "triceps", antebraco: "forearms", abdomen: "abdominals", quadriceps: "quadriceps", "posterior de coxa": "hamstrings", gluteos: "glutes", panturrilha: "calves", adutores: "adductors", abdutores: "abductors", pescoco: "neck", "corpo inteiro": "full_body",
   };
   return regions[key] ?? null;
-}
-
-function MuscleFigure({ view, active, regions }: { view: "front" | "back"; active: Set<string>; regions: string[] }) {
-  const front = view === "front";
-  const body = "#f3eee5";
-  const off = "#898b91";
-  const activeFill = (key: string) => active.has(key) || active.has("full_body") ? "#d96735" : off;
-  const mutedFill = (key: string) => regions.includes(key) ? activeFill(key) : "transparent";
-  return (
-    <svg aria-hidden viewBox="0 0 240 500" className="mx-auto mt-3 h-[500px] w-full max-w-[205px]">
-      <g fill={body} fillOpacity=".12" stroke={body} strokeOpacity=".38" strokeWidth="4" strokeLinejoin="round">
-        <circle cx="120" cy="36" r="25" />
-        <path d="M106 61h28v28l19 9 22 20-9 102-17 31-58 0-17-31-9-102 22-20 19-9z" />
-        <path d="M83 99 60 108 39 166 25 222l17 7 27-55 22-52zM157 99l23 9 21 58 14 56-17 7-27-55-22-52z" />
-        <path d="M91 243h58l7 67-12 85-6 80h-25l-7-77-6 77H75l-6-80-12-85 7-67z" />
-      </g>
-      <g stroke="#27292f" strokeOpacity=".65" strokeWidth="2">
-        <rect x="108" y="66" width="24" height="24" rx="7" fill={mutedFill("neck")} />
-        <ellipse cx="101" cy="125" rx="19" ry="23" fill={mutedFill(front ? "chest" : "traps")} />
-        <ellipse cx="139" cy="125" rx="19" ry="23" fill={mutedFill(front ? "chest" : "traps")} />
-        <ellipse cx="78" cy="108" rx="17" ry="15" fill={mutedFill("shoulders")} />
-        <ellipse cx="162" cy="108" rx="17" ry="15" fill={mutedFill("shoulders")} />
-        <ellipse cx="56" cy="151" rx="11" ry="29" fill={mutedFill(front ? "biceps" : "triceps")} />
-        <ellipse cx="184" cy="151" rx="11" ry="29" fill={mutedFill(front ? "biceps" : "triceps")} />
-        <path d="M43 177q-8 22-11 44l12 5q9-21 14-42zM197 177q8 22 11 44l-12 5q-9-21-14-42z" fill={mutedFill("forearms")} />
-        {front ? <>
-          <rect x="107" y="157" width="12" height="22" rx="4" fill={mutedFill("abdominals")} />
-          <rect x="121" y="157" width="12" height="22" rx="4" fill={mutedFill("abdominals")} />
-          <rect x="107" y="182" width="12" height="22" rx="4" fill={mutedFill("abdominals")} />
-          <rect x="121" y="182" width="12" height="22" rx="4" fill={mutedFill("abdominals")} />
-        </> : <>
-          <ellipse cx="120" cy="109" rx="27" ry="16" fill={mutedFill("traps")} />
-          <path d="M91 135q29-15 58 0l-8 53q-21 18-42 0z" fill={mutedFill("lats")} />
-          <rect x="108" y="190" width="24" height="36" rx="8" fill={mutedFill("lower_back")} />
-          <ellipse cx="104" cy="252" rx="18" ry="16" fill={mutedFill("glutes")} />
-          <ellipse cx="136" cy="252" rx="18" ry="16" fill={mutedFill("glutes")} />
-        </>}
-        <ellipse cx="91" cy="280" rx="18" ry="36" fill={mutedFill(front ? "quadriceps" : "hamstrings")} />
-        <ellipse cx="149" cy="280" rx="18" ry="36" fill={mutedFill(front ? "quadriceps" : "hamstrings")} />
-        {front && <>
-          <ellipse cx="75" cy="280" rx="10" ry="31" fill={mutedFill("abductors")} />
-          <ellipse cx="165" cy="280" rx="10" ry="31" fill={mutedFill("abductors")} />
-          <ellipse cx="109" cy="286" rx="8" ry="28" fill={mutedFill("adductors")} />
-          <ellipse cx="131" cy="286" rx="8" ry="28" fill={mutedFill("adductors")} />
-        </>}
-        <ellipse cx="94" cy="405" rx="12" ry="28" fill={mutedFill("calves")} />
-        <ellipse cx="146" cy="405" rx="12" ry="28" fill={mutedFill("calves")} />
-      </g>
-    </svg>
-  );
 }
 
 function SessionSequence({ data, date, options }: { data: StoryData; date: string; options: WorkoutStoryOptions }) {
