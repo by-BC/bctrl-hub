@@ -6,4 +6,4 @@
 - [x] 2.0 Importação da planilha da balança (Complexidade: HIGH)
 - [x] 3.0 Tela de composição (Complexidade: MEDIUM)
 - [x] 4.0 Metas de composição e integração com as metas nutricionais (Complexidade: MEDIUM)
-- [ ] 5.0 Perfil, card do mês e acabamento da v3 (Complexidade: MEDIUM)
+- [x] 5.0 Perfil, card do mês e acabamento da v3 (Complexidade: MEDIUM)

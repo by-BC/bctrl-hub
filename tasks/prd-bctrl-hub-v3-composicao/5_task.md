@@ -36,7 +36,7 @@ Fechar a v3:
 - [x] 5.4 `MonthCard` com a linha de composição (pior caso dentro das áreas seguras)
 - [x] 5.5 Conquistas novas em `achievements.ts`
 - [x] 5.6 Axe, documentação e `get_advisors`
-- [ ] 5.7 Smoke test do dono no celular (Composição, nova medição, metas, Perfil e card do mês)
+- [x] 5.7 Smoke test do dono no celular (Composição, nova medição, metas, Perfil e card do mês)
 
 ## Detalhes de Implementação
 
@@ -62,7 +62,8 @@ Ver techspec: **Endpoints de API**, **Modelos de Dados → bloco `composition`**
 - Axe: temas claro e escuro, mobile e desktop, 0 violações serious/critical; teste de teclado desktop verde.
 - `typecheck`, `lint`, `git diff --check` e build de produção verdes.
 - Advisors remoto: 0 erros; permanece 1 aviso de configuração do Auth (`auth_leaked_password_protection`), sem relação com a migration.
-- Pendente apenas 5.7: smoke test do dono no celular depois do deploy.
+- Smoke test do dono no celular concluído e confirmado em 2026-10-24: Composição, nova medição, metas, Perfil e card do mês.
+- Task 5.0 concluída; a V3 está fechada.
 
 <critical>SEMPRE CRIE E EXECUTE OS TESTES DA TAREFA ANTES DE CONSIDERÁ-LA FINALIZADA</critical>
 
