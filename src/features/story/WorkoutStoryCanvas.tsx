@@ -1,8 +1,11 @@
 import type { ReactNode, Ref } from "react";
+import { MuscleMap } from "@musclemap/react";
+import type { MuscleGroup, MuscleMapValues } from "@musclemap/core";
+import maleBack from "@musclemap/assets/bodies/male-back.webp";
+import maleFront from "@musclemap/assets/bodies/male-front.webp";
 import type { StoryData, StoryPr } from "@/features/story/domain/story";
 import { StoryFrame } from "./StoryFrame";
 import { STORY_LAYOUTS } from "./layouts";
-import { MuscleFigure } from "./MuscleFigure";
 import type { StoryPhoto } from "./types";
 
 export const WORKOUT_STORY_MODELS = ["Pôster", "Replay", "Recordes", "Adesivo", "Mapa muscular", "Sequência", "PR do dia", "Recibo", "Hex Week", "Blueprint", "Foto + overlay"] as const;
@@ -62,25 +65,36 @@ export function WorkoutStoryCanvas({
 }
 
 function MuscleMapPoster({ data, date }: { data: StoryData; date: string }) {
-  const keys = new Set(data.muscles.map(muscleRegion).filter((key): key is string => key !== null));
-  const views = [
-    { name: "FRENTE", view: "front" as const },
-    { name: "COSTAS", view: "back" as const },
-  ];
+  const activeGroups = new Set(data.muscles.flatMap(muscleGroups));
+  const values = Object.fromEntries([...activeGroups].map((group) => [group, { score: 88 }])) as MuscleMapValues;
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden px-[64px] pb-[260px] pt-[270px] text-brand-paper">
-      <div aria-hidden className="absolute left-1/2 top-[820px] size-[780px] -translate-x-1/2 rounded-full bg-brand-orange/10 blur-[120px]" />
+      <div aria-hidden className="absolute left-1/2 top-[790px] size-[780px] -translate-x-1/2 rounded-full bg-brand-orange/10 blur-[120px]" />
       <div className="relative">
         <p className="text-[23px] font-bold uppercase tracking-[.24em] text-brand-orange">SESSÃO · {date}</p>
         <h2 className="mt-4 text-[76px] font-black leading-[.9] tracking-[-.055em]">MAPA MUSCULAR<span className="text-brand-orange">.</span></h2>
         <p className="mt-4 line-clamp-1 text-[34px] font-semibold text-brand-paper/70">{data.routineName}</p>
       </div>
-      <div className="relative mt-7 grid grid-cols-2 gap-2 border-y border-brand-paper/15 py-4">
-        {views.map((view) => <div key={view.name} className="flex min-w-0 flex-col items-center text-center">
-          <div className="flex items-center gap-3 text-[22px] font-black tracking-[.22em] text-brand-paper/65"><span className="h-[3px] w-8 bg-brand-orange" />{view.name}<span className="h-[3px] w-8 bg-brand-orange" /></div>
-          <MuscleFigure view={view.view} active={keys} />
-        </div>)}
+      <div className="relative mt-6 flex min-h-0 flex-1 items-center justify-center border-y border-brand-paper/15 py-3">
+        <MuscleMap
+          values={values}
+          view="BOTH"
+          colorModel="FREQUENCY"
+          monochromeColor="#ed6a36"
+          monochromeBaseColor="#747984"
+          figureWidth={448}
+          backgroundImageFront={maleFront}
+          backgroundImageBack={maleBack}
+          backgroundOpacity={0.78}
+          backgroundGrayscale
+          backgroundBrightness={0.86}
+          glow={false}
+          showLegend={false}
+          tooltipFields={[]}
+          labels={MUSCLE_GROUP_LABELS}
+          style={{ width: "100%", gap: 0, pointerEvents: "none" }}
+        />
       </div>
       <div className="relative mt-6 border-t border-brand-paper/25 pt-5">
         <p className="text-[22px] font-bold uppercase tracking-[.2em] text-brand-paper/55">GRUPOS TRABALHADOS</p>
@@ -91,12 +105,25 @@ function MuscleMapPoster({ data, date }: { data: StoryData; date: string }) {
   );
 }
 
-function muscleRegion(value: string): string | null {
+const MUSCLE_GROUP_LABELS: Partial<Record<MuscleGroup, string>> = {
+  CHEST: "Peito", BACK_UPPER: "Costas", BACK_LOWER: "Lombar", TRAPEZIUS: "Trapézio", RHOMBOIDS: "Romboides", LATS: "Dorsais",
+  SHOULDERS_FRONT: "Ombro frontal", SHOULDERS_SIDE: "Ombro lateral", SHOULDERS_REAR: "Ombro posterior", BICEPS: "Bíceps", TRICEPS: "Tríceps",
+  FOREARMS: "Antebraço", CORE: "Abdômen", OBLIQUES: "Oblíquos", GLUTES: "Glúteos", QUADS: "Quadríceps", HAMSTRINGS: "Posterior de coxa",
+  CALVES: "Panturrilha", HIP_FLEXORS: "Flexores do quadril", ADDUCTORS: "Adutores", ABDUCTORS: "Abdutores",
+};
+
+const FULL_BODY_GROUPS: MuscleGroup[] = Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[];
+
+function muscleGroups(value: string): MuscleGroup[] {
   const key = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR").trim();
-  const regions: Record<string, string> = {
-    peito: "chest", costas: "lats", lombar: "lower_back", trapezio: "traps", ombros: "shoulders", biceps: "biceps", triceps: "triceps", antebraco: "forearms", abdomen: "abdominals", quadriceps: "quadriceps", "posterior de coxa": "hamstrings", gluteos: "glutes", panturrilha: "calves", adutores: "adductors", abdutores: "abductors", pescoco: "neck", "corpo inteiro": "full_body",
+  const regions: Record<string, MuscleGroup[]> = {
+    peito: ["CHEST"], peitoral: ["CHEST"], costas: ["BACK_UPPER", "BACK_LOWER", "TRAPEZIUS", "RHOMBOIDS", "LATS"], dorsais: ["LATS"], lombar: ["BACK_LOWER"], trapezio: ["TRAPEZIUS"], romboides: ["RHOMBOIDS"],
+    ombro: ["SHOULDERS_FRONT", "SHOULDERS_SIDE", "SHOULDERS_REAR"], ombros: ["SHOULDERS_FRONT", "SHOULDERS_SIDE", "SHOULDERS_REAR"], biceps: ["BICEPS"], triceps: ["TRICEPS"], antebraco: ["FOREARMS"],
+    abdomen: ["CORE", "OBLIQUES"], abdominal: ["CORE"], obliquos: ["OBLIQUES"], quadriceps: ["QUADS"], coxas: ["QUADS", "HAMSTRINGS", "ADDUCTORS", "ABDUCTORS"],
+    "posterior de coxa": ["HAMSTRINGS"], isquiotibiais: ["HAMSTRINGS"], gluteos: ["GLUTES"], panturrilha: ["CALVES"], gemeos: ["CALVES"], adutores: ["ADDUCTORS"], abdutores: ["ABDUCTORS"],
+    "flexores do quadril": ["HIP_FLEXORS"], "corpo inteiro": FULL_BODY_GROUPS,
   };
-  return regions[key] ?? null;
+  return regions[key] ?? [];
 }
 
 function SessionSequence({ data, date, options }: { data: StoryData; date: string; options: WorkoutStoryOptions }) {
