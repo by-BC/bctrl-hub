@@ -35,7 +35,8 @@ export function usePreviewScale(ref: React.RefObject<HTMLElement | null>, maxHei
     const el = ref.current;
     if (!el) return;
     const update = () => {
-      const maxH = Math.min(760, Math.max(320, window.innerHeight * maxHeightRatio));
+      const responsiveRatio = window.innerWidth < 1024 ? Math.min(maxHeightRatio, 0.54) : maxHeightRatio;
+      const maxH = Math.min(760, Math.max(320, window.innerHeight * responsiveRatio));
       const next = Math.min((el.clientWidth - 16) / STORY_WIDTH, maxH / STORY_HEIGHT);
       setScale(Math.max(0.12, Math.floor(next * 1000) / 1000));
     };
