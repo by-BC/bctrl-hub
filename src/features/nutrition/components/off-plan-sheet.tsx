@@ -23,8 +23,8 @@ type OffPlanSheetProps = {
 };
 
 /**
- * Adicionar alimento fora do plano: buscar (TACO ou próprio) → quantidade → Adicionar.
- * Com a refeição aberta: "Adicionar alimento", tocar no resultado e "Adicionar" (a quantidade
+ * Adicionar complemento à refeição: buscar (TACO ou próprio) → quantidade → Adicionar.
+ * Com a refeição aberta: "Adicionar complemento", tocar no resultado e "Adicionar" (a quantidade
  * já vem preenchida com 100 g, ou 1 unidade quando o alimento tem peso por unidade).
  */
 export function OffPlanSheet({ open, onOpenChange, mealName, onAdd }: OffPlanSheetProps) {
@@ -44,7 +44,7 @@ function Body({ mealName, onAdd, close }: { mealName: string; onAdd: OffPlanShee
       <DialogHeader className="min-w-0 space-y-3 p-5 pr-14 pb-3 text-left">
         <DialogTitle>Adicionar alimento</DialogTitle>
         <DialogDescription>
-          {food ? `Quanto de "${food.name}" em ${mealName}?` : `Fora do plano em ${mealName}. Valores por 100 g.`}
+          {food ? `Quanto de "${food.name}" em ${mealName}?` : `Adicione um complemento em ${mealName}. Valores por 100 g.`}
         </DialogDescription>
       </DialogHeader>
       {food ? (

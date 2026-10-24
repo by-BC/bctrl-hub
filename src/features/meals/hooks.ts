@@ -188,7 +188,7 @@ function useOffPlanMutation<V extends { day: string }>(
   });
 }
 
-/** Adiciona um alimento à refeição; sem registro ainda, a refeição passa a "fora do plano". */
+/** Adiciona um alimento como complemento; sem registro, cria uma refeição registrada dentro do plano. */
 export function useAddOffPlanItem() {
   return useOffPlanMutation(WRITES.addOffPlanItem, ({ logs, items }, v) => ({
     logs: v.log ? [...logs.filter((l) => l.meal_id !== v.log!.meal_id), v.log] : logs,
@@ -205,14 +205,14 @@ export function useRemoveOffPlanItem() {
 
 /**
  * Variáveis para adicionar um item: reaproveita o registro da refeição se existir; senão cria
- * um "fora do plano" (sem nota) junto com o item.
+ * um registro sem opção selecionada, mantendo a refeição dentro do plano.
  */
 export function buildOffPlanAdd(
   existing: MealLog | undefined,
   base: { day: string; meal_id: string },
   item: Omit<OffPlanItemInsert, "id" | "meal_log_id">,
 ) {
-  const log = existing ? null : buildMealLog(undefined, base, { off_plan: true, note: null });
+  const log = existing ? null : buildMealLog(undefined, base, { option_id: null });
   const meal_log_id = existing?.id ?? log!.id;
   return { day: base.day, meal_id: base.meal_id, log, item: { ...item, id: crypto.randomUUID(), meal_log_id } };
 }
@@ -222,7 +222,7 @@ export function buildMealLog(
   existing: MealLog | undefined,
   base: { day: string; meal_id: string },
   choice:
-    | { option_id: string; selected_item_indices?: number[] | null }
+    | { option_id: string | null; selected_item_indices?: number[] | null }
     | { off_plan: true; note: string | null },
 ): MealLog {
   const id = existing?.id ?? crypto.randomUUID();

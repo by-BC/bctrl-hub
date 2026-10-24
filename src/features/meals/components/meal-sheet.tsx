@@ -287,9 +287,7 @@ function ItemRow({
 const gramsFmt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
 
 /**
- * Alimentos fora do plano da refeição (snapshot gravado): lista com remover e "Adicionar
- * alimento". Sem registro, adicionar marca a refeição como fora do plano; com uma opção já
- * marcada, o alimento entra como extra e também soma no dia.
+ * Complementos da refeição (snapshot gravado): alimentos consumidos além da opção planejada.
  */
 function OffPlanItems({ day, meal, log }: { day: string; meal: Meal; log: MealLog | undefined }) {
   const [adding, setAdding] = useState(false);
@@ -300,10 +298,10 @@ function OffPlanItems({ day, meal, log }: { day: string; meal: Meal; log: MealLo
   const total = dayTotals({ options: [], offPlan: items.map(snapshotMacros) });
 
   return (
-    <section aria-labelledby={`fora-${meal.id}`} className="space-y-2 rounded-xl border border-dashed p-4">
+    <section aria-labelledby={`complementos-${meal.id}`} className="space-y-2 rounded-xl border border-dashed p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 id={`fora-${meal.id}`} className="text-sm font-semibold">
-          Fora do plano
+        <h3 id={`complementos-${meal.id}`} className="text-sm font-semibold">
+          Complementos da refeição
         </h3>
         {items.length > 0 && (
           <span className="num text-xs text-muted-foreground" data-testid="off-plan-total">
@@ -312,7 +310,7 @@ function OffPlanItems({ day, meal, log }: { day: string; meal: Meal; log: MealLo
         )}
       </div>
       {items.length > 0 && (
-        <ul className="divide-y" aria-label="Alimentos fora do plano">
+        <ul className="divide-y" aria-label="Complementos da refeição">
           {items.map((item) => (
             <li key={item.id} className="flex items-center gap-2 py-1" data-testid="off-plan-item">
               <span className="min-w-0 flex-1 text-sm">
@@ -337,7 +335,7 @@ function OffPlanItems({ day, meal, log }: { day: string; meal: Meal; log: MealLo
       )}
       <Button type="button" variant="outline" className="h-11 w-full" onClick={() => setAdding(true)}>
         <Plus aria-hidden />
-        Adicionar alimento
+        Adicionar complemento
       </Button>
       <OffPlanSheet
         open={adding}
