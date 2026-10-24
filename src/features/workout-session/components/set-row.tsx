@@ -22,8 +22,8 @@ import { PrBadge } from "./pr-badge";
  * Classes literais: o Tailwind só gera o que aparece escrito no código.
  */
 const GRID_BY_FIELDS = {
-  1: "grid grid-cols-[2.75rem_minmax(0,1fr)_6.5rem_2.75rem] items-center gap-2",
-  2: "grid grid-cols-[2.75rem_minmax(0,1fr)_4.75rem_4rem_2.75rem] items-center gap-2",
+  1: "grid grid-cols-[2.75rem_minmax(0,1fr)_6.5rem_2.75rem] max-[360px]:grid-cols-[2.75rem_4.5rem_2.75rem] items-center gap-2",
+  2: "grid grid-cols-[2.75rem_minmax(0,1fr)_4.75rem_4rem_2.75rem] max-[360px]:grid-cols-[2.75rem_minmax(0,1fr)_4rem_2.75rem] items-center gap-2",
 } as const;
 
 export const setGrid = (type: ExerciseType) => GRID_BY_FIELDS[FIELDS[type].length as 1 | 2];
@@ -127,7 +127,7 @@ export function SetRow({ index, set, previous, exerciseName, exerciseType, onCha
         >
           {warmup ? "A" : n}
         </button>
-        <span className="num truncate text-sm text-muted-foreground" data-testid="previous">
+        <span className="num truncate text-sm text-muted-foreground max-[360px]:hidden" data-testid="previous">
           <span className="sr-only">Anterior: </span>
           {prevText}
         </span>

@@ -28,7 +28,7 @@ import { formatDay, formatKg } from "@/lib/format";
 import { HexWeekCard } from "./hex-week-card";
 
 /** Tarefas pendentes mostradas no painel (as demais ficam em /tarefas). */
-const TASKS_ON_PANEL = 5;
+const TASKS_ON_PANEL = 3;
 
 /**
  * Painel Hoje: Hex Week da semana, treino de hoje, refeições, hábitos e tarefas, com as
@@ -212,19 +212,39 @@ function TodayMeals({ today }: { today: string }) {
 
   const openMeal = data.visible.find((m) => m.id === openMealId) ?? null;
   const { done, planned } = data.adherence;
+  const unlogged = data.visible.filter((meal) => !data.byMeal.has(meal.id));
+  const logged = data.visible.filter((meal) => data.byMeal.has(meal.id));
 
   return (
     <>
       <p className="num mb-3 text-sm text-muted-foreground" data-testid="today-meals-adherence">
         {done} de {planned} no plano hoje
       </p>
-      <ul className="space-y-2" aria-label="Refeições do dia">
-        {data.visible.map((meal) => (
-          <li key={meal.id}>
-            <MealCard meal={meal} log={data.byMeal.get(meal.id)} onOpen={() => setOpenMealId(meal.id)} />
-          </li>
-        ))}
-      </ul>
+      {unlogged.length > 0 ? (
+        <ul className="space-y-2" aria-label="Refeições pendentes">
+          {unlogged.map((meal) => (
+            <li key={meal.id}>
+              <MealCard meal={meal} log={undefined} onOpen={() => setOpenMealId(meal.id)} />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-lg bg-muted/50 px-3 py-2 text-sm text-muted-foreground">Todas as refeições foram registradas.</p>
+      )}
+      {logged.length > 0 && (
+        <details className="mt-3 rounded-xl border px-3">
+          <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 text-sm font-medium">
+            Refeições registradas <span className="num text-muted-foreground">{logged.length}</span>
+          </summary>
+          <ul className="space-y-2 border-t py-3" aria-label="Refeições registradas">
+            {logged.map((meal) => (
+              <li key={meal.id}>
+                <MealCard meal={meal} log={data.byMeal.get(meal.id)} onOpen={() => setOpenMealId(meal.id)} />
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
       <DayNutrition day={today} headingLevel={3} className="mt-3" />
       <MealSheet
         day={today}
@@ -345,6 +365,7 @@ function HabitRow({
 
 function TodayTasks() {
   const { data, isPending, isError, refetch } = useTasks();
+  const [showAll, setShowAll] = useState(false);
   if (isError) return <LoadError what="as tarefas" retry={refetch} />;
   if (isPending) return <ListSkeleton rows={2} />;
 
@@ -359,7 +380,7 @@ function TodayTasks() {
       </EmptyLine>
     );
   }
-  const shown = pending.slice(0, TASKS_ON_PANEL);
+  const shown = showAll ? pending : pending.slice(0, TASKS_ON_PANEL);
   return (
     <>
       <ul aria-label="Tarefas pendentes" className="divide-y rounded-xl border">
@@ -367,13 +388,15 @@ function TodayTasks() {
           <TaskRow key={task.id} task={task} deletable={false} />
         ))}
       </ul>
-      {pending.length > shown.length && (
-        <p className="num mt-3 text-sm text-muted-foreground">
-          + {pending.length - shown.length} em{" "}
-          <Link href="/tarefas" className="font-medium text-primary-text underline underline-offset-4">
-            Tarefas
+      {pending.length > TASKS_ON_PANEL && (
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <Button variant="ghost" className="h-11 px-2 text-sm" onClick={() => setShowAll((value) => !value)}>
+            {showAll ? "Mostrar menos" : `Ver mais ${pending.length - TASKS_ON_PANEL} tarefas`}
+          </Button>
+          <Link href="/tarefas" className="text-sm font-medium text-primary-text underline underline-offset-4">
+            Abrir tarefas
           </Link>
-        </p>
+        </div>
       )}
     </>
   );

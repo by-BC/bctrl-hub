@@ -152,35 +152,41 @@ function WorkoutStoryStudio({ data, workoutId }: { data: ReturnType<typeof story
               {photo && <Button type="button" variant="ghost" className="min-h-11" onClick={() => { setPhoto(null); setPhotoMode(false); }}><Trash2 aria-hidden /> Remover foto</Button>}
             </div>
             {photo && hasPhotoBackground && (
-              <fieldset className="space-y-3 rounded-xl border p-4">
-                <legend className="px-1 text-sm font-semibold">Enquadrar foto</legend>
-                <label className="block text-sm">Zoom <span className="num text-muted-foreground">{Math.round(photo.zoom * 100)}%</span>
-                  <input type="range" min="100" max="200" step="5" value={Math.round(photo.zoom * 100)} aria-label="Zoom da foto" onChange={(event) => setPhoto({ ...photo, zoom: Number(event.target.value) / 100 })} className="h-11 w-full accent-primary" />
-                </label>
-                <label className="block text-sm">Posição horizontal
-                  <input type="range" min="0" max="100" value={photo.x} aria-label="Posição horizontal da foto" onChange={(event) => setPhoto({ ...photo, x: Number(event.target.value) })} className="h-11 w-full accent-primary" />
-                </label>
-                <label className="block text-sm">Posição vertical
-                  <input type="range" min="0" max="100" value={photo.y} aria-label="Posição vertical da foto" onChange={(event) => setPhoto({ ...photo, y: Number(event.target.value) })} className="h-11 w-full accent-primary" />
-                </label>
-              </fieldset>
+                <details className="rounded-xl border">
+                  <summary className="flex min-h-11 cursor-pointer items-center px-4 text-sm font-semibold">Ajustar enquadramento da foto</summary>
+                  <div className="space-y-3 border-t p-4">
+                    <label className="block text-sm">Zoom <span className="num text-muted-foreground">{Math.round(photo.zoom * 100)}%</span>
+                      <input type="range" min="100" max="200" step="5" value={Math.round(photo.zoom * 100)} aria-label="Zoom da foto" onChange={(event) => setPhoto({ ...photo, zoom: Number(event.target.value) / 100 })} className="h-11 w-full accent-primary" />
+                    </label>
+                    <label className="block text-sm">Posição horizontal
+                      <input type="range" min="0" max="100" value={photo.x} aria-label="Posição horizontal da foto" onChange={(event) => setPhoto({ ...photo, x: Number(event.target.value) })} className="h-11 w-full accent-primary" />
+                    </label>
+                    <label className="block text-sm">Posição vertical
+                      <input type="range" min="0" max="100" value={photo.y} aria-label="Posição vertical da foto" onChange={(event) => setPhoto({ ...photo, y: Number(event.target.value) })} className="h-11 w-full accent-primary" />
+                    </label>
+                  </div>
+                </details>
             )}
           </section>
 
-          <fieldset className="space-y-3 rounded-xl border p-4">
-            <legend className="px-1 text-sm font-semibold">O que vai aparecer</legend>
-            <div className="grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3">
-              <StoryOption label="Volume" checked={options.volume} onChange={(checked) => toggleOption("volume", checked)} />
-              <StoryOption label="Duração" checked={options.duration} onChange={(checked) => toggleOption("duration", checked)} />
-              <StoryOption label="Séries" checked={options.sets} onChange={(checked) => toggleOption("sets", checked)} />
-              <StoryOption label="Exercícios" checked={options.exercises} onChange={(checked) => toggleOption("exercises", checked)} />
-              <StoryOption label="Recordes" checked={options.records} onChange={(checked) => toggleOption("records", checked)} />
-            </div>
+          <section className="space-y-3">
+            <details className="rounded-xl border">
+              <summary className="flex min-h-11 cursor-pointer items-center px-4 text-sm font-semibold">Personalizar dados do story</summary>
+              <div className="border-t p-4">
+                <div className="grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3">
+                  <StoryOption label="Volume" checked={options.volume} onChange={(checked) => toggleOption("volume", checked)} />
+                  <StoryOption label="Duração" checked={options.duration} onChange={(checked) => toggleOption("duration", checked)} />
+                  <StoryOption label="Séries" checked={options.sets} onChange={(checked) => toggleOption("sets", checked)} />
+                  <StoryOption label="Exercícios" checked={options.exercises} onChange={(checked) => toggleOption("exercises", checked)} />
+                  <StoryOption label="Recordes" checked={options.records} onChange={(checked) => toggleOption("records", checked)} />
+                </div>
+              </div>
+            </details>
             <label className="block space-y-1.5 text-sm font-medium" htmlFor="story-caption">
               Uma frase sua <span className="font-normal text-muted-foreground">(opcional)</span>
               <Input id="story-caption" maxLength={48} value={options.caption} onChange={(event) => setOptions((current) => ({ ...current, caption: event.target.value }))} placeholder="Ex.: Mais um treino feito" />
             </label>
-          </fieldset>
+          </section>
 
           <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-20 -mx-4 space-y-2 border-t bg-background/95 px-4 py-3 shadow-[0_-8px_20px_-16px_rgba(0,0,0,0.45)] backdrop-blur lg:static lg:mx-0 lg:bg-transparent lg:px-0 lg:py-5 lg:shadow-none lg:backdrop-blur-none">
             <Button className="h-12 w-full text-base font-semibold" disabled={busy} onClick={savePng}>

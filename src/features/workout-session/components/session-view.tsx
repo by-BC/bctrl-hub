@@ -196,7 +196,7 @@ function ExerciseCard({ exercise, exIdx }: { exercise: SessionExercise; exIdx: n
           aria-hidden
         >
           <span className="text-center">Sér.</span>
-          <span>Anterior</span>
+          <span className="max-[360px]:hidden">Anterior</span>
           {FIELDS[exercise.exerciseType].map((field) => (
             <span key={field} className="text-center">
               {fieldHeader(field, exercise.exerciseType)}
