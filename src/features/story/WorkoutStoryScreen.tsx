@@ -47,7 +47,7 @@ function WorkoutStoryStudio({ data, workoutId }: { data: ReturnType<typeof story
   const fileRef = useRef<HTMLInputElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
-  const scale = usePreviewScale(previewRef);
+  const scale = usePreviewScale(previewRef, 0.68);
   const canShare = useCanShare();
   const date = useMemo(() => formatDay(data.date), [data.date]);
   const hasPhotoBackground = photoMode && !!photo;
@@ -108,7 +108,7 @@ function WorkoutStoryStudio({ data, workoutId }: { data: ReturnType<typeof story
         <ArrowLeft aria-hidden className="size-4" /> Voltar ao treino
       </Link>
       <PageHeader title="Monte seu story" eyebrow="Treino" />
-      <div className="flex flex-col gap-7 xl:flex-row xl:items-start xl:gap-10">
+      <div className="flex flex-col gap-5 sm:gap-7 xl:flex-row xl:items-start xl:gap-10">
         <div ref={previewRef} className="min-w-0 xl:w-[460px] xl:shrink-0">
           <div className="flex justify-center py-2">
             <div
@@ -127,8 +127,8 @@ function WorkoutStoryStudio({ data, workoutId }: { data: ReturnType<typeof story
               </div>
             </div>
           </div>
-          <div role="group" aria-label="Modelos de story do treino" className="mt-3 flex flex-wrap justify-center gap-2">
-            {WORKOUT_STORY_MODELS.map((name) => <Button key={name} variant={model === name ? "default" : "outline"} className="min-h-11" aria-pressed={model === name} onClick={() => setModel(name)}>{name}</Button>)}
+          <div role="group" aria-label="Modelos de story do treino" className="mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:justify-center sm:overflow-visible sm:pb-0">
+            {WORKOUT_STORY_MODELS.map((name) => <Button key={name} variant={model === name ? "default" : "outline"} className="min-h-11 shrink-0 snap-start" aria-pressed={model === name} onClick={() => setModel(name)}>{name}</Button>)}
           </div>
           <p aria-live="polite" className="mt-3 text-center text-sm text-muted-foreground">
             {transparentExport ? "Prévia quadriculada = transparência. Baixe o PNG para aplicar sobre sua foto." : "A foto e os dados ficam neste aparelho; nada é enviado para o servidor."}
@@ -182,7 +182,7 @@ function WorkoutStoryStudio({ data, workoutId }: { data: ReturnType<typeof story
             </label>
           </fieldset>
 
-          <div className="space-y-2 border-t pt-5">
+          <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-20 -mx-4 space-y-2 border-t bg-background/95 px-4 py-3 shadow-[0_-8px_20px_-16px_rgba(0,0,0,0.45)] backdrop-blur lg:static lg:mx-0 lg:bg-transparent lg:px-0 lg:py-5 lg:shadow-none lg:backdrop-blur-none">
             <Button className="h-12 w-full text-base font-semibold" disabled={busy} onClick={savePng}>
               {busy ? <span className="animate-spin" aria-hidden>◌</span> : <Download aria-hidden />}
               {busy ? "Gerando…" : transparentExport ? "Baixar PNG transparente" : "Baixar story com foto"}

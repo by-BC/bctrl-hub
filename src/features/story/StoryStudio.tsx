@@ -28,14 +28,14 @@ export function useCanShare() {
   return useSyncExternalStore(noop, () => typeof navigator.canShare === "function", () => false);
 }
 
-/** Escala da prévia: cabe na largura do carrossel e em ~56% da altura da janela. */
-export function usePreviewScale(ref: React.RefObject<HTMLElement | null>) {
+/** Escala da prévia: cabe na largura do carrossel e na fração da altura configurada. */
+export function usePreviewScale(ref: React.RefObject<HTMLElement | null>, maxHeightRatio = 0.56) {
   const [scale, setScale] = useState(0.22);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const update = () => {
-      const maxH = Math.min(760, Math.max(320, window.innerHeight * 0.56));
+      const maxH = Math.min(760, Math.max(320, window.innerHeight * maxHeightRatio));
       const next = Math.min((el.clientWidth - 16) / STORY_WIDTH, maxH / STORY_HEIGHT);
       setScale(Math.max(0.12, Math.floor(next * 1000) / 1000));
     };
@@ -47,7 +47,7 @@ export function usePreviewScale(ref: React.RefObject<HTMLElement | null>) {
       ro.disconnect();
       window.removeEventListener("resize", update);
     };
-  }, [ref]);
+  }, [maxHeightRatio, ref]);
   return scale;
 }
 
