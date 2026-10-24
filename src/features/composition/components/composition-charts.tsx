@@ -44,6 +44,10 @@ export function CompositionCharts({ measurements, refreshing }: { measurements: 
   const format = (n: number) => metricText(n, def);
   const period = RANGE_LABEL[range].toLowerCase();
   const showYear = range === "all";
+  const changeLabel = (first: number, last: number, formatter: (n: number) => string) => {
+    const change = last - first;
+    return change === 0 ? "sem alteração" : `${change > 0 ? "+" : "−"}${formatter(Math.abs(change))}`;
+  };
 
   return (
     <section aria-labelledby="graficos-composicao" className="space-y-3">
@@ -69,7 +73,7 @@ export function CompositionCharts({ measurements, refreshing }: { measurements: 
         <ChartCard
           title={def.label}
           subtitle={`${count(points.length)} · ${period}${def.unit ? ` · ${def.unit}` : ""}`}
-          summary={`${def.label}, ${count(points.length)}. De ${format(points[0].value)} em ${formatDay(points[0].day)} a ${format(points.at(-1)!.value)} em ${formatDay(points.at(-1)!.day)}.`}
+          summary={`${def.label}, ${count(points.length)}. De ${format(points[0].value)} em ${formatDay(points[0].day)} a ${format(points.at(-1)!.value)} em ${formatDay(points.at(-1)!.day)}. Variação: ${changeLabel(points[0].value, points.at(-1)!.value, format)}.`}
           refreshing={refreshing}
           chart={
             <TrendChart
@@ -103,7 +107,7 @@ export function CompositionCharts({ measurements, refreshing }: { measurements: 
           title="Gordura × músculo"
           subtitle={`${count(pairs.length)} · ${period} · kg`}
           legend={FAT_MUSCLE.map(({ label, color, kind }) => ({ label, color, kind }))}
-          summary={`Massa de gordura de ${kg(pairs[0].fat)} para ${kg(pairs.at(-1)!.fat)}; músculo esquelético de ${kg(pairs[0].muscle)} para ${kg(pairs.at(-1)!.muscle)}.`}
+          summary={`Massa de gordura: ${kg(pairs[0].fat)} → ${kg(pairs.at(-1)!.fat)} (variação ${changeLabel(pairs[0].fat, pairs.at(-1)!.fat, kg)}); músculo esquelético: ${kg(pairs[0].muscle)} → ${kg(pairs.at(-1)!.muscle)} (variação ${changeLabel(pairs[0].muscle, pairs.at(-1)!.muscle, kg)}).`}
           refreshing={refreshing}
           chart={<TrendChart data={pairs} series={FAT_MUSCLE} format={kg} showYear={showYear} />}
           table={

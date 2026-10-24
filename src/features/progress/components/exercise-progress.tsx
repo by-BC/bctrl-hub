@@ -250,7 +250,9 @@ function chartSummary(points: ChartPoint[], metric: Metric) {
   const first = points[0];
   const last = points[points.length - 1];
   const max = Math.max(...points.map((p) => p.value));
-  return `${METRIC_LABEL[metric]} em ${points.length} sessões, de ${formatDay(first.day)} a ${formatDay(last.day)}. Primeira: ${format(first.value)}. Última: ${format(last.value)}. Máxima: ${format(max)}.`;
+  const change = last.value - first.value;
+  const changeLabel = change === 0 ? "sem alteração" : `${change > 0 ? "+" : "−"}${format(Math.abs(change))}`;
+  return `${METRIC_LABEL[metric]} em ${points.length} sessões, de ${formatDay(first.day)} a ${formatDay(last.day)}. De ${format(first.value)} para ${format(last.value)} (variação: ${changeLabel}). Máxima: ${format(max)}.`;
 }
 
 function ExerciseRecords({ exerciseId, type }: { exerciseId: string; type: ExerciseType }) {

@@ -51,7 +51,7 @@ export function MealPlanEditor() {
 
   const header = (
     <>
-      <BackLink href="/comida" label="Comida" />
+      <BackLink href="/comida" label="Voltar ao registro diário" />
       <PageHeader title="Plano alimentar" eyebrow="Comida">
         <SaveStatus />
       </PageHeader>
@@ -94,8 +94,8 @@ export function MealPlanEditor() {
     <>
       {header}
       <p className="mb-4 text-sm text-muted-foreground">
-        Na tela do dia, as refeições aparecem por horário. As sem horário (como o pós-treino) ficam no lugar
-        definido pela ordem abaixo.
+        Esta tela organiza refeições, horários e opções previstas. Para registrar o que comeu e adicionar complementos, volte ao registro diário.
+        Refeições com horário são ordenadas automaticamente; as demais seguem a ordem abaixo.
       </p>
 
       {meals.length === 0 ? (

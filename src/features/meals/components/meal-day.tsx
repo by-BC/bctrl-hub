@@ -35,11 +35,11 @@ export function MealDay() {
 
   return (
     <>
-      <PageHeader title="Comida" eyebrow="Plano alimentar">
+      <PageHeader title="Comida" eyebrow="Registro diário">
         <Button asChild variant="outline" className="h-11">
           <Link href="/comida/plano">
             <Pencil aria-hidden />
-            Editar plano
+            Gerenciar plano
           </Link>
         </Button>
       </PageHeader>
@@ -79,9 +79,10 @@ function DayContent({ day }: { day: string }) {
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:grid-rows-[auto_1fr] lg:items-start">
       <section aria-labelledby="refeicoes-titulo" className="space-y-3 lg:col-start-1 lg:row-span-2 lg:row-start-1">
-        <h2 id="refeicoes-titulo" className="sr-only">
-          Refeições
-        </h2>
+        <header className="space-y-1">
+          <h2 id="refeicoes-titulo" className="text-lg font-semibold">O que você comeu?</h2>
+          <p className="text-sm text-muted-foreground">Abra uma refeição para registrar os itens consumidos e adicionar complementos.</p>
+        </header>
         {data.visible.length === 0 ? (
           <div className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
             Nenhuma refeição no plano.{" "}

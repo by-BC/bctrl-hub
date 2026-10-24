@@ -169,6 +169,10 @@ function BodyWeightTrend() {
   }
 
   const latest = averaged[averaged.length - 1];
+  const firstInRange = points[0] ?? latest;
+  const latestInRange = points[points.length - 1] ?? latest;
+  const averageChange = latestInRange.average - firstInRange.average;
+  const averageChangeLabel = averageChange === 0 ? "sem alteração" : `${averageChange > 0 ? "+" : "−"}${kg(Math.abs(averageChange))}`;
   return (
     <div className="space-y-3">
       <dl className="grid grid-cols-2 gap-2" aria-label="Peso atual">
@@ -201,7 +205,7 @@ function BodyWeightTrend() {
           title="Tendência do peso"
           subtitle={`${points.length} ${points.length === 1 ? "registro" : "registros"} · ${RANGE_LABEL[range].toLowerCase()}`}
           legend={SERIES.map(({ label, color, kind }) => ({ label, color, kind }))}
-          summary={`Peso corporal, ${points.length} registros. Último: ${kg(latest.value)} em ${formatDay(latest.day)}, média de 7 dias ${kg(latest.average)}.`}
+          summary={`Média móvel de 7 dias: ${kg(firstInRange.average)} em ${formatDay(firstInRange.day)} para ${kg(latestInRange.average)} em ${formatDay(latestInRange.day)} (variação: ${averageChangeLabel}). Último registro neste período: ${kg(latestInRange.value)}.`}
           refreshing={isFetching}
           chart={<TrendChart data={points} series={SERIES} format={kg} showYear={range === "all"} />}
           table={

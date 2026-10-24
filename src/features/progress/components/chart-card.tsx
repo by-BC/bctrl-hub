@@ -10,7 +10,7 @@ type ChartCardProps = {
   subtitle?: ReactNode;
   /** Legenda (2+ séries). Uma série só dispensa: o título já diz o que é. */
   legend?: { label: string; color: string; kind: "line" | "dots" }[];
-  /** Resumo em texto para leitores de tela. */
+  /** Resumo visível e acessível do período e dos principais valores. */
   summary: string;
   chart: ReactNode;
   /** Tabela com os mesmos dados ("ver dados"). */
@@ -33,7 +33,6 @@ export function ChartCard({ title, subtitle, legend, summary, chart, table, refr
             {title}
           </p>
           {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
-          <p className="sr-only">{summary}</p>
         </div>
         {legend && legend.length > 1 && (
           <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label="Legenda">
@@ -52,6 +51,10 @@ export function ChartCard({ title, subtitle, legend, summary, chart, table, refr
       </figcaption>
 
       <div className={refreshing ? "opacity-60 transition-opacity" : "transition-opacity"}>{chart}</div>
+
+      <p className="text-sm leading-relaxed text-muted-foreground" data-testid="chart-summary">
+        {summary}
+      </p>
 
       <div className="mt-2 border-t pt-2">
         <Button
