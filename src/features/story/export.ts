@@ -64,6 +64,11 @@ function download(blob: Blob, filename: string, env: ShareEnv) {
   setTimeout(() => env.url.revokeObjectURL(href), 60_000);
 }
 
+/** Baixa o PNG diretamente, sem abrir o menu de compartilhamento do navegador. */
+export function downloadStory(blob: Blob, filename: string) {
+  download(blob, filename, browserEnv());
+}
+
 /**
  * Menu nativo de compartilhar (Instagram incluso, quando o sistema oferece) se o
  * navegador aceitar arquivos; senão, download do PNG. Fechar o menu não é erro.

@@ -18,11 +18,13 @@ const SHOW_GUIDES = process.env.NODE_ENV === "development";
  */
 export function StoryFrame({
   tone,
+  transparent = false,
   children,
   className,
   ref,
 }: {
-  tone: StoryTone;
+  tone?: StoryTone;
+  transparent?: boolean;
   children: ReactNode;
   className?: string;
   ref?: Ref<HTMLDivElement>;
@@ -31,7 +33,7 @@ export function StoryFrame({
     <div
       ref={ref}
       data-story-frame
-      className={cn("relative isolate overflow-hidden font-sans antialiased", TONE_CLASS[tone], className)}
+      className={cn("relative isolate overflow-hidden font-sans antialiased", transparent ? "bg-transparent" : tone ? TONE_CLASS[tone] : undefined, className)}
       style={{ width: STORY_WIDTH, height: STORY_HEIGHT }}
     >
       {children}
