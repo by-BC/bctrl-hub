@@ -77,8 +77,8 @@ function DayContent({ day }: { day: string }) {
   const openMeal = data.visible.find((m) => m.id === openMealId) ?? null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:grid-rows-[auto_1fr] lg:items-start">
-      <section aria-labelledby="refeicoes-titulo" className="space-y-3 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:grid-rows-[auto_1fr] lg:items-start">
+      <section aria-labelledby="refeicoes-titulo" className="min-w-0 space-y-3 lg:col-start-1 lg:row-span-2 lg:row-start-1">
         <header className="space-y-1">
           <h2 id="refeicoes-titulo" className="text-lg font-semibold">O que você comeu?</h2>
           <p className="text-sm text-muted-foreground">Abra uma refeição para registrar os itens consumidos e adicionar complementos.</p>
@@ -114,7 +114,7 @@ function DayContent({ day }: { day: string }) {
 
       <aside
         aria-label="Adesão"
-        className="order-first grid grid-cols-2 gap-2 lg:order-none lg:col-start-2 lg:row-start-1 lg:grid-cols-1"
+        className="order-first grid min-w-0 grid-cols-2 gap-2 lg:order-none lg:col-start-2 lg:row-start-1 lg:grid-cols-1"
       >
         <DayAdherence adherence={data.adherence} />
         <WeekAdherence day={day} />
@@ -195,7 +195,7 @@ function AdherenceCard({
   testId: string;
 }) {
   return (
-    <div className="space-y-2 rounded-xl border bg-card p-4" data-testid={testId}>
+    <div className="min-w-0 space-y-2 rounded-xl border bg-card p-4" data-testid={testId}>
       <p className="text-xs text-muted-foreground">{title}</p>
       <p className="num text-2xl font-semibold">{pct}%</p>
       <div aria-hidden className="h-1.5 overflow-hidden rounded-full bg-muted">

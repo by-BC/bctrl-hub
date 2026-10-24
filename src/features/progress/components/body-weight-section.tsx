@@ -29,7 +29,7 @@ const kg = (n: number) => `${formatKg(n)} kg`;
 /** Peso corporal: registro rápido (um por dia) e tendência com média móvel de 7 dias. */
 export function BodyWeightSection() {
   return (
-    <section aria-labelledby="peso-titulo" className="space-y-3">
+    <section aria-labelledby="peso-titulo" className="min-w-0 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <h2 id="peso-titulo" className="flex items-center gap-2 text-lg font-semibold">
           <Scale aria-hidden className="size-5 text-primary-text" />
@@ -89,8 +89,8 @@ function BodyWeightForm() {
 
   return (
     <form onSubmit={submit} noValidate className="rounded-xl border bg-card p-4" aria-label="Registrar peso">
-      <div className="grid grid-cols-[1fr_1fr] gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-        <div className="space-y-1.5">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+        <div className="min-w-0 space-y-1.5">
           <Label htmlFor={dayId}>Dia</Label>
           <Input
             id={dayId}
@@ -102,7 +102,7 @@ function BodyWeightForm() {
             required
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="min-w-0 space-y-1.5">
           <Label htmlFor={kgId}>Peso (kg)</Label>
           <Input
             id={kgId}

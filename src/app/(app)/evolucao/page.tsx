@@ -11,11 +11,11 @@ export default function EvolucaoPage() {
   return (
     <>
       <PageHeader title="Evolução" eyebrow="Progresso" />
-      <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
-        <div className="lg:sticky lg:top-10 lg:order-2">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-2 lg:items-start">
+        <div className="min-w-0 lg:sticky lg:top-10 lg:order-2">
           <BodyWeightSection />
         </div>
-        <div className="lg:order-1">
+        <div className="min-w-0 lg:order-1">
           <ProgressList />
         </div>
       </div>
