@@ -102,14 +102,14 @@ export async function seedWorkout(
  * com 2 treinos já finalizados (Upper e depois Lower). Assim o próximo sugerido é o Upper
  * (volta do fim da sequência para o início) e o supino tem "anterior" 40 × 10 e 40 × 8.
  */
-export async function seedTrainingPlan(user: DisposableUser): Promise<TrainingPlan> {
+export async function seedTrainingPlan(user: DisposableUser, { supinoThumbnailUrl }: { supinoThumbnailUrl?: string } = {}): Promise<TrainingPlan> {
   const insert = inserter(user);
   const id = () => crypto.randomUUID();
   const ex = { supino: id(), remada: id(), agachamento: id() };
   const routine = { upper: id(), lower: id() };
 
   await insert("exercises", [
-    { id: ex.supino, name: "Supino E2E", muscle_group: "Peito" },
+    { id: ex.supino, name: "Supino E2E", muscle_group: "Peito", ...(supinoThumbnailUrl ? { thumbnail_url: supinoThumbnailUrl, source: "hevy" } : {}) },
     { id: ex.remada, name: "Remada E2E", muscle_group: "Costas" },
     { id: ex.agachamento, name: "Agachamento E2E", muscle_group: "Quadríceps" },
   ]);

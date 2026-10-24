@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { Share2 } from "lucide-react";
+import Link from "next/link";
 import { PageHeader } from "@/components/shell/page-header";
+import { Button } from "@/components/ui/button";
 import { AchievementsSection } from "@/features/profile/components/achievements";
 import { ControlHeatmap } from "@/features/profile/components/control-heatmap";
 import { MonthSection } from "@/features/profile/components/month-summary";
@@ -16,6 +19,12 @@ export default function PerfilPage() {
     <>
       <PageHeader title="Perfil" eyebrow="Você" />
       <div className="space-y-8">
+        <Button asChild className="h-11 w-full font-semibold sm:w-auto">
+          <Link href="/perfil/story">
+            <Share2 aria-hidden />
+            Gerar story de hoje
+          </Link>
+        </Button>
         <ProfileCard />
         <ControlHeatmap />
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">

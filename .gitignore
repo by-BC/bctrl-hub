@@ -6,6 +6,7 @@ supabase/seed*.sql
 *.pdf
 Captura de tela*.png
 screenshots/
+assets/brand/references/
 
 # ── Chaves e segredos (APIs: Supabase, Vercel, Context7…) ──
 .env

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { StoryScreen, StorySkeleton } from "@/features/story/StoryScreen";
 
-export const metadata: Metadata = { title: "Story" };
+export const metadata: Metadata = { title: "Story do treino" };
 
 // O id só existe na requisição: fica atrás do Suspense e o resto do shell é pré-renderizado.
 export default function TreinoHistoricoIdStoryPage({ params }: PageProps<"/treino/historico/[id]/story">) {

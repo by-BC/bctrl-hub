@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ExerciseMedia } from "@/features/exercises/components/exercise-media";
 import { ExercisePicker } from "@/features/routines/components/exercise-picker";
 import { BackLink } from "@/features/routines/components/back-link";
 import { useCatalogExercise } from "@/features/exercises/hooks";
@@ -164,7 +165,8 @@ function ExerciseCard({ exercise, exIdx }: { exercise: SessionExercise; exIdx: n
   const actions = useActiveWorkout.getState();
   const hasDone = exercise.sets.some((s) => s.done);
   // Instruções próprias (RF02b) vêm do catálogo em cache; a sessão salva no aparelho não muda.
-  const instructions = useCatalogExercise(exercise.exerciseId)?.instructions;
+  const catalogExercise = useCatalogExercise(exercise.exerciseId);
+  const instructions = catalogExercise?.instructions;
 
   return (
     <li>
@@ -183,6 +185,14 @@ function ExerciseCard({ exercise, exIdx }: { exercise: SessionExercise; exIdx: n
         </header>
 
         {exercise.notes && <Collapsed title="Observações técnicas" text={exercise.notes} />}
+        <ExerciseMedia
+          name={exercise.name}
+          muscleGroup={catalogExercise?.muscle_group ?? null}
+          thumbnailUrl={catalogExercise?.thumbnail_url ?? null}
+          mediaUrl={null}
+          className="mx-auto mb-3 max-w-[180px]"
+        />
+
         {instructions && <Collapsed title="Como executar" text={instructions} testId="session-instructions" />}
 
         <div
@@ -319,7 +329,7 @@ function FinishedSession({ finished }: { finished: Finished }) {
           <Button asChild className="h-12 font-semibold">
             <Link href={`/treino/historico/${finished.workoutId}/story`}>
               <Share2 aria-hidden />
-              Gerar story
+              Gerar story do treino
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-12">

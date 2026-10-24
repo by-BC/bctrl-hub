@@ -69,7 +69,7 @@ function Studio({ workout, week }: { workout: HistoryDetail; week: WeekSummary |
   return (
     <>
       <BackLink id={workout.id} />
-      <PageHeader title="Gerar story" />
+      <PageHeader title="Story do treino" />
       <StoryStudio data={data} />
     </>
   );

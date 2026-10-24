@@ -105,7 +105,7 @@ function Detail({ workout }: { workout: HistoryDetail }) {
         <Button asChild className="h-12 w-full font-semibold sm:w-auto">
           <Link href={`/treino/historico/${workout.id}/story`}>
             <Share2 aria-hidden />
-            Gerar story
+            Gerar story do treino
           </Link>
         </Button>
 

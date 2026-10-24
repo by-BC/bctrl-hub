@@ -60,9 +60,9 @@ test.describe("story studio", () => {
     test.setTimeout(120_000);
 
     await page.goto(`/treino/historico/${workoutId}`);
-    await page.getByRole("link", { name: "Gerar story" }).click();
+    await page.getByRole("link", { name: "Gerar story do treino" }).click();
     await expect(page).toHaveURL(new RegExp(`/treino/historico/${workoutId}/story$`));
-    await expect(page.getByRole("heading", { level: 1, name: "Gerar story" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Story do treino" })).toBeVisible();
 
     const carousel = page.getByRole("region", { name: "Layouts do story" });
     const slide = (name: string) => carousel.getByRole("group", { name: new RegExp(`^${name.replace("+", "\\+")}, `) });

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import {
+  CATALOG_MEDIA,
   createDisposableUser,
   deleteDisposableUser,
   seedTrainingPlan,
@@ -33,13 +34,33 @@ test.describe("sessão de treino", () => {
 
   test.beforeAll(async () => {
     user = await createDisposableUser("e2e-sessao");
-    await seedTrainingPlan(user);
+    await seedTrainingPlan(user, { supinoThumbnailUrl: CATALOG_MEDIA.thumb("session-supino") });
   });
   test.afterAll(async () => {
     await deleteDisposableUser(user);
   });
   test.beforeEach(async ({ page }) => {
+    await page.route(/pump-app\.s3\.eu-west-2\.amazonaws\.com|d2l9nsnmtah87f\.cloudfront\.net/, (route) => {
+      const url = route.request().url();
+      if (url.endsWith(".jpg")) {
+        return route.fulfill({
+          status: 200,
+          contentType: "image/png",
+          body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", "base64"),
+        });
+      }
+      return route.abort();
+    });
     await loginAndWaitForHome(page, user.email, user.password);
+  });
+
+  test("shows an exercise thumbnail in the active workout without loading its video", async ({ page }) => {
+    await startSuggested(page);
+    const supino = exerciseCard(page, "Supino E2E");
+    const image = supino.getByTestId("exercise-image");
+    await expect(image).toHaveAttribute("src", CATALOG_MEDIA.thumb("session-supino"));
+    await expect(image).toHaveJSProperty("naturalWidth", 1);
+    await expect(supino.getByTestId("exercise-video")).toHaveCount(0);
   });
 
   test("treino completo: próxima rotina, anterior, timer, reload no meio, PR e histórico", async ({ page }) => {
