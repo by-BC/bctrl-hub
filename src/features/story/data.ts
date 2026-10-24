@@ -17,6 +17,8 @@ export function storyDataFrom(workout: HistoryDetail, week: WeekSummary | null):
       finishedAt: workout.finished_at,
       exercises: workout.workout_exercises.map((e) => ({
         name: e.exercise?.name ?? "Exercício",
+        muscleGroup: e.exercise?.muscle_group ?? null,
+        secondaryMuscles: e.exercise?.secondary_muscles ?? [],
         sets: e.workout_sets.flatMap((s) =>
           countsForRecords(s) && s.weight_kg !== null && s.reps !== null
             ? [{ weightKg: Number(s.weight_kg), reps: s.reps, prs: s.pr_kinds }]

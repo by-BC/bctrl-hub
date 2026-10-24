@@ -22,7 +22,7 @@ export type HistoryListItem = Pick<Tables<"workouts">, "id" | "day" | "started_a
 };
 
 export type HistoryExercise = Pick<Tables<"workout_exercises">, "id" | "position" | "exercise_id"> & {
-  exercise: { name: string; exercise_type: string } | null;
+  exercise: { name: string; exercise_type: string; muscle_group: string | null; secondary_muscles: string[] } | null;
   workout_sets: SetRow[];
 };
 
@@ -54,7 +54,7 @@ export async function fetchWorkoutDetail(id: string): Promise<HistoryDetail | nu
   const { data, error } = await db()
     .from("workouts")
     .select(
-      "id, day, started_at, finished_at, routine_id, routine:routines(name), workout_exercises(id, position, exercise_id, exercise:exercises(name, exercise_type), workout_sets(id, position, set_type, weight_kg, reps, distance_m, duration_s, pr_kinds))",
+      "id, day, started_at, finished_at, routine_id, routine:routines(name), workout_exercises(id, position, exercise_id, exercise:exercises(name, exercise_type, muscle_group, secondary_muscles), workout_sets(id, position, set_type, weight_kg, reps, distance_m, duration_s, pr_kinds))",
     )
     .eq("id", id)
     .order("position", { referencedTable: "workout_exercises" })

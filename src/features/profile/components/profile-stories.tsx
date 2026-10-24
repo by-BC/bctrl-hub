@@ -13,7 +13,7 @@ export function ProfileStories() {
       </span>
       <span className="min-w-0 flex-1">
         <span className="block font-semibold">Criar um story</span>
-        <span className="block text-sm text-muted-foreground">Do dia ou de um treino salvo</span>
+        <span className="block text-sm text-muted-foreground">Resumo geral do dia</span>
       </span>
       <ArrowUpRight aria-hidden className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
     </Link>

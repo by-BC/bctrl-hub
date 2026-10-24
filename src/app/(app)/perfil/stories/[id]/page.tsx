@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { StoryScreen, StorySkeleton } from "@/features/story/StoryScreen";
 
-export const metadata: Metadata = { title: "Stories do treino" };
+export const metadata: Metadata = { title: "Story do treino" };
 
+/** Compatibilidade com links antigos: um story de sessão pertence ao módulo Treino. */
 export default function PerfilWorkoutStoriesPage({ params }: PageProps<"/perfil/stories/[id]">) {
-  return (
-    <Suspense fallback={<StorySkeleton />}>
-      <StoryFromParams params={params} />
-    </Suspense>
-  );
+  return <Suspense fallback={<p className="text-sm text-muted-foreground">Abrindo story do treino…</p>}><RedirectToTrainingStory params={params} /></Suspense>;
 }
 
-async function StoryFromParams({ params }: Pick<PageProps<"/perfil/stories/[id]">, "params">) {
+async function RedirectToTrainingStory({ params }: Pick<PageProps<"/perfil/stories/[id]">, "params">): Promise<never> {
   const { id } = await params;
-  return <StoryScreen id={id} />;
+  redirect(`/treino/historico/${id}/story`);
 }

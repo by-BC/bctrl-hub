@@ -19,6 +19,8 @@ export type StoryWorkoutInput = {
   finishedAt: string | null;
   exercises: readonly {
     name: string;
+    muscleGroup?: string | null;
+    secondaryMuscles?: readonly string[];
     sets: readonly { weightKg: number; reps: number; prs: readonly string[] }[];
   }[];
 };
@@ -62,6 +64,7 @@ export type StoryData = {
   /** Quantos ficaram de fora ("+N"). */
   hiddenExercises: number;
   prs: StoryPr[];
+  muscles: string[];
   week: StoryWeek | null;
 };
 
@@ -143,6 +146,7 @@ export function buildStoryData(workout: StoryWorkoutInput, week: StoryWeekInput 
     exercises: shown,
     hiddenExercises: all.length - shown.length,
     prs: all.flatMap(exercisePrs),
+    muscles: [...new Set(workout.exercises.flatMap((exercise) => [exercise.muscleGroup, ...(exercise.secondaryMuscles ?? [])]).filter((muscle): muscle is string => !!muscle?.trim()).map((muscle) => muscle.trim()))],
     week: week ? toWeek(week) : null,
   };
 }

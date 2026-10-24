@@ -116,8 +116,8 @@ function WorkoutStoryStudio({ data, workoutId }: { data: ReturnType<typeof story
               style={{
                 width: Math.round(STORY_WIDTH * scale),
                 height: Math.round(STORY_HEIGHT * scale),
-                backgroundColor: "#fff",
-                backgroundImage: "linear-gradient(45deg,#e5e7eb 25%,transparent 25%,transparent 75%,#e5e7eb 75%),linear-gradient(45deg,#e5e7eb 25%,transparent 25%,transparent 75%,#e5e7eb 75%)",
+                backgroundColor: "#27292f",
+                backgroundImage: "linear-gradient(45deg,rgba(255,255,255,.10) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.10) 75%),linear-gradient(45deg,rgba(255,255,255,.10) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.10) 75%)",
                 backgroundPosition: "0 0,12px 12px",
                 backgroundSize: "24px 24px",
               }}

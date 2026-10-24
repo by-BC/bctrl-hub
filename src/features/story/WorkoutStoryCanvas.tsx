@@ -1,9 +1,10 @@
 import type { ReactNode, Ref } from "react";
 import type { StoryData, StoryPr } from "@/features/story/domain/story";
 import { StoryFrame } from "./StoryFrame";
+import { STORY_LAYOUTS } from "./layouts";
 import type { StoryPhoto } from "./types";
 
-export const WORKOUT_STORY_MODELS = ["Pôster", "Replay", "Recordes", "Adesivo"] as const;
+export const WORKOUT_STORY_MODELS = ["Pôster", "Replay", "Recordes", "Adesivo", "Mapa muscular", "Sequência", "PR do dia", "Recibo", "Hex Week", "Blueprint", "Foto + overlay"] as const;
 export type WorkoutStoryModel = (typeof WORKOUT_STORY_MODELS)[number];
 export type WorkoutStoryOptions = {
   volume: boolean;
@@ -31,9 +32,10 @@ export function WorkoutStoryCanvas({
   photoMode: boolean;
   ref: Ref<HTMLDivElement>;
 }) {
+  const legacyLayout = STORY_LAYOUTS.find((layout) => layout.name === model);
   return (
-    <StoryFrame transparent ref={ref}>
-      {photoMode && photo && (
+    <StoryFrame transparent={!legacyLayout} tone={legacyLayout?.tone} ref={ref}>
+      {!legacyLayout && photoMode && photo && (
         <>
           {/* A imagem já foi reduzida e convertida em dataURL local. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -42,12 +44,143 @@ export function WorkoutStoryCanvas({
         </>
       )}
       <div className="relative z-10 h-full">
-        {model === "Pôster" && <SessionPoster data={data} date={date} options={options} />}
-        {model === "Replay" && <SessionReplay data={data} date={date} options={options} photoMode={photoMode} />}
-        {model === "Recordes" && <RecordsPoster data={data} date={date} options={options} />}
-        {model === "Adesivo" && <SessionSticker data={data} date={date} options={options} />}
+        {legacyLayout ? <legacyLayout.Component data={data} photo={legacyLayout.id === "foto" && photoMode ? photo : null} /> : (
+          <>
+            {model === "Pôster" && <SessionPoster data={data} date={date} options={options} />}
+            {model === "Replay" && <SessionReplay data={data} date={date} options={options} photoMode={photoMode} />}
+            {model === "Recordes" && <RecordsPoster data={data} date={date} options={options} />}
+            {model === "Adesivo" && <SessionSticker data={data} date={date} options={options} />}
+            {model === "Mapa muscular" && <MuscleMapPoster data={data} date={date} />}
+            {model === "Sequência" && <SessionSequence data={data} date={date} options={options} />}
+            {model === "PR do dia" && <PrSticker data={data} date={date} />}
+          </>
+        )}
       </div>
     </StoryFrame>
+  );
+}
+
+function MuscleMapPoster({ data, date }: { data: StoryData; date: string }) {
+  const keys = new Set(data.muscles.map(muscleRegion).filter((key): key is string => key !== null));
+  const views = [
+    { name: "FRENTE", regions: ["neck", "shoulders", "chest", "biceps", "forearms", "abdominals", "quadriceps", "adductors", "abductors", "calves"] },
+    { name: "COSTAS", regions: ["neck", "shoulders", "traps", "lats", "lower_back", "triceps", "forearms", "glutes", "hamstrings", "calves"] },
+  ];
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden px-[76px] pb-[270px] pt-[270px] text-brand-paper">
+      <p className="text-[24px] font-bold uppercase tracking-[.24em] text-brand-orange">MAPA DE TREINO · {date}</p>
+      <h2 className="mt-7 text-[88px] font-black leading-[.88] tracking-[-.06em]">MÚSCULOS<br />ATIVADOS<span className="text-brand-orange">.</span></h2>
+      <p className="mt-7 line-clamp-2 text-[34px] font-semibold text-brand-paper/75">{data.routineName}</p>
+      <div className="mt-12 grid grid-cols-2 gap-7">
+        {views.map((view, i) => <div key={view.name} className="rounded-[28px] border border-brand-paper/20 bg-brand-paper/5 px-4 pb-4 pt-5 text-center">
+          <p className="text-[21px] font-bold tracking-[.2em] text-brand-paper/70">{view.name}</p>
+          <MuscleFigure view={i === 0 ? "front" : "back"} active={keys} regions={view.regions} />
+        </div>)}
+      </div>
+      <div className="mt-8 border-t border-brand-paper/25 pt-6">
+        <p className="text-[21px] font-bold uppercase tracking-[.2em] text-brand-paper/60">GRUPOS CADASTRADOS</p>
+        {data.muscles.length > 0 ? <div className="mt-4 flex flex-wrap gap-3">{data.muscles.slice(0, 8).map((name) => <span key={name} className="rounded-full border border-brand-orange/70 bg-brand-orange/15 px-4 py-2 text-[22px] font-bold">{name}</span>)}</div> : <p className="mt-4 text-[25px] text-brand-paper/70">Adicione os grupos musculares aos exercícios para ver o mapa.</p>}
+      </div>
+      <p className="num mt-auto border-t border-brand-paper/25 pt-5 text-[22px] font-bold uppercase tracking-[.18em] text-brand-paper/65">{data.setsCount} SÉRIES · {date}</p>
+    </div>
+  );
+}
+
+function muscleRegion(value: string): string | null {
+  const key = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR").trim();
+  const regions: Record<string, string> = {
+    peito: "chest", costas: "lats", lombar: "lower_back", trapezio: "traps", ombros: "shoulders", biceps: "biceps", triceps: "triceps", antebraco: "forearms", abdomen: "abdominals", quadriceps: "quadriceps", "posterior de coxa": "hamstrings", gluteos: "glutes", panturrilha: "calves", adutores: "adductors", abdutores: "abductors", pescoco: "neck", "corpo inteiro": "full_body",
+  };
+  return regions[key] ?? null;
+}
+
+function MuscleFigure({ view, active, regions }: { view: "front" | "back"; active: Set<string>; regions: string[] }) {
+  const front = view === "front";
+  const body = "#f3eee5";
+  const off = "#898b91";
+  const activeFill = (key: string) => active.has(key) || active.has("full_body") ? "#d96735" : off;
+  const mutedFill = (key: string) => regions.includes(key) ? activeFill(key) : "transparent";
+  return (
+    <svg aria-hidden viewBox="0 0 240 500" className="mx-auto mt-3 h-[500px] w-full max-w-[205px]">
+      <g fill={body} fillOpacity=".12" stroke={body} strokeOpacity=".38" strokeWidth="4" strokeLinejoin="round">
+        <circle cx="120" cy="36" r="25" />
+        <path d="M106 61h28v28l19 9 22 20-9 102-17 31-58 0-17-31-9-102 22-20 19-9z" />
+        <path d="M83 99 60 108 39 166 25 222l17 7 27-55 22-52zM157 99l23 9 21 58 14 56-17 7-27-55-22-52z" />
+        <path d="M91 243h58l7 67-12 85-6 80h-25l-7-77-6 77H75l-6-80-12-85 7-67z" />
+      </g>
+      <g stroke="#27292f" strokeOpacity=".65" strokeWidth="2">
+        <rect x="108" y="66" width="24" height="24" rx="7" fill={mutedFill("neck")} />
+        <ellipse cx="101" cy="125" rx="19" ry="23" fill={mutedFill(front ? "chest" : "traps")} />
+        <ellipse cx="139" cy="125" rx="19" ry="23" fill={mutedFill(front ? "chest" : "traps")} />
+        <ellipse cx="78" cy="108" rx="17" ry="15" fill={mutedFill("shoulders")} />
+        <ellipse cx="162" cy="108" rx="17" ry="15" fill={mutedFill("shoulders")} />
+        <ellipse cx="56" cy="151" rx="11" ry="29" fill={mutedFill(front ? "biceps" : "triceps")} />
+        <ellipse cx="184" cy="151" rx="11" ry="29" fill={mutedFill(front ? "biceps" : "triceps")} />
+        <path d="M43 177q-8 22-11 44l12 5q9-21 14-42zM197 177q8 22 11 44l-12 5q-9-21-14-42z" fill={mutedFill("forearms")} />
+        {front ? <>
+          <rect x="107" y="157" width="12" height="22" rx="4" fill={mutedFill("abdominals")} />
+          <rect x="121" y="157" width="12" height="22" rx="4" fill={mutedFill("abdominals")} />
+          <rect x="107" y="182" width="12" height="22" rx="4" fill={mutedFill("abdominals")} />
+          <rect x="121" y="182" width="12" height="22" rx="4" fill={mutedFill("abdominals")} />
+        </> : <>
+          <ellipse cx="120" cy="109" rx="27" ry="16" fill={mutedFill("traps")} />
+          <path d="M91 135q29-15 58 0l-8 53q-21 18-42 0z" fill={mutedFill("lats")} />
+          <rect x="108" y="190" width="24" height="36" rx="8" fill={mutedFill("lower_back")} />
+          <ellipse cx="104" cy="252" rx="18" ry="16" fill={mutedFill("glutes")} />
+          <ellipse cx="136" cy="252" rx="18" ry="16" fill={mutedFill("glutes")} />
+        </>}
+        <ellipse cx="91" cy="280" rx="18" ry="36" fill={mutedFill(front ? "quadriceps" : "hamstrings")} />
+        <ellipse cx="149" cy="280" rx="18" ry="36" fill={mutedFill(front ? "quadriceps" : "hamstrings")} />
+        {front && <>
+          <ellipse cx="75" cy="280" rx="10" ry="31" fill={mutedFill("abductors")} />
+          <ellipse cx="165" cy="280" rx="10" ry="31" fill={mutedFill("abductors")} />
+          <ellipse cx="109" cy="286" rx="8" ry="28" fill={mutedFill("adductors")} />
+          <ellipse cx="131" cy="286" rx="8" ry="28" fill={mutedFill("adductors")} />
+        </>}
+        <ellipse cx="94" cy="405" rx="12" ry="28" fill={mutedFill("calves")} />
+        <ellipse cx="146" cy="405" rx="12" ry="28" fill={mutedFill("calves")} />
+      </g>
+    </svg>
+  );
+}
+
+function SessionSequence({ data, date, options }: { data: StoryData; date: string; options: WorkoutStoryOptions }) {
+  const exercises = data.exercises.slice(0, 5);
+  return (
+    <div className="relative flex h-full flex-col overflow-hidden px-[78px] pb-[270px] pt-[270px] text-brand-paper">
+      <p className="text-[24px] font-bold uppercase tracking-[.24em] text-brand-orange">SUA SESSÃO · {date}</p>
+      <h2 className="mt-8 text-[96px] font-black leading-[.84] tracking-[-.07em]">DO<br />PRIMEIRO<br />AO ÚLTIMO<span className="text-brand-orange">.</span></h2>
+      <p className="mt-7 text-[38px] font-semibold">{data.routineName}</p>
+      <ol className="relative mt-12 border-l-[4px] border-brand-orange/70 pl-8">
+        {exercises.map((exercise, index) => <li key={exercise.name} className="relative border-b border-brand-paper/20 py-5 first:pt-0 last:border-0">
+          <span className="absolute -left-[51px] top-5 flex size-10 items-center justify-center rounded-full border-2 border-brand-ink bg-brand-orange text-[20px] font-black text-brand-ink">{index + 1}</span>
+          <p className="line-clamp-2 text-[29px] font-bold leading-tight">{exercise.name}</p>
+          <p className="num mt-2 text-[22px] font-semibold uppercase tracking-[.1em] text-brand-paper/65">{exercise.sets.length} séries · melhor {exercise.best.kg} kg × {exercise.best.reps}</p>
+        </li>)}
+        {data.hiddenExercises > 0 && <li className="pt-5 text-[22px] font-bold uppercase tracking-[.1em] text-brand-orange">+ {data.hiddenExercises} exercícios</li>}
+      </ol>
+      <div className="mt-auto flex gap-7 border-t border-brand-paper/30 pt-5 text-[22px] font-bold uppercase tracking-[.1em]">{options.duration && <span>{data.durationMin} min</span>}{options.sets && <span>{data.setsCount} séries</span>}{options.volume && <span>{data.volumeKg.toLocaleString("pt-BR")} kg</span>}</div>
+      {options.caption && <p className="mt-5 text-[25px] font-semibold">{options.caption}</p>}
+    </div>
+  );
+}
+
+function PrSticker({ data, date }: { data: StoryData; date: string }) {
+  const pr = data.prs[0];
+  const exercise = pr?.exercise ?? data.exercises[0]?.name;
+  const value = pr ? `${pr.kg} kg × ${pr.reps}` : data.exercises[0] ? `${data.exercises[0].best.kg} kg × ${data.exercises[0].best.reps}` : "TREINO FEITO";
+  return (
+    <div className="flex h-full items-center justify-center px-[90px] pb-[270px] pt-[270px]">
+      <div className="relative w-full -rotate-3 rounded-[56px] border-[7px] border-brand-paper bg-brand-orange px-12 py-14 text-brand-ink shadow-[24px_26px_0_rgba(0,0,0,0.35)]">
+        <span className="absolute -right-6 -top-9 flex size-[132px] rotate-12 items-center justify-center rounded-full border-[6px] border-brand-ink bg-brand-paper text-[30px] font-black leading-none">{pr ? "NOVO\nPR" : "SÉRIE\nTOP"}</span>
+        <p className="text-[25px] font-black uppercase tracking-[.2em]">{date} · {data.routineName}</p>
+        <h2 className="mt-10 text-[84px] font-black leading-[.84] tracking-[-.07em]">{pr ? "RECORDE" : "DESTAQUE"}<br />DO DIA<span className="text-brand-paper">!</span></h2>
+        <p className="mt-10 line-clamp-3 break-words border-t-[3px] border-brand-ink/25 pt-7 text-[44px] font-black leading-tight">{exercise ?? "Cada treino conta"}</p>
+        <p className="num mt-6 text-[76px] font-black leading-none tracking-[-.06em]">{value}</p>
+        <p className="mt-10 text-[23px] font-bold uppercase tracking-[.2em]">{pr ? "MARCA PESSOAL" : "SESSÃO CONCLUÍDA"}</p>
+      </div>
+    </div>
   );
 }
 
