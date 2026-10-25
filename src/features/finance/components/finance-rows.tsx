@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDownLeft, ArrowUpRight, CalendarClock, CreditCard, Pencil } from "lucide-react";
+import { ArrowDownLeft, BookOpen, Briefcase, CalendarClock, Car, CreditCard, Dumbbell, Gift, HeartPulse, Home, PawPrint, Pencil, PiggyBank, Receipt, Shirt, ShoppingCart, Ticket, Tv, Utensils, Wallet, Wifi, Zap, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,28 @@ import type { FinanceAccount, FinanceCategory, FinanceRecurringRule, FinanceTran
 import { useDeleteFinanceTransaction, useSaveFinanceTransactions, useSetFinanceInvoicePaid, useSetFinancePaid, useSetFinanceRecurring, useUpdateFinanceTransaction } from "../hooks";
 import { ACCOUNT_KIND_LABELS, BRL, cardInstallmentDueDates, recurringDate } from "../domain/finance";
 import { financeTitleSchema } from "../schemas/finance";
+
+function categoryIcon(name = ""): LucideIcon {
+  const value = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (/moradia|aluguel|condominio|casa/.test(value)) return Home;
+  if (/internet|celular|telefone/.test(value)) return Wifi;
+  if (/contas|energia|eletric|agua|gas/.test(value)) return Zap;
+  if (/supermercado|mercado|comida|alimentacao|restaurante|delivery|cafe/.test(value)) return value.includes("supermercado") || value.includes("mercado") ? ShoppingCart : Utensils;
+  if (/transporte|uber|combustivel|onibus|passagem|carro|estacionamento/.test(value)) return Car;
+  if (/saude|farmacia|medico|hospital/.test(value)) return HeartPulse;
+  if (/streaming|assinatura/.test(value)) return Tv;
+  if (/roupa|vestuario|compras/.test(value)) return Shirt;
+  if (/lazer|entretenimento|cinema|show|viagem/.test(value)) return Ticket;
+  if (/curso|livro|educacao|conhecimento/.test(value)) return BookOpen;
+  if (/reserva|investimento|metas|sonhos/.test(value)) return PiggyBank;
+  if (/pet|animais/.test(value)) return PawPrint;
+  if (/academia|esporte/.test(value)) return Dumbbell;
+  if (/presente|doacao/.test(value)) return Gift;
+  if (/divida|emprestimo|parcela/.test(value)) return CreditCard;
+  if (/renda|salario|trabalho/.test(value)) return Briefcase;
+  if (/dinheiro|outros/.test(value)) return Wallet;
+  return Receipt;
+}
 
 export type FinanceInvoice = { account: FinanceAccount; dueOn: string; total: number; paid: boolean; count: number };
 export function InvoiceCard({ invoice }: { invoice: FinanceInvoice }) {
@@ -83,6 +105,7 @@ export function TransactionRow({ row, category, account, categories = [] }: { ro
   const [title, setTitle] = useState(row.title);
   const [categoryId, setCategoryId] = useState(row.category_id);
   const isCard = account?.kind === "credit_card";
+  const Icon = row.kind === "income" ? ArrowDownLeft : categoryIcon(category?.name);
   const categoryOptions = categories.filter((item) => item.kind === row.kind);
   function saveEdit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -95,7 +118,7 @@ export function TransactionRow({ row, category, account, categories = [] }: { ro
     <li className="grid min-w-0 gap-3 px-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center sm:px-4">
       <div className="flex min-w-0 items-center gap-3">
       <span className={`flex size-9 shrink-0 items-center justify-center rounded-full ${row.kind === "income" ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground"}`}>
-        {row.kind === "income" ? <ArrowDownLeft aria-hidden className="size-4" /> : <ArrowUpRight aria-hidden className="size-4" />}
+        <Icon aria-hidden className="size-4" />
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{row.title}{row.installment_count ? <span className="ml-1 text-xs text-muted-foreground">{row.installment_number}/{row.installment_count}</span> : null}</p>
