@@ -13,6 +13,7 @@ assets/brand/references/
 .env.*
 !.env.example
 scripts/whatsapp-food/state.json
+infra/evolution/upstream/
 *.pem
 *.key
 .mcp.json
