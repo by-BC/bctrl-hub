@@ -26,7 +26,7 @@ function BottomNavList({ pathname }: { pathname: string | null }) {
       aria-label="Navegação principal"
       className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
     >
-      <ul className="mx-auto grid max-w-lg grid-cols-5">
+      <ul className="mx-auto grid max-w-lg grid-cols-6">
         {NAV_ITEMS.filter((item) => item.mobile).map(({ href, label, icon: Icon }) => {
           const active = pathname !== null && isActivePath(pathname, href);
           return (

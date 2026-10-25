@@ -6,6 +6,7 @@ import {
   Repeat,
   UserRound,
   UtensilsCrossed,
+  WalletCards,
   type LucideIcon,
 } from "lucide-react";
 
@@ -13,7 +14,7 @@ export type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
-  /** Aparece na barra inferior do celular (máx. 5). */
+  /** Aparece na barra inferior do celular (máx. 6). */
   mobile: boolean;
 };
 
@@ -23,6 +24,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/comida", label: "Comida", icon: UtensilsCrossed, mobile: true },
   { href: "/habitos", label: "Hábitos", icon: Repeat, mobile: true },
   { href: "/tarefas", label: "Tarefas", icon: ListChecks, mobile: true },
+  { href: "/financas", label: "Finanças", icon: WalletCards, mobile: true },
   { href: "/evolucao", label: "Evolução", icon: ChartLine, mobile: false },
   // No celular, o Perfil fica no cabeçalho (MobileHeader), sem tirar item da barra inferior.
   { href: "/perfil", label: "Perfil", icon: UserRound, mobile: false },

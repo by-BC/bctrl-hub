@@ -64,6 +64,19 @@ import {
   type HabitPatch,
 } from "@/features/habits/api";
 import { deleteTask, setTaskDone, upsertTask, type Task } from "@/features/tasks/api";
+import {
+  createFinanceCategory,
+  deleteFinanceTransaction,
+  saveFinanceAccount,
+  saveFinanceBudget,
+  saveFinanceRecurringRule,
+  saveFinanceTransactions,
+  setFinanceInvoicePaid,
+  setFinanceRecurringActive,
+  setFinanceTransactionPaid,
+  type FinanceTransactionSave,
+} from "@/features/finance/api";
+import type { FinanceAccountSave, FinanceBudgetSave, FinanceRecurringSave } from "@/features/finance/schemas/finance";
 
 /**
  * Fila offline: toda gravação tem uma chave própria e a função de envio registrada aqui.
@@ -233,6 +246,20 @@ export const WRITES = {
     setTaskDone(id, doneAt),
   ),
   deleteTask: write(["tasks-edit", "delete"], (id: string) => deleteTask(id)),
+
+  // Controle financeiro. Uma compra parcelada entra como um único lote idempotente.
+  saveFinanceTransactions: write(["finance", "save-transactions"], (rows: FinanceTransactionSave[]) => saveFinanceTransactions(rows)),
+  saveFinanceBudget: write(["finance", "save-budget"], (row: FinanceBudgetSave & { id: string }) => saveFinanceBudget(row)),
+  saveFinanceAccount: write(["finance", "save-account"], (row: FinanceAccountSave & { id: string }) => saveFinanceAccount(row)),
+  saveFinanceRecurring: write(["finance", "save-recurring"], (row: FinanceRecurringSave & { id: string }) => saveFinanceRecurringRule(row)),
+  setFinanceRecurring: write(["finance", "set-recurring"], ({ id, active }: { id: string; active: boolean }) => setFinanceRecurringActive(id, active)),
+  createFinanceCategory: write(
+    ["finance", "create-category"],
+    (row: { id: string; name: string; kind: "income" | "expense"; bucket: "fixed" | "freedom" | "variable" | null; sub_bucket: "comfort" | "pleasures" | "knowledge" | "goals" | null }) => createFinanceCategory(row),
+  ),
+  setFinancePaid: write(["finance", "set-paid"], ({ id, isPaid }: { id: string; isPaid: boolean }) => setFinanceTransactionPaid(id, isPaid)),
+  setFinanceInvoicePaid: write(["finance", "set-invoice-paid"], setFinanceInvoicePaid),
+  deleteFinanceTransaction: write(["finance", "delete-transaction"], (id: string) => deleteFinanceTransaction(id)),
 };
 
 export type WriteName = keyof typeof WRITES;

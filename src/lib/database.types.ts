@@ -2,7 +2,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
-  
+
   "graphql_public": {
           Tables: {
             [_ in never]: never
@@ -35,7 +35,7 @@ export type Database = {
                     "bmi"?: number | null,"bmr_kcal"?: number | null,"body_fat_pct"?: number | null,"bone_kg"?: number | null,"created_at"?: string,"day"?: string,"fat_mass_kg"?: number | null,"id"?: string,"lean_mass_kg"?: number | null,"measured_at"?: string,"metabolic_age"?: number | null,"muscle_mass_kg"?: number | null,"muscle_rate_pct"?: number | null,"note"?: string | null,"obesity_pct"?: number | null,"protein_pct"?: number | null,"skeletal_muscle_kg"?: number | null,"skeletal_muscle_pct"?: number | null,"source"?: string,"user_id"?: string,"visceral_fat"?: number | null,"water_kg"?: number | null,"water_pct"?: number | null,"weight_kg"?: number
                   }
                   Relationships: [
-                    
+
                   ]
                 },"body_weights": {
                   Row: {
@@ -49,7 +49,7 @@ export type Database = {
                     "created_at"?: string,"day"?: string,"id"?: string,"source"?: string,"user_id"?: string,"weight_kg"?: number
                   }
                   Relationships: [
-                    
+
                   ]
                 },"composition_goals": {
                   Row: {
@@ -63,7 +63,7 @@ export type Database = {
                     "achieved_on"?: string | null,"archived_at"?: string | null,"created_at"?: string,"id"?: string,"metric"?: string,"start_day"?: string,"start_value"?: number,"target"?: number,"target_date"?: string | null,"user_id"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"exercises": {
                   Row: {
@@ -77,7 +77,107 @@ export type Database = {
                     "created_at"?: string,"equipment"?: string | null,"exercise_type"?: string,"hevy_template_id"?: string | null,"id"?: string,"instructions"?: string | null,"media_url"?: string | null,"muscle_group"?: string | null,"name"?: string,"notes"?: string | null,"secondary_muscles"?: (string)[],"source"?: string,"thumbnail_url"?: string | null,"user_id"?: string
                   }
                   Relationships: [
-                    
+
+                  ]
+                },"finance_accounts": {
+                  Row: {
+                    "closing_day": number | null,"created_at": string,"due_day": number | null,"id": string,"kind": string,"name": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "closing_day"?: number | null,"created_at"?: string,"due_day"?: number | null,"id"?: string,"kind": string,"name": string,"user_id"?: string
+                  }
+                  Update: {
+                    "closing_day"?: number | null,"created_at"?: string,"due_day"?: number | null,"id"?: string,"kind"?: string,"name"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+
+                  ]
+                },"finance_categories": {
+                  Row: {
+                    "bucket": string | null,"created_at": string,"id": string,"is_default": boolean,"kind": string,"name": string,"sub_bucket": string | null,"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "bucket"?: string | null,"created_at"?: string,"id"?: string,"is_default"?: boolean,"kind": string,"name": string,"sub_bucket"?: string | null,"user_id"?: string | null
+                  }
+                  Update: {
+                    "bucket"?: string | null,"created_at"?: string,"id"?: string,"is_default"?: boolean,"kind"?: string,"name"?: string,"sub_bucket"?: string | null,"user_id"?: string | null
+                  }
+                  Relationships: [
+
+                  ]
+                },"finance_monthly_budgets": {
+                  Row: {
+                    "comfort_pct": number,"created_at": string,"fixed_pct": number,"freedom_pct": number,"goals_pct": number,"id": string,"knowledge_pct": number,"month_start": string,"planned_income": number,"pleasures_pct": number,"updated_at": string,"user_id": string,"variable_pct": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "comfort_pct"?: number,"created_at"?: string,"fixed_pct"?: number,"freedom_pct"?: number,"goals_pct"?: number,"id"?: string,"knowledge_pct"?: number,"month_start": string,"planned_income"?: number,"pleasures_pct"?: number,"updated_at"?: string,"user_id"?: string,"variable_pct"?: number
+                  }
+                  Update: {
+                    "comfort_pct"?: number,"created_at"?: string,"fixed_pct"?: number,"freedom_pct"?: number,"goals_pct"?: number,"id"?: string,"knowledge_pct"?: number,"month_start"?: string,"planned_income"?: number,"pleasures_pct"?: number,"updated_at"?: string,"user_id"?: string,"variable_pct"?: number
+                  }
+                  Relationships: [
+
+                  ]
+                },"finance_recurring_rules": {
+                  Row: {
+                    "account_id": string | null,"active": boolean,"amount": number,"category_id": string,"created_at": string,"day_of_month": number,"ends_on": string | null,"id": string,"kind": string,"starts_on": string,"title": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_id"?: string | null,"active"?: boolean,"amount": number,"category_id": string,"created_at"?: string,"day_of_month": number,"ends_on"?: string | null,"id"?: string,"kind": string,"starts_on": string,"title": string,"user_id"?: string
+                  }
+                  Update: {
+                    "account_id"?: string | null,"active"?: boolean,"amount"?: number,"category_id"?: string,"created_at"?: string,"day_of_month"?: number,"ends_on"?: string | null,"id"?: string,"kind"?: string,"starts_on"?: string,"title"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "finance_recurring_rules_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "finance_accounts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "finance_recurring_rules_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "finance_categories"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"finance_transactions": {
+                  Row: {
+                    "account_id": string | null,"amount": number,"category_id": string,"created_at": string,"due_on": string,"id": string,"installment_count": number | null,"installment_group_id": string | null,"installment_number": number | null,"is_paid": boolean,"kind": string,"notes": string | null,"occurred_on": string,"recurrence_occurrence": string | null,"recurring_rule_id": string | null,"title": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "account_id"?: string | null,"amount": number,"category_id": string,"created_at"?: string,"due_on": string,"id"?: string,"installment_count"?: number | null,"installment_group_id"?: string | null,"installment_number"?: number | null,"is_paid"?: boolean,"kind": string,"notes"?: string | null,"occurred_on": string,"recurrence_occurrence"?: string | null,"recurring_rule_id"?: string | null,"title": string,"user_id"?: string
+                  }
+                  Update: {
+                    "account_id"?: string | null,"amount"?: number,"category_id"?: string,"created_at"?: string,"due_on"?: string,"id"?: string,"installment_count"?: number | null,"installment_group_id"?: string | null,"installment_number"?: number | null,"is_paid"?: boolean,"kind"?: string,"notes"?: string | null,"occurred_on"?: string,"recurrence_occurrence"?: string | null,"recurring_rule_id"?: string | null,"title"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "finance_transactions_account_id_fkey"
+      columns: ["account_id"]
+isOneToOne: false
+      referencedRelation: "finance_accounts"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "finance_transactions_category_id_fkey"
+      columns: ["category_id"]
+isOneToOne: false
+      referencedRelation: "finance_categories"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "finance_transactions_recurring_rule_id_user_id_fkey"
+      columns: ["recurring_rule_id","user_id"]
+isOneToOne: false
+      referencedRelation: "finance_recurring_rules"
+      referencedColumns: ["id","user_id"]
+    }
                   ]
                 },"foods": {
                   Row: {
@@ -91,7 +191,7 @@ export type Database = {
                     "carbs_g"?: number,"category"?: string | null,"created_at"?: string,"fat_g"?: number,"id"?: string,"kcal"?: number,"name"?: string,"protein_g"?: number,"taco_id"?: number | null,"unit_grams"?: NonNullable<Json>,"user_id"?: string | null
                   }
                   Relationships: [
-                    
+
                   ]
                 },"habit_logs": {
                   Row: {
@@ -125,7 +225,7 @@ isOneToOne: false
                     "archived_at"?: string | null,"created_at"?: string,"id"?: string,"kind"?: string,"name"?: string,"period"?: string,"system_key"?: string | null,"target"?: number,"unit"?: string | null,"user_id"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"meal_log_items": {
                   Row: {
@@ -211,7 +311,7 @@ isOneToOne: false
                     "created_at"?: string,"id"?: string,"name"?: string,"position"?: number,"time"?: string | null,"training_day_only"?: boolean,"user_id"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"profiles": {
                   Row: {
@@ -225,7 +325,7 @@ isOneToOne: false
                     "activity_level"?: string | null,"birth_date"?: string | null,"bmr_source"?: string,"created_at"?: string,"display_name"?: string | null,"goal"?: string | null,"goal_overrides"?: NonNullable<Json>,"height_cm"?: number | null,"protein_basis"?: string,"protein_g_per_kg"?: number,"protein_g_per_kg_lean"?: number,"sex"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"routine_exercises": {
                   Row: {
@@ -265,7 +365,7 @@ isOneToOne: false
                     "archived_at"?: string | null,"created_at"?: string,"id"?: string,"name"?: string,"notes"?: string | null,"position"?: number,"rest_sec"?: number,"user_id"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"tasks": {
                   Row: {
@@ -279,7 +379,7 @@ isOneToOne: false
                     "created_at"?: string,"done_at"?: string | null,"id"?: string,"title"?: string,"user_id"?: string
                   }
                   Relationships: [
-                    
+
                   ]
                 },"workout_exercises": {
                   Row: {
@@ -396,7 +496,7 @@ isOneToOne: false
                   }
                   ComputedFields: never
                   Relationships: [
-                    
+
                   ]
                 }
           }
@@ -533,11 +633,11 @@ export type CompositeTypes<
 export const Constants = {
   "graphql_public": {
           Enums: {
-            
+
           }
         },"public": {
           Enums: {
-            
+
           }
         }
 } as const
