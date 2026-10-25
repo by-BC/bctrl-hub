@@ -132,7 +132,13 @@ function FinanceContent({
     && (!fromDate || row.due_on >= fromDate)
     && (!toDate || row.due_on <= toDate),
   ), [data.transactions, categoryFilter, sourceFilter, fromDate, toDate, accounts]);
+  const accountTransactions = filteredTransactions.filter((row) => row.account_id && accounts.get(row.account_id)?.kind !== "credit_card");
+  const cardTransactions = filteredTransactions.filter((row) => row.account_id && accounts.get(row.account_id)?.kind === "credit_card");
+  const unlinkedTransactions = filteredTransactions.filter((row) => !row.account_id);
   const hasFilters = categoryFilter !== "all" || sourceFilter !== "all" || Boolean(fromDate || toDate);
+  const renderTransactionRows = (rows: FinanceTransaction[]) => <ul className="divide-y rounded-xl border bg-card">{rows.map((row) => (
+    <TransactionRow key={row.id} row={row} category={categories.get(row.category_id)} account={row.account_id ? accounts.get(row.account_id) : undefined} categories={data.categories} />
+  ))}</ul>;
 
   return (
     <div className="space-y-6">
@@ -226,13 +232,13 @@ function FinanceContent({
           <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">Nenhum lançamento neste mês. Comece pelo planejamento ou registre uma entrada ou saída.</p>
         ) : filteredTransactions.length === 0 ? (
           <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">Nenhum lançamento corresponde aos filtros. Ajuste o período ou limpe os filtros.</p>
-        ) : (
-          <ul className="divide-y rounded-xl border bg-card">
-            {filteredTransactions.map((row) => (
-              <TransactionRow key={row.id} row={row} category={categories.get(row.category_id)} account={row.account_id ? accounts.get(row.account_id) : undefined} categories={data.categories} />
-            ))}
-          </ul>
-        )}
+        ) : sourceFilter === "all" ? (
+          <div className="space-y-5">
+            {accountTransactions.length > 0 && <section className="space-y-2" aria-labelledby="finance-account-transactions-title"><header><h3 id="finance-account-transactions-title" className="font-semibold">Conta</h3><p className="text-xs text-muted-foreground">Movimentações já realizadas no extrato da conta.</p></header>{renderTransactionRows(accountTransactions)}</section>}
+            {cardTransactions.length > 0 && <section className="space-y-2" aria-labelledby="finance-card-transactions-title"><header><h3 id="finance-card-transactions-title" className="font-semibold">Cartão de crédito</h3><p className="text-xs text-muted-foreground">Compras agrupadas pela fatura; parcelas anteriores podem constar como pagas.</p></header>{renderTransactionRows(cardTransactions)}</section>}
+            {unlinkedTransactions.length > 0 && <section className="space-y-2" aria-labelledby="finance-unlinked-transactions-title"><header><h3 id="finance-unlinked-transactions-title" className="font-semibold">Sem conta vinculada</h3></header>{renderTransactionRows(unlinkedTransactions)}</section>}
+          </div>
+        ) : renderTransactionRows(filteredTransactions)}
       </section>
     </div>
   );
