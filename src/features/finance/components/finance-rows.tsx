@@ -104,7 +104,7 @@ export function TransactionRow({ row, category, account, categories = [] }: { ro
       </div>
       <div className="flex items-center justify-between gap-3 sm:justify-end">
         <p className={`num text-sm font-semibold ${row.kind === "income" ? "text-emerald-600" : ""}`}>{row.kind === "income" ? "+" : "−"}{BRL.format(Number(row.amount))}</p>
-        {row.kind === "expense" && !isCard && <Button variant="outline" className="h-9 px-3 text-xs" disabled={setPaid.isPending} onClick={() => setPaid.mutate({ id: row.id, isPaid: !row.is_paid })}>{row.is_paid ? "Pago" : "Marcar pago"}</Button>}
+        {row.kind === "expense" && !isCard && <Button variant={row.is_paid ? "ghost" : "outline"} className="h-9 px-3 text-xs" disabled={setPaid.isPending} aria-label={row.is_paid ? `Desfazer pagamento de ${row.title}` : `Marcar ${row.title} como pago`} onClick={() => setPaid.mutate({ id: row.id, isPaid: !row.is_paid })}>{row.is_paid ? "Pago · desfazer" : "Marcar como pago"}</Button>}
       </div>
       <div className="flex items-center justify-end gap-1">
       <Button variant="ghost" size="icon" className="size-10 shrink-0" aria-label={`Editar ${row.title}`} onClick={() => { setTitle(row.title); setCategoryId(row.category_id); setEditOpen(true); }}><Pencil aria-hidden className="size-4" /></Button>
