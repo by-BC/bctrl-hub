@@ -38,7 +38,7 @@ export function FinanceBudget({ month, budget, actualIncome, spent, subSpent }: 
       goals_pct: Number(goalsPct) / 100,
     };
     const parsed = financeBudgetSchema.safeParse(values);
-    if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Revise os valores do orÃ§amento.");
+    if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Revise os valores do orçamento.");
     setError(null);
     save.mutate({ id: budget?.id ?? crypto.randomUUID(), ...parsed.data });
   };
@@ -61,14 +61,14 @@ export function FinanceBudget({ month, budget, actualIncome, spent, subSpent }: 
       <header className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="num text-xs tracking-[0.18em] text-muted-foreground uppercase">Planeje antes de gastar</p>
-          <h2 id="finance-budget-title" className="mt-1 text-lg font-semibold">OrÃ§amento do mÃªs</h2>
+          <h2 id="finance-budget-title" className="mt-1 text-lg font-semibold">Orçamento do mês</h2>
         </div>
-        <p className="text-right text-xs text-muted-foreground">ReferÃªncia inicial 50 / 20 / 30<br />ajuste Ã s suas prioridades</p>
+        <p className="text-right text-xs text-muted-foreground">Referência inicial 50 / 20 / 30<br />ajuste às suas prioridades</p>
       </header>
 
       <form onSubmit={submit} className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_repeat(3,minmax(5rem,0.65fr))]">
-          <NumberField label="Renda lÃ­quida planejada" value={plannedIncome} onChange={setPlannedIncome} step="0.01" min="0" placeholder="0,00" prefix="R$" />
+          <NumberField label="Renda líquida planejada" value={plannedIncome} onChange={setPlannedIncome} step="0.01" min="0" placeholder="0,00" prefix="R$" />
           <NumberField label="Fixos %" value={fixedPct} onChange={setFixedPct} step="1" min="0" max="100" suffix="%" />
           <NumberField label="Reserva %" value={freedomPct} onChange={setFreedomPct} step="1" min="0" max="100" suffix="%" />
           <NumberField label="Eventuais %" value={variablePct} onChange={setVariablePct} step="1" min="0" max="100" suffix="%" />
@@ -86,8 +86,8 @@ export function FinanceBudget({ month, budget, actualIncome, spent, subSpent }: 
 
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs text-muted-foreground">Entradas registradas neste mÃªs: <strong className="num text-foreground">{BRL.format(actualIncome)}</strong></p>
-          <Button type="submit" variant="outline" className="h-10" disabled={save.isPending}>{save.isPending ? "Salvandoâ€¦" : "Salvar orÃ§amento"}</Button>
+          <p className="text-xs text-muted-foreground">Entradas registradas neste mês: <strong className="num text-foreground">{BRL.format(actualIncome)}</strong></p>
+          <Button type="submit" variant="outline" className="h-10" disabled={save.isPending}>{save.isPending ? "Salvando…" : "Salvar orçamento"}</Button>
         </div>
       </form>
 
@@ -117,7 +117,7 @@ export function FinanceBudget({ month, budget, actualIncome, spent, subSpent }: 
           const pct = planned > 0 ? Math.min(100, actual / planned * 100) : 0;
           return (
             <div key={bucket.key} className="min-w-0 rounded-xl border border-dashed p-3">
-              <p className="truncate text-xs text-muted-foreground">{bucket.label} Â· {Math.round(bucket.pct * 100)}%</p>
+              <p className="truncate text-xs text-muted-foreground">{bucket.label} · {Math.round(bucket.pct * 100)}%</p>
               <p className="num mt-1 truncate text-sm font-semibold">{BRL.format(actual)} <span className="font-normal text-muted-foreground">/ {BRL.format(planned)}</span></p>
               <div role="progressbar" aria-label={`${bucket.label} usado`} aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100} className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
                 <div className={`h-full rounded-full ${actual > planned ? "bg-destructive" : "bg-primary/70"}`} style={{ width: `${pct}%` }} />

@@ -39,12 +39,12 @@ export function FinanceDashboard() {
 
   return (
     <>
-      <PageHeader title="FinanÃ§as" eyebrow="Controle financeiro">
+      <PageHeader title="Finanças" eyebrow="Controle financeiro">
         <div className="flex items-center gap-1 rounded-xl border bg-card p-1">
-          <Button variant="ghost" size="icon" className="size-10" aria-label="MÃªs anterior" onClick={() => setMonth((v) => shiftMonth(v, -1))}>
+          <Button variant="ghost" size="icon" className="size-10" aria-label="Mês anterior" onClick={() => setMonth((v) => shiftMonth(v, -1))}>
             <ArrowLeft aria-hidden className="size-4" />
           </Button>
-          <label className="sr-only" htmlFor="finance-month">MÃªs</label>
+          <label className="sr-only" htmlFor="finance-month">Mês</label>
           <input
             id="finance-month"
             type="month"
@@ -52,7 +52,7 @@ export function FinanceDashboard() {
             onChange={(e) => e.target.value && setMonth(`${e.target.value}-01`)}
             className="h-10 w-[8.75rem] bg-transparent text-center text-sm font-medium outline-none"
           />
-          <Button variant="ghost" size="icon" className="size-10" aria-label="PrÃ³ximo mÃªs" onClick={() => setMonth((v) => shiftMonth(v, 1))}>
+          <Button variant="ghost" size="icon" className="size-10" aria-label="Próximo mês" onClick={() => setMonth((v) => shiftMonth(v, 1))}>
             <ArrowRight aria-hidden className="size-4" />
           </Button>
         </div>
@@ -60,11 +60,11 @@ export function FinanceDashboard() {
 
       {isError ? (
         <section role="alert" className="space-y-3 rounded-xl border p-5 text-sm">
-          <p>NÃ£o foi possÃ­vel carregar seus dados financeiros.</p>
+          <p>Não foi possível carregar seus dados financeiros.</p>
           <Button variant="outline" onClick={() => refetch()}>Tentar de novo</Button>
         </section>
       ) : isPending || !data ? (
-        <div aria-busy="true" aria-label="Carregando finanÃ§as" className="space-y-4">
+        <div aria-busy="true" aria-label="Carregando finanças" className="space-y-4">
           <Skeleton className="h-28 w-full rounded-2xl" />
           <Skeleton className="h-28 w-full rounded-2xl" />
           <Skeleton className="h-48 w-full rounded-2xl" />
@@ -116,32 +116,32 @@ function FinanceContent({
     <div className="space-y-6">
       <section aria-label={`Resumo de ${titleMonth(month)}`} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard label="Entradas" value={income} icon={ArrowDownLeft} tone="green" />
-        <MetricCard label="SaÃ­das" value={expenses} icon={ArrowUpRight} tone="orange" />
-        <MetricCard label="Saldo do mÃªs" value={income - expenses} icon={Wallet} tone={income - expenses >= 0 ? "green" : "orange"} />
+        <MetricCard label="Saídas" value={expenses} icon={ArrowUpRight} tone="orange" />
+        <MetricCard label="Saldo do mês" value={income - expenses} icon={Wallet} tone={income - expenses >= 0 ? "green" : "orange"} />
         <MetricCard label="A pagar" value={pending} icon={CalendarClock} tone="orange" />
       </section>
 
       <FinanceBudget key={month} month={month} budget={data.budget} actualIncome={income} spent={spending.buckets} subSpent={spending.subBuckets} />
 
-      <section aria-label="AÃ§Ãµes financeiras" className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-        <Button className="h-12" onClick={onNewTransaction}><Plus aria-hidden className="size-4" />Novo lanÃ§amento</Button>
-        <Button variant="outline" className="h-12" onClick={onNewAccount}><CreditCard aria-hidden className="size-4" />Adicionar conta ou cartÃ£o</Button>
-        <Button variant="outline" className="h-12" onClick={onNewRecurring}><CalendarClock aria-hidden className="size-4" />Nova recorrÃªncia</Button>
+      <section aria-label="Ações financeiras" className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <Button className="h-12" onClick={onNewTransaction}><Plus aria-hidden className="size-4" />Novo lançamento</Button>
+        <Button variant="outline" className="h-12" onClick={onNewAccount}><CreditCard aria-hidden className="size-4" />Adicionar conta ou cartão</Button>
+        <Button variant="outline" className="h-12" onClick={onNewRecurring}><CalendarClock aria-hidden className="size-4" />Nova recorrência</Button>
       </section>
 
       <section aria-labelledby="finance-accounts-title" className="space-y-3">
         <header>
-          <h2 id="finance-accounts-title" className="text-lg font-semibold">Contas e cartÃµes</h2>
-          <p className="text-sm text-muted-foreground">Identificadores e vencimentos, sem armazenar dados do cartÃ£o.</p>
+          <h2 id="finance-accounts-title" className="text-lg font-semibold">Contas e cartões</h2>
+          <p className="text-sm text-muted-foreground">Identificadores e vencimentos, sem armazenar dados do cartão.</p>
         </header>
         {data.accounts.length === 0 ? (
-          <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">Adicione uma conta ou cartÃ£o para vinculÃ¡-lo aos lanÃ§amentos.</p>
+          <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">Adicione uma conta ou cartão para vinculá-lo aos lançamentos.</p>
         ) : (
           <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {data.accounts.map((account) => (
               <li key={account.id} className="min-w-0 rounded-xl border bg-card p-3">
                 <p className="truncate font-medium">{account.name}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{ACCOUNT_KIND_LABELS[account.kind as keyof typeof ACCOUNT_KIND_LABELS]}{account.kind === "credit_card" ? ` Â· fecha dia ${account.closing_day} Â· vence dia ${account.due_day}` : ""}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{ACCOUNT_KIND_LABELS[account.kind as keyof typeof ACCOUNT_KIND_LABELS]}{account.kind === "credit_card" ? ` · fecha dia ${account.closing_day} · vence dia ${account.due_day}` : ""}</p>
               </li>
             ))}
           </ul>
@@ -152,11 +152,11 @@ function FinanceContent({
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 id="finance-invoices-title" className="text-lg font-semibold">Faturas e vencimentos</h2>
-            <p className="text-sm text-muted-foreground">Compras no cartÃ£o agrupadas pela data prevista da fatura.</p>
+            <p className="text-sm text-muted-foreground">Compras no cartão agrupadas pela data prevista da fatura.</p>
           </div>
         </div>
         {invoices.length === 0 ? (
-          <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">Adicione um cartÃ£o e registre uma compra para acompanhar as faturas aqui.</p>
+          <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">Adicione um cartão e registre uma compra para acompanhar as faturas aqui.</p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {invoices.map((invoice) => <InvoiceCard key={`${invoice.account.id}:${invoice.dueOn}`} invoice={invoice} />)}
@@ -167,12 +167,12 @@ function FinanceContent({
       <section aria-labelledby="finance-recurring-title" className="space-y-3">
         <header className="flex items-end justify-between gap-3">
           <div>
-            <h2 id="finance-recurring-title" className="text-lg font-semibold">RecorrÃªncias de {titleMonth(month)}</h2>
-            <p className="text-sm text-muted-foreground">Revise cada previsÃ£o e registre quando ela acontecer.</p>
+            <h2 id="finance-recurring-title" className="text-lg font-semibold">Recorrências de {titleMonth(month)}</h2>
+            <p className="text-sm text-muted-foreground">Revise cada previsão e registre quando ela acontecer.</p>
           </div>
         </header>
         {data.recurringRules.length === 0 ? (
-          <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">Cadastre salÃ¡rio, aluguel, assinaturas ou outras entradas e contas recorrentes.</p>
+          <p className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">Cadastre salário, aluguel, assinaturas ou outras entradas e contas recorrentes.</p>
         ) : (
           <ul className="divide-y rounded-xl border bg-card">
             {data.recurringRules.map((rule) => (
@@ -185,13 +185,13 @@ function FinanceContent({
       <section aria-labelledby="finance-transactions-title" className="space-y-3">
         <header className="flex items-end justify-between gap-3">
           <div>
-            <h2 id="finance-transactions-title" className="text-lg font-semibold">LanÃ§amentos do mÃªs</h2>
+            <h2 id="finance-transactions-title" className="text-lg font-semibold">Lançamentos do mês</h2>
             <p className="text-sm text-muted-foreground">Organizados pela data de pagamento ou vencimento.</p>
           </div>
           <span className="num text-sm text-muted-foreground">{data.transactions.length} itens</span>
         </header>
         {data.transactions.length === 0 ? (
-          <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">Nenhum lanÃ§amento neste mÃªs. Comece pelo planejamento ou registre uma entrada ou saÃ­da.</p>
+          <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">Nenhum lançamento neste mês. Comece pelo planejamento ou registre uma entrada ou saída.</p>
         ) : (
           <ul className="divide-y rounded-xl border bg-card">
             {data.transactions.map((row) => (

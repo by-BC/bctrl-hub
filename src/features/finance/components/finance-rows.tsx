@@ -23,7 +23,7 @@ export function InvoiceCard({ invoice }: { invoice: FinanceInvoice }) {
         <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${invoice.paid ? "bg-emerald-500/10 text-emerald-600" : "bg-orange-500/10 text-orange-500"}`}>{invoice.paid ? "Paga" : "Em aberto"}</span>
       </div>
       <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
-        <div><p className="num text-xl font-semibold">{BRL.format(invoice.total)}</p><p className="text-xs text-muted-foreground">{invoice.count} {invoice.count === 1 ? "lanÃ§amento" : "lanÃ§amentos"}</p></div>
+        <div><p className="num text-xl font-semibold">{BRL.format(invoice.total)}</p><p className="text-xs text-muted-foreground">{invoice.count} {invoice.count === 1 ? "lançamento" : "lançamentos"}</p></div>
         <Button variant="outline" className="h-10" disabled={setPaid.isPending} onClick={() => setPaid.mutate({ accountId: invoice.account.id, dueOn: invoice.dueOn, isPaid: !invoice.paid })}>{invoice.paid ? "Reabrir fatura" : "Marcar fatura paga"}</Button>
       </div>
     </article>
@@ -49,9 +49,9 @@ export function RecurringRow({ rule, month, category, account, alreadyRecorded }
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{rule.title}</p>
-        <p className="text-xs text-muted-foreground">Dia {rule.day_of_month} Â· {category?.name ?? "Categoria"}{account ? ` Â· ${account.name}` : ""}</p>
+        <p className="text-xs text-muted-foreground">Dia {rule.day_of_month} · {category?.name ?? "Categoria"}{account ? ` · ${account.name}` : ""}</p>
       </div>
-      <p className={`num text-sm font-semibold ${rule.kind === "income" ? "text-emerald-600" : ""}`}>{rule.kind === "income" ? "+" : "âˆ’"}{BRL.format(Number(rule.amount))}</p>
+      <p className={`num text-sm font-semibold ${rule.kind === "income" ? "text-emerald-600" : ""}`}>{rule.kind === "income" ? "+" : "−"}{BRL.format(Number(rule.amount))}</p>
       {rule.active && isInRange ? (
         <Button variant={alreadyRecorded ? "ghost" : "outline"} className="h-10" disabled={alreadyRecorded || saveRows.isPending} onClick={() => {
           const dueOn = account?.kind === "credit_card" && account.closing_day && account.due_day
@@ -82,15 +82,15 @@ export function TransactionRow({ row, category, account }: { row: FinanceTransac
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{row.title}{row.installment_count ? <span className="ml-1 text-xs text-muted-foreground">{row.installment_number}/{row.installment_count}</span> : null}</p>
-        <p className="truncate text-xs text-muted-foreground">{formatShortDay(row.due_on)} Â· {category?.name ?? "Categoria"}{account ? ` Â· ${account.name}` : ""}</p>
+        <p className="truncate text-xs text-muted-foreground">{formatShortDay(row.due_on)} · {category?.name ?? "Categoria"}{account ? ` · ${account.name}` : ""}</p>
       </div>
-      <p className={`num text-sm font-semibold ${row.kind === "income" ? "text-emerald-600" : ""}`}>{row.kind === "income" ? "+" : "âˆ’"}{BRL.format(Number(row.amount))}</p>
+      <p className={`num text-sm font-semibold ${row.kind === "income" ? "text-emerald-600" : ""}`}>{row.kind === "income" ? "+" : "−"}{BRL.format(Number(row.amount))}</p>
       {row.kind === "expense" && !isCard && (
         <Button variant="ghost" className="h-10 px-3 text-xs" disabled={setPaid.isPending} onClick={() => setPaid.mutate({ id: row.id, isPaid: !row.is_paid })}>{row.is_paid ? "Pago" : "Marcar pago"}</Button>
       )}
       <Button variant="ghost" size="icon" className="size-10 shrink-0 text-muted-foreground hover:text-destructive" aria-label={`Excluir ${row.title}`} disabled={remove.isPending} onClick={() => {
-        if (window.confirm(`Excluir â€œ${row.title}â€ deste lanÃ§amento?`)) remove.mutate(row.id);
-      }}>Ã—</Button>
+        if (window.confirm(`Excluir “${row.title}” deste lançamento?`)) remove.mutate(row.id);
+      }}>×</Button>
     </li>
   );
 }
