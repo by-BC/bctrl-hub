@@ -31,8 +31,6 @@ if (!(await maybeRead(assistantEnvPath))) {
     "WHATSAPP_GROUP_JID=",
     `WHATSAPP_WEBHOOK_SECRET=${randomSecret()}`,
     "WHATSAPP_FOOD_PORT=8787",
-    "OPENAI_API_KEY=",
-    "OPENAI_MODEL=gpt-4.1-mini",
     `SUPABASE_URL=${appEnv.NEXT_PUBLIC_SUPABASE_URL ?? ""}`,
     "SUPABASE_SECRET_KEY=",
     "BCTRL_USER_ID=",
