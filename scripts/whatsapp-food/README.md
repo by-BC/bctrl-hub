@@ -17,7 +17,9 @@ A instância da Evolution deve estar conectada e acessível antes dos passos 5 e
 ## Uso no grupo
 
 - Envie uma foto do prato ou da tabela nutricional. O agente sugere as gramas de cada alimento visível na foto. Pode escrever na legenda a refeição e o peso que consumiu, por exemplo `Almoço, 180 g`.
-- Confira a prévia: ela identifica quando as gramas foram estimadas pela foto, informadas na legenda ou retiradas da porção do rótulo. Para ajustar: `PORCAO 150` (ou `PORCAO 150, 80` se houver dois alimentos), `REFEICAO Almoço`, `CONFIRMAR` ou `CANCELAR`.
+- Confira a prévia: ela identifica quando as gramas foram estimadas pela foto, informadas na legenda ou retiradas da porção do rótulo. Para ajustar só um item, envie `PORCAO 2 150` (item 2, 150 g); `PORCAO 150, 80` ajusta todos os itens de uma vez. Use `REFEICAO Almoço` para mudar a refeição.
+- Para guardar um alimento no catálogo pessoal, envie `CADASTRAR 2` na prévia (ou `CADASTRAR 1, 3` para vários). O comando marca ou desmarca os itens; `CADASTRAR NENHUM` limpa a seleção. `CONFIRMAR` registra a refeição e os alimentos marcados. `SALVAR ALIMENTOS` guarda só os marcados, sem registrar refeição. `CANCELAR` descarta a prévia. Um alimento já existente com o mesmo nome não é duplicado.
 - As gramas estimadas pela foto são aproximadas e podem variar muito sem referência de escala. A porção do rótulo não confirma quanto você consumiu. Confira os itens e as quantidades antes de enviar `CONFIRMAR`.
+- Se o agente não tiver valores nutricionais suficientes para algum item, ele o exclui da prévia e avisa. O registro de gastos pelo WhatsApp ainda não está ativo; mensagens financeiras recebem uma orientação para usar Finanças no app.
 
 O serviço guarda apenas a prévia pendente e IDs recentes de mensagens em `scripts/whatsapp-food/state.json`, ignorado pelo Git. Não guarda as fotos. A prévia expira após aproximadamente 48 horas. Para remover dados locais pendentes, pare o serviço e apague `state.json`.
