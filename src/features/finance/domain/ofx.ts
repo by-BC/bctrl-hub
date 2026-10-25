@@ -43,7 +43,11 @@ function installmentFrom(text: string): OfxInstallment | null {
 }
 
 function cleanTitle(value: string) {
-  return value.replace(/\s*[-–|,]?\s*parc(?:ela)?\s*(?:n[ºo.]?\s*)?\d{1,2}\s*(?:\/|de)\s*\d{1,2}\b/i, "").replace(/\s+/g, " ").trim();
+  const cleaned = value.replace(/\s*[-–|,]?\s*parc(?:ela)?\s*(?:n[ºo.]?\s*)?\d{1,2}\s*(?:\/|de)\s*\d{1,2}\b/i, "").replace(/\s+/g, " ").trim();
+  const normalized = cleaned.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (/\bifd\s*\*/i.test(cleaned) || /ifood/.test(normalized)) return "iFood";
+  if (/uber/.test(normalized)) return "Uber";
+  return cleaned;
 }
 
 export function parseOfx(fileName: string, text: string): OfxStatement {
