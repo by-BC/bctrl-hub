@@ -1,11 +1,15 @@
 "use client";
 
-import { ArrowDownLeft, ArrowUpRight, CalendarClock, CreditCard } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, CalendarClock, CreditCard, Pencil } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatShortDay } from "@/lib/format";
 import type { FinanceAccount, FinanceCategory, FinanceRecurringRule, FinanceTransaction } from "../api";
-import { useDeleteFinanceTransaction, useSaveFinanceTransactions, useSetFinanceInvoicePaid, useSetFinancePaid, useSetFinanceRecurring } from "../hooks";
+import { useDeleteFinanceTransaction, useSaveFinanceTransactions, useSetFinanceInvoicePaid, useSetFinancePaid, useSetFinanceRecurring, useUpdateFinanceTransaction } from "../hooks";
 import { ACCOUNT_KIND_LABELS, BRL, cardInstallmentDueDates, recurringDate } from "../domain/finance";
+import { financeTitleSchema } from "../schemas/finance";
 
 export type FinanceInvoice = { account: FinanceAccount; dueOn: string; total: number; paid: boolean; count: number };
 export function InvoiceCard({ invoice }: { invoice: FinanceInvoice }) {
@@ -71,12 +75,25 @@ export function RecurringRow({ rule, month, category, account, alreadyRecorded }
   );
 }
 
-export function TransactionRow({ row, category, account }: { row: FinanceTransaction; category?: FinanceCategory; account?: FinanceAccount }) {
+export function TransactionRow({ row, category, account, categories = [] }: { row: FinanceTransaction; category?: FinanceCategory; account?: FinanceAccount; categories?: FinanceCategory[] }) {
   const setPaid = useSetFinancePaid();
   const remove = useDeleteFinanceTransaction();
+  const update = useUpdateFinanceTransaction();
+  const [editOpen, setEditOpen] = useState(false);
+  const [title, setTitle] = useState(row.title);
+  const [categoryId, setCategoryId] = useState(row.category_id);
   const isCard = account?.kind === "credit_card";
+  const categoryOptions = categories.filter((item) => item.kind === row.kind);
+  function saveEdit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const parsed = financeTitleSchema.safeParse(title);
+    if (!parsed.success) return toast.error(parsed.error.issues[0]?.message ?? "Informe um nome válido.");
+    if (!categoryOptions.some((item) => item.id === categoryId)) return toast.error("Escolha uma categoria válida.");
+    update.mutate({ id: row.id, title: parsed.data, category_id: categoryId }, { onSuccess: () => { toast.success("Lançamento atualizado."); setEditOpen(false); } });
+  }
   return (
-    <li className="flex flex-wrap items-center gap-3 px-3 py-3 sm:px-4">
+    <li className="grid min-w-0 gap-3 px-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center sm:px-4">
+      <div className="flex min-w-0 items-center gap-3">
       <span className={`flex size-9 shrink-0 items-center justify-center rounded-full ${row.kind === "income" ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground"}`}>
         {row.kind === "income" ? <ArrowDownLeft aria-hidden className="size-4" /> : <ArrowUpRight aria-hidden className="size-4" />}
       </span>
@@ -84,13 +101,25 @@ export function TransactionRow({ row, category, account }: { row: FinanceTransac
         <p className="truncate font-medium">{row.title}{row.installment_count ? <span className="ml-1 text-xs text-muted-foreground">{row.installment_number}/{row.installment_count}</span> : null}</p>
         <p className="truncate text-xs text-muted-foreground">{formatShortDay(row.due_on)} · {category?.name ?? "Categoria"}{account ? ` · ${account.name}` : ""}</p>
       </div>
-      <p className={`num text-sm font-semibold ${row.kind === "income" ? "text-emerald-600" : ""}`}>{row.kind === "income" ? "+" : "−"}{BRL.format(Number(row.amount))}</p>
-      {row.kind === "expense" && !isCard && (
-        <Button variant="ghost" className="h-10 px-3 text-xs" disabled={setPaid.isPending} onClick={() => setPaid.mutate({ id: row.id, isPaid: !row.is_paid })}>{row.is_paid ? "Pago" : "Marcar pago"}</Button>
-      )}
+      </div>
+      <div className="flex items-center justify-between gap-3 sm:justify-end">
+        <p className={`num text-sm font-semibold ${row.kind === "income" ? "text-emerald-600" : ""}`}>{row.kind === "income" ? "+" : "−"}{BRL.format(Number(row.amount))}</p>
+        {row.kind === "expense" && !isCard && <Button variant="outline" className="h-9 px-3 text-xs" disabled={setPaid.isPending} onClick={() => setPaid.mutate({ id: row.id, isPaid: !row.is_paid })}>{row.is_paid ? "Pago" : "Marcar pago"}</Button>}
+      </div>
+      <div className="flex items-center justify-end gap-1">
+      <Button variant="ghost" size="icon" className="size-10 shrink-0" aria-label={`Editar ${row.title}`} onClick={() => { setTitle(row.title); setCategoryId(row.category_id); setEditOpen(true); }}><Pencil aria-hidden className="size-4" /></Button>
       <Button variant="ghost" size="icon" className="size-10 shrink-0 text-muted-foreground hover:text-destructive" aria-label={`Excluir ${row.title}`} disabled={remove.isPending} onClick={() => {
         if (window.confirm(`Excluir “${row.title}” deste lançamento?`)) remove.mutate(row.id);
       }}>×</Button>
+      </div>
+      <Dialog open={editOpen} onOpenChange={setEditOpen}><DialogContent className="sm:max-w-md">
+        <DialogHeader><DialogTitle>Editar lançamento</DialogTitle><DialogDescription>Atualize a descrição e a categoria. Para uma compra parcelada, a alteração vale para todas as parcelas.</DialogDescription></DialogHeader>
+        <form onSubmit={saveEdit} className="space-y-4">
+          <label className="block space-y-1.5 text-sm font-medium">Nome<input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={140} required className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 md:text-sm" /></label>
+          <label className="block space-y-1.5 text-sm font-medium">Categoria<select value={categoryId} onChange={(event) => setCategoryId(event.target.value)} className="h-11 w-full rounded-md border border-input bg-background px-3 text-base outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 md:text-sm">{categoryOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+          <div className="flex justify-end gap-2"><Button type="button" variant="outline" className="h-10" onClick={() => setEditOpen(false)}>Cancelar</Button><Button type="submit" className="h-10" disabled={update.isPending}>{update.isPending ? "Salvando…" : "Salvar alterações"}</Button></div>
+        </form>
+      </DialogContent></Dialog>
     </li>
   );
 }

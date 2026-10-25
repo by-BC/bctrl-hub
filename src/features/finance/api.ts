@@ -114,6 +114,17 @@ export async function setFinanceTransactionPaid(id: string, isPaid: boolean, cli
   if (error) fail(error, "Não foi possível atualizar o status do lançamento.");
 }
 
+export async function updateFinanceTransaction({ id, title, category_id }: Pick<FinanceTransaction, "id" | "title" | "category_id">, client: Client = db()) {
+  const { data: transaction, error: lookupError } = await client.from("finance_transactions")
+    .select("installment_group_id").eq("id", id).single();
+  if (lookupError) fail(lookupError, "NÃ£o foi possÃ­vel localizar o lanÃ§amento.");
+  const query = client.from("finance_transactions").update({ title, category_id });
+  const { error } = transaction.installment_group_id
+    ? await query.eq("installment_group_id", transaction.installment_group_id)
+    : await query.eq("id", id);
+  if (error) fail(error, "NÃ£o foi possÃ­vel atualizar o lanÃ§amento.");
+}
+
 export async function setFinanceInvoicePaid(
   { accountId, dueOn, isPaid }: { accountId: string; dueOn: string; isPaid: boolean },
   client: Client = db(),

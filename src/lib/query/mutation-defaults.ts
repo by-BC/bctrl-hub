@@ -74,6 +74,7 @@ import {
   setFinanceInvoicePaid,
   setFinanceRecurringActive,
   setFinanceTransactionPaid,
+  updateFinanceTransaction,
   type FinanceTransactionSave,
 } from "@/features/finance/api";
 import type { FinanceAccountSave, FinanceBudgetSave, FinanceRecurringSave } from "@/features/finance/schemas/finance";
@@ -258,6 +259,7 @@ export const WRITES = {
     (row: { id: string; name: string; kind: "income" | "expense"; bucket: "fixed" | "freedom" | "variable" | null; sub_bucket: "comfort" | "pleasures" | "knowledge" | "goals" | null }) => createFinanceCategory(row),
   ),
   setFinancePaid: write(["finance", "set-paid"], ({ id, isPaid }: { id: string; isPaid: boolean }) => setFinanceTransactionPaid(id, isPaid)),
+  updateFinanceTransaction: write(["finance", "update-transaction"], (row: { id: string; title: string; category_id: string }) => updateFinanceTransaction(row)),
   setFinanceInvoicePaid: write(["finance", "set-invoice-paid"], setFinanceInvoicePaid),
   deleteFinanceTransaction: write(["finance", "delete-transaction"], (id: string) => deleteFinanceTransaction(id)),
 };

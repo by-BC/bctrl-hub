@@ -118,6 +118,16 @@ function FinanceContent({
   const invoices = useMemo(() => groupInvoices(data.transactions, accounts), [data.transactions, accounts]);
   const occurrences = useMemo(() => new Set(data.recurringOccurrences.map((row) => `${row.recurring_rule_id}:${row.recurrence_occurrence}`)), [data.recurringOccurrences]);
   const spending = useMemo(() => bucketTotals(data.transactions, categories), [data.transactions, categories]);
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  useEffect(() => { setCategoryFilter("all"); setFromDate(""); setToDate(""); }, [month]);
+  const filteredTransactions = useMemo(() => data.transactions.filter((row) =>
+    (categoryFilter === "all" || row.category_id === categoryFilter)
+    && (!fromDate || row.due_on >= fromDate)
+    && (!toDate || row.due_on <= toDate),
+  ), [data.transactions, categoryFilter, fromDate, toDate]);
+  const hasFilters = categoryFilter !== "all" || Boolean(fromDate || toDate);
 
   return (
     <div className="space-y-6">
@@ -128,16 +138,16 @@ function FinanceContent({
         <MetricCard label="A pagar" value={pending} icon={CalendarClock} tone="orange" />
       </section>
 
-      <FinanceBudget key={month} month={month} budget={data.budget} actualIncome={income} spent={spending.buckets} subSpent={spending.subBuckets} />
-
-      <FinanceCharts month={month} transactions={data.transactions} categories={data.categories} />
-
-      <section aria-label="Ações financeiras" className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label="Ações financeiras" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Button className="h-12" onClick={onNewTransaction}><Plus aria-hidden className="size-4" />Novo lançamento</Button>
-        <Button variant="outline" className="h-12" onClick={onNewAccount}><CreditCard aria-hidden className="size-4" />Adicionar conta ou cartão</Button>
+        <Button variant="outline" className="h-12" onClick={onNewAccount}><CreditCard aria-hidden className="size-4" />Adicionar conta</Button>
         <Button variant="outline" className="h-12" onClick={onNewRecurring}><CalendarClock aria-hidden className="size-4" />Nova recorrência</Button>
         <Button variant="outline" className="h-12" onClick={onImport}><FileUp aria-hidden className="size-4" />Importar OFX</Button>
       </section>
+
+      <FinanceBudget key={month} month={month} budget={data.budget} actualIncome={income} spent={spending.buckets} subSpent={spending.subBuckets} />
+
+      <FinanceCharts month={month} transactions={data.transactions} categories={data.categories} />
 
       <section aria-labelledby="finance-accounts-title" className="space-y-3">
         <header>
@@ -193,19 +203,27 @@ function FinanceContent({
       </section>
 
       <section aria-labelledby="finance-transactions-title" className="space-y-3">
-        <header className="flex items-end justify-between gap-3">
+        <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 id="finance-transactions-title" className="text-lg font-semibold">Lançamentos do mês</h2>
-            <p className="text-sm text-muted-foreground">Organizados pela data de pagamento ou vencimento.</p>
+            <p className="text-sm text-muted-foreground">Filtre, edite a descrição e ajuste a categoria de cada item.</p>
           </div>
-          <span className="num text-sm text-muted-foreground">{data.transactions.length} itens</span>
+          <span className="num text-sm text-muted-foreground">{filteredTransactions.length}{hasFilters ? ` de ${data.transactions.length}` : ""} itens</span>
         </header>
+        <div className="grid gap-2 rounded-2xl border bg-card p-3 sm:grid-cols-[minmax(12rem,1.4fr)_repeat(2,minmax(9rem,1fr))_auto] sm:items-end">
+          <label className="block min-w-0 space-y-1 text-xs font-medium text-muted-foreground">Categoria<select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm font-normal text-foreground"><option value="all">Todas as categorias</option>{data.categories.filter((item) => data.transactions.some((row) => row.category_id === item.id)).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+          <label className="block min-w-0 space-y-1 text-xs font-medium text-muted-foreground">De<input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm font-normal text-foreground" /></label>
+          <label className="block min-w-0 space-y-1 text-xs font-medium text-muted-foreground">Até<input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm font-normal text-foreground" /></label>
+          <Button variant="ghost" className="h-10" disabled={!hasFilters} onClick={() => { setCategoryFilter("all"); setFromDate(""); setToDate(""); }}>Limpar filtros</Button>
+        </div>
         {data.transactions.length === 0 ? (
           <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">Nenhum lançamento neste mês. Comece pelo planejamento ou registre uma entrada ou saída.</p>
+        ) : filteredTransactions.length === 0 ? (
+          <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">Nenhum lançamento corresponde aos filtros. Ajuste o período ou limpe os filtros.</p>
         ) : (
           <ul className="divide-y rounded-xl border bg-card">
-            {data.transactions.map((row) => (
-              <TransactionRow key={row.id} row={row} category={categories.get(row.category_id)} account={row.account_id ? accounts.get(row.account_id) : undefined} />
+            {filteredTransactions.map((row) => (
+              <TransactionRow key={row.id} row={row} category={categories.get(row.category_id)} account={row.account_id ? accounts.get(row.account_id) : undefined} categories={data.categories} />
             ))}
           </ul>
         )}
