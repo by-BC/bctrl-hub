@@ -122,10 +122,10 @@ export function FinanceCategoryManager({ open, onOpenChange, categories }: {
               {bucket === "variable" && <label className="space-y-1 text-sm font-medium">Subcaixa<select className={fieldClass} value={subBucket} onChange={(event) => setSubBucket(event.target.value as SubBucket)}>{Object.entries(SUB_BUCKET_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>}
             </div>
           )}
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="space-y-1 text-sm font-medium">Cor da categoria<input aria-label="Cor da categoria" type="color" value={color} onChange={(event) => setColor(event.target.value)} className="block h-11 w-16 cursor-pointer rounded-md border border-input bg-background p-1" /></label>
-            <span className="flex h-11 items-center gap-2 rounded-md border px-3 text-sm" style={{ color, borderColor: color }}><span className="grid size-7 place-items-center rounded-full" style={{ backgroundColor: `color-mix(in srgb, ${color} 16%, transparent)` }}><Tags aria-hidden className="size-4" /></span>Prévia do ícone</span>
-            <div className="ml-auto flex gap-2">
+          <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-end gap-3 sm:flex sm:flex-wrap">
+            <label className="min-w-0 space-y-1 text-sm font-medium">Cor<input aria-label="Cor da categoria" type="color" value={color} onChange={(event) => setColor(event.target.value)} className="block h-11 w-16 cursor-pointer rounded-md border border-input bg-background p-1" /></label>
+            <span className="flex h-11 min-w-0 items-center gap-2 overflow-hidden rounded-md border px-2 text-sm sm:px-3" style={{ color, borderColor: color }}><span className="grid size-7 shrink-0 place-items-center rounded-full" style={{ backgroundColor: `color-mix(in srgb, ${color} 16%, transparent)` }}><Tags aria-hidden className="size-4" /></span><span className="truncate">Prévia do ícone</span></span>
+            <div className="col-span-2 ml-0 flex justify-end gap-2 sm:ml-auto sm:col-span-1">
               {editing && <Button type="button" variant="outline" className="h-11" onClick={resetForm}><X aria-hidden className="size-4" />Cancelar</Button>}
               <Button type="submit" className="h-11" disabled={busy}><Check aria-hidden className="size-4" />{editing ? "Salvar" : <><Plus aria-hidden className="size-4" />Adicionar</>}</Button>
             </div>
@@ -155,13 +155,15 @@ function CategoryList({ title, description, categories, editingId, onEdit, onTog
         <ul className="divide-y rounded-xl border">
           {categories.map((category) => {
             const Icon = categoryIcon(category.name);
-            return <li key={category.id} className={`flex min-w-0 items-center gap-2 p-2.5 ${category.is_active ? "" : "opacity-60"}`}>
+            return <li key={category.id} className={`grid min-w-0 grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-x-2 gap-y-1 p-2.5 sm:flex sm:gap-2 ${category.is_active ? "" : "opacity-60"}`}>
               <span className="grid size-9 shrink-0 place-items-center rounded-full" style={{ color: category.color, backgroundColor: `color-mix(in srgb, ${category.color} 16%, transparent)` }}><Icon aria-hidden className="size-4" /></span>
-              <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{category.name}</p><p className="text-xs text-muted-foreground">{category.kind === "income" ? "Entrada" : "Saída"}{!category.is_active ? " · desativada" : ""}</p></div>
-              <span className="hidden text-xs text-muted-foreground sm:inline">{category.color}</span>
-              <Button type="button" variant="ghost" size="icon" className="size-10 shrink-0" aria-label={`Editar cor e dados de ${category.name}`} aria-pressed={editingId === category.id} onClick={() => onEdit(category)}><Pencil aria-hidden className="size-4" /></Button>
-              <Button type="button" variant="outline" className="h-10 shrink-0 px-2.5 text-xs sm:px-3" onClick={() => onToggle(category)}>{category.is_active ? "Desativar" : "Ativar"}</Button>
-              {!category.is_default && <Button type="button" variant="ghost" size="icon" className="size-10 shrink-0 text-muted-foreground hover:text-destructive" aria-label={`Excluir ${category.name}`} onClick={() => onDelete(category)}><Trash2 aria-hidden className="size-4" /></Button>}
+              <div className="min-w-0"><p className="truncate text-sm font-medium">{category.name}</p><p className="text-xs text-muted-foreground">{category.kind === "income" ? "Entrada" : "Saída"}{!category.is_active ? " · desativada" : ""}</p></div>
+              <div className="col-span-2 flex min-w-0 items-center gap-1 border-t pt-1 sm:ml-auto sm:col-span-1 sm:border-0 sm:pt-0">
+                <span className="mr-auto text-xs text-muted-foreground sm:mr-0">{category.color}</span>
+                <Button type="button" variant="ghost" size="icon" className="size-10 shrink-0" aria-label={`Editar cor e dados de ${category.name}`} aria-pressed={editingId === category.id} onClick={() => onEdit(category)}><Pencil aria-hidden className="size-4" /></Button>
+                <Button type="button" variant="outline" className="h-10 shrink-0 px-2.5 text-xs sm:px-3" onClick={() => onToggle(category)}>{category.is_active ? "Desativar" : "Ativar"}</Button>
+                {!category.is_default && <Button type="button" variant="ghost" size="icon" className="size-10 shrink-0 text-muted-foreground hover:text-destructive" aria-label={`Excluir ${category.name}`} onClick={() => onDelete(category)}><Trash2 aria-hidden className="size-4" /></Button>}
+              </div>
             </li>;
           })}
         </ul>
