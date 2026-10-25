@@ -19,7 +19,10 @@
     "instructions:hevy": "tsx scripts/hevy/instructions-run.ts",
     "import:scale": "tsx scripts/scale/run.ts",
     "taco:convert": "tsx scripts/taco/convert.ts",
-    "meals:link": "tsx scripts/meals/link-foods.ts"
+    "meals:link": "tsx scripts/meals/link-foods.ts",
+    "whatsapp:groups": "node --env-file=.env.whatsapp.local scripts/whatsapp-food/setup.mjs groups",
+    "whatsapp:webhook": "node --env-file=.env.whatsapp.local scripts/whatsapp-food/setup.mjs webhook",
+    "whatsapp:food": "node --env-file=.env.whatsapp.local scripts/whatsapp-food/server.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
