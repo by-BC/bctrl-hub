@@ -29,16 +29,19 @@ export type FinanceMonthData = {
   accounts: FinanceAccount[];
   budget: FinanceBudget | null;
   transactions: FinanceTransaction[];
+  dueTransactions: FinanceTransaction[];
   recurringOccurrences: FinanceTransaction[];
   recurringRules: FinanceRecurringRule[];
 };
 
 export async function fetchFinanceMonth(month: string, client: Client = db()): Promise<FinanceMonthData> {
   const end = monthEnd(month);
-  const [categories, accounts, budget, transactions, recurringOccurrences, recurringRules] = await Promise.all([
+  const [categories, accounts, budget, transactions, dueTransactions, recurringOccurrences, recurringRules] = await Promise.all([
     client.from("finance_categories").select("*").order("kind").order("name"),
     client.from("finance_accounts").select("*").order("created_at"),
     client.from("finance_monthly_budgets").select("*").eq("month_start", month).maybeSingle(),
+    client.from("finance_transactions").select("*").gte("occurred_on", month).lt("occurred_on", end)
+      .order("occurred_on", { ascending: false }).order("created_at", { ascending: false }),
     client.from("finance_transactions").select("*").gte("due_on", month).lt("due_on", end)
       .order("due_on", { ascending: false }).order("created_at", { ascending: false }),
     client.from("finance_transactions").select("*").gte("recurrence_occurrence", month).lt("recurrence_occurrence", end)
@@ -53,11 +56,24 @@ export async function fetchFinanceMonth(month: string, client: Client = db()): P
   if (recurringOccurrences.error) fail(recurringOccurrences.error, "Não foi possível carregar as ocorrências recorrentes.");
   if (recurringRules.error) fail(recurringRules.error, "Não foi possível carregar as recorrências.");
 
+  if (dueTransactions.error) fail(dueTransactions.error, "Could not load finance due dates.");
+  const currentInstallmentByGroup = new Map<string, number>();
+  for (const row of transactions.data) {
+    if (!row.installment_group_id || row.is_paid || row.installment_number === null) continue;
+    const current = currentInstallmentByGroup.get(row.installment_group_id);
+    if (current === undefined || row.installment_number < current) currentInstallmentByGroup.set(row.installment_group_id, row.installment_number);
+  }
+  const monthlyTransactions = transactions.data.filter((row) => {
+    if (!row.installment_group_id) return true;
+    return !row.is_paid && row.installment_number === currentInstallmentByGroup.get(row.installment_group_id);
+  });
+
   return {
     categories: categories.data,
     accounts: accounts.data,
     budget: budget.data,
-    transactions: transactions.data,
+    transactions: monthlyTransactions,
+    dueTransactions: dueTransactions.data,
     recurringOccurrences: recurringOccurrences.data,
     recurringRules: recurringRules.data,
   };

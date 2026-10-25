@@ -122,7 +122,7 @@ export function TransactionRow({ row, category, account, categories = [] }: { ro
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{row.title}{row.installment_count ? <span className="ml-1 text-xs text-muted-foreground">{row.installment_number}/{row.installment_count}</span> : null}</p>
-        <p className="truncate text-xs text-muted-foreground">{formatShortDay(row.due_on)} · {category?.name ?? "Categoria"}{account ? ` · ${account.name}` : ""}</p>
+        <p className="truncate text-xs text-muted-foreground">{isCard ? `Compra ${formatShortDay(row.occurred_on)} · fatura ${formatShortDay(row.due_on)}` : formatShortDay(row.occurred_on)} · {category?.name ?? "Categoria"}{account ? ` · ${account.name}` : ""}</p>
       </div>
       </div>
       <div className="flex items-center justify-between gap-3 sm:justify-end">

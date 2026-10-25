@@ -18,7 +18,7 @@ export function FinanceCharts({ month, transactions, categories }: {
   const totals = new Map<string, number>();
 
   for (const row of transactions) {
-    const date = Number(row.due_on.slice(8, 10));
+    const date = Number(row.occurred_on.slice(8, 10));
     if (date >= 1 && date <= days) daily[date - 1][row.kind === "income" ? "entradas" : "saídas"] += Number(row.amount);
     if (row.kind === "expense") {
       const name = categoryNames.get(row.category_id) ?? "Sem categoria";
@@ -33,7 +33,7 @@ export function FinanceCharts({ month, transactions, categories }: {
 
   return <section aria-label="Gráficos financeiros do mês" className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)]">
     <article className="min-w-0 rounded-2xl border bg-card p-4 sm:p-5">
-      <header className="mb-3"><h2 className="font-semibold">Entradas e saídas por dia</h2><p className="text-sm text-muted-foreground">Valores agrupados pela data de vencimento.</p></header>
+      <header className="mb-3"><h2 className="font-semibold">Entradas e saídas por dia</h2><p className="text-sm text-muted-foreground">Valores agrupados pela data da compra ou movimentação.</p></header>
       {hasDailyData ? <div className="[&_.recharts-cartesian-axis-tick-value]:fill-muted-foreground [&_.recharts-cartesian-axis-tick-value]:text-xs [&_.recharts-surface]:outline-none">
         <BarChart responsive data={daily} margin={{ top: 6, right: 4, bottom: 0, left: -18 }} style={{ width: "100%", height: 240 }}>
           <CartesianGrid vertical={false} stroke="var(--border)" />

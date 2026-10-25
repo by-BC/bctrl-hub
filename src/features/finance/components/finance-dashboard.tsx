@@ -115,7 +115,10 @@ function FinanceContent({
   const pending = data.transactions.filter((row) => !row.is_paid && row.kind === "expense").reduce((sum, row) => sum + Number(row.amount), 0);
   const categories = useMemo(() => new Map(data.categories.map((item) => [item.id, item])), [data.categories]);
   const accounts = useMemo(() => new Map(data.accounts.map((item) => [item.id, item])), [data.accounts]);
-  const invoices = useMemo(() => groupInvoices(data.transactions, accounts), [data.transactions, accounts]);
+  const invoices = useMemo(() => {
+    const byId = new Map([...data.dueTransactions, ...data.transactions].map((row) => [row.id, row]));
+    return groupInvoices([...byId.values()], accounts);
+  }, [data.dueTransactions, data.transactions, accounts]);
   const occurrences = useMemo(() => new Set(data.recurringOccurrences.map((row) => `${row.recurring_rule_id}:${row.recurrence_occurrence}`)), [data.recurringOccurrences]);
   const spending = useMemo(() => bucketTotals(data.transactions, categories), [data.transactions, categories]);
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -129,8 +132,8 @@ function FinanceContent({
       || (sourceFilter === "card" && row.account_id && accounts.get(row.account_id)?.kind === "credit_card")
       || (sourceFilter === "account" && row.account_id && accounts.get(row.account_id)?.kind !== "credit_card")
       || (sourceFilter === "unlinked" && !row.account_id))
-    && (!fromDate || row.due_on >= fromDate)
-    && (!toDate || row.due_on <= toDate),
+    && (!fromDate || row.occurred_on >= fromDate)
+    && (!toDate || row.occurred_on <= toDate),
   ), [data.transactions, categoryFilter, sourceFilter, fromDate, toDate, accounts]);
   const accountTransactions = filteredTransactions.filter((row) => row.account_id && accounts.get(row.account_id)?.kind !== "credit_card");
   const cardTransactions = filteredTransactions.filter((row) => row.account_id && accounts.get(row.account_id)?.kind === "credit_card");
@@ -235,7 +238,7 @@ function FinanceContent({
         ) : sourceFilter === "all" ? (
           <div className="space-y-5">
             {accountTransactions.length > 0 && <section className="space-y-2" aria-labelledby="finance-account-transactions-title"><header><h3 id="finance-account-transactions-title" className="font-semibold">Conta</h3><p className="text-xs text-muted-foreground">Movimentações já realizadas no extrato da conta.</p></header>{renderTransactionRows(accountTransactions)}</section>}
-            {cardTransactions.length > 0 && <section className="space-y-2" aria-labelledby="finance-card-transactions-title"><header><h3 id="finance-card-transactions-title" className="font-semibold">Cartão de crédito</h3><p className="text-xs text-muted-foreground">Compras agrupadas pela fatura; parcelas anteriores podem constar como pagas.</p></header>{renderTransactionRows(cardTransactions)}</section>}
+            {cardTransactions.length > 0 && <section className="space-y-2" aria-labelledby="finance-card-transactions-title"><header><h3 id="finance-card-transactions-title" className="font-semibold">Cartão de crédito</h3><p className="text-xs text-muted-foreground">Compras exibidas pela data em que aconteceram; o vencimento da fatura aparece junto de cada item.</p></header>{renderTransactionRows(cardTransactions)}</section>}
             {unlinkedTransactions.length > 0 && <section className="space-y-2" aria-labelledby="finance-unlinked-transactions-title"><header><h3 id="finance-unlinked-transactions-title" className="font-semibold">Sem conta vinculada</h3></header>{renderTransactionRows(unlinkedTransactions)}</section>}
           </div>
         ) : renderTransactionRows(filteredTransactions)}
