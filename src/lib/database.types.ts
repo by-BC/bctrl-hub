@@ -107,6 +107,26 @@ export type Database = {
                   Relationships: [
 
                   ]
+                },"finance_category_preferences": {
+                  Row: {
+                    "category_id": string,"color": string,"is_active": boolean,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category_id": string,"color"?: string,"is_active"?: boolean,"user_id"?: string
+                  }
+                  Update: {
+                    "category_id"?: string,"color"?: string,"is_active"?: boolean,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+                      foreignKeyName: "finance_category_preferences_category_id_fkey"
+                      columns: ["category_id"]
+                      isOneToOne: false
+                      referencedRelation: "finance_categories"
+                      referencedColumns: ["id"]
+                    }
+                  ]
                 },"finance_monthly_budgets": {
                   Row: {
                     "comfort_pct": number,"created_at": string,"fixed_pct": number,"freedom_pct": number,"goals_pct": number,"id": string,"knowledge_pct": number,"month_start": string,"planned_income": number,"pleasures_pct": number,"updated_at": string,"user_id": string,"variable_pct": number

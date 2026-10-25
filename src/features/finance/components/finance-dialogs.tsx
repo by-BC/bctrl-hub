@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import type { FinanceAccount, FinanceCategory } from "../api";
 import { useCreateFinanceCategory, useSaveFinanceAccount, useSaveFinanceRecurring, useSaveFinanceTransactions } from "../hooks";
 import { financeAccountSchema, financeRecurringSchema, financeTitleSchema, financeTransactionSchema } from "../schemas/finance";
-import { ACCOUNT_KIND_LABELS, cardInstallmentDueDates, lastDayOfMonth, splitInstallments } from "../domain/finance";
+import { ACCOUNT_KIND_LABELS, cardInstallmentDueDates, defaultFinanceCategoryColor, lastDayOfMonth, splitInstallments } from "../domain/finance";
 export function FinanceTransactionDialog({ open, onOpenChange, today, categories, accounts }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -26,7 +26,7 @@ export function FinanceTransactionDialog({ open, onOpenChange, today, categories
   const [subBucket, setSubBucket] = useState<"comfort" | "pleasures" | "knowledge" | "goals">("comfort");
   const [error, setError] = useState<string | null>(null);
   const chosenAccount = accounts.find((item) => item.id === accountId);
-  const availableCategories = categories.filter((item) => item.kind === kind);
+  const availableCategories = categories.filter((item) => item.kind === kind && item.is_active);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -68,7 +68,7 @@ export function FinanceTransactionDialog({ open, onOpenChange, today, categories
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Informe uma categoria válida.");
     const id = crypto.randomUUID();
     try {
-      await createCategory.mutateAsync({ id, name: parsed.data, kind, bucket: kind === "income" ? null : bucket, sub_bucket: kind === "income" || bucket !== "variable" ? null : subBucket });
+      await createCategory.mutateAsync({ id, name: parsed.data, kind, bucket: kind === "income" ? null : bucket, sub_bucket: kind === "income" || bucket !== "variable" ? null : subBucket, color: defaultFinanceCategoryColor(parsed.data) });
       setCategoryId(id);
       setCategoryName("");
       setCategoryOpen(false);
@@ -186,7 +186,7 @@ export function FinanceRecurringDialog({ open, onOpenChange, month, categories, 
       <form onSubmit={submit} className="max-h-[65dvh] space-y-3 overflow-y-auto">
         <Field label="Descrição"><input name="title" required maxLength={140} placeholder="Aluguel, salário…" className={fieldClass} /></Field>
         <Field label="Valor"><input name="amount" type="number" inputMode="decimal" step="0.01" min="0.01" required className={fieldClass} /></Field>
-        <Field label="Categoria"><select name="category_id" required value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={fieldClass}><option value="">Selecione</option>{categories.filter((item) => item.kind === kind).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
+        <Field label="Categoria"><select name="category_id" required value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={fieldClass}><option value="">Selecione</option>{categories.filter((item) => item.kind === kind && item.is_active).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
         <Field label="Conta ou cartão (opcional)"><select value={accountId} onChange={(e) => setAccountId(e.target.value)} className={fieldClass}><option value="">Sem conta vinculada</option>{accounts.filter((item) => kind !== "income" || item.kind !== "credit_card").map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></Field>
         <div className="grid grid-cols-2 gap-3"><Field label="Dia do mês"><input name="day_of_month" type="number" min="1" max="31" defaultValue="5" required className={fieldClass} /></Field><Field label="Último mês (opcional)"><input name="ends_on" type="month" className={fieldClass} /></Field></div>
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}

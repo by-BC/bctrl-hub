@@ -29,6 +29,9 @@ export const useSaveFinanceAccount = () => useFinanceWrite(WRITES.saveFinanceAcc
 export const useSaveFinanceRecurring = () => useFinanceWrite(WRITES.saveFinanceRecurring);
 export const useSetFinanceRecurring = () => useFinanceWrite(WRITES.setFinanceRecurring);
 export const useCreateFinanceCategory = () => useFinanceWrite(WRITES.createFinanceCategory);
+export const useUpdateFinanceCategory = () => useFinanceWrite(WRITES.updateFinanceCategory);
+export const useSetFinanceCategoryPreference = () => useFinanceWrite(WRITES.setFinanceCategoryPreference);
+export const useDeleteFinanceCategory = () => useFinanceWrite(WRITES.deleteFinanceCategory);
 export const useSetFinancePaid = () => useFinanceWrite(WRITES.setFinancePaid);
 export const useUpdateFinanceTransaction = () => useFinanceWrite(WRITES.updateFinanceTransaction);
 export const useSetFinanceInvoicePaid = () => useFinanceWrite(WRITES.setFinanceInvoicePaid);

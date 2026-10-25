@@ -11,7 +11,7 @@ import { useDeleteFinanceTransaction, useSaveFinanceTransactions, useSetFinanceI
 import { ACCOUNT_KIND_LABELS, BRL, cardInstallmentDueDates, recurringDate } from "../domain/finance";
 import { financeTitleSchema } from "../schemas/finance";
 
-function categoryIcon(name = ""): LucideIcon {
+export function categoryIcon(name = ""): LucideIcon {
   const value = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   if (/moradia|aluguel|condominio|casa/.test(value)) return Home;
   if (/internet|celular|telefone/.test(value)) return Wifi;
@@ -106,7 +106,7 @@ export function TransactionRow({ row, category, account, categories = [] }: { ro
   const [categoryId, setCategoryId] = useState(row.category_id);
   const isCard = account?.kind === "credit_card";
   const Icon = row.kind === "income" ? ArrowDownLeft : categoryIcon(category?.name);
-  const categoryOptions = categories.filter((item) => item.kind === row.kind);
+  const categoryOptions = categories.filter((item) => item.kind === row.kind && (item.is_active || item.id === row.category_id));
   function saveEdit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const parsed = financeTitleSchema.safeParse(title);
@@ -117,7 +117,7 @@ export function TransactionRow({ row, category, account, categories = [] }: { ro
   return (
     <li className="grid min-w-0 gap-3 px-3 py-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center sm:px-4">
       <div className="flex min-w-0 items-center gap-3">
-      <span className={`flex size-9 shrink-0 items-center justify-center rounded-full ${row.kind === "income" ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground"}`}>
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-full" style={{ color: category?.color ?? "var(--muted-foreground)", backgroundColor: category?.color ? `color-mix(in srgb, ${category.color} 16%, transparent)` : "var(--muted)" }}>
         <Icon aria-hidden className="size-4" />
       </span>
       <div className="min-w-0 flex-1">

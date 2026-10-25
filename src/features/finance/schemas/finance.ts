@@ -5,6 +5,20 @@ export const financeBuckets = ["fixed", "freedom", "variable"] as const;
 export const financeSubBuckets = ["comfort", "pleasures", "knowledge", "goals"] as const;
 export const financeAccountKinds = ["cash", "checking", "savings", "credit_card"] as const;
 
+export const financeCategorySchema = z.object({
+  name: z.string().trim().min(1, "Informe o nome da categoria.").max(80, "Use até 80 caracteres."),
+  kind: z.enum(financeKinds),
+  bucket: z.enum(financeBuckets).nullable(),
+  sub_bucket: z.enum(financeSubBuckets).nullable(),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Escolha uma cor válida."),
+}).refine((value) => value.kind === "expense" ? value.bucket !== null : value.bucket === null && value.sub_bucket === null, {
+  message: "Categorias de entrada não usam caixas de orçamento.",
+  path: ["bucket"],
+}).refine((value) => value.bucket === "variable" || value.sub_bucket === null, {
+  message: "Subcaixas só podem ser usadas em gastos eventuais.",
+  path: ["sub_bucket"],
+});
+
 export const financeTitleSchema = z.string().trim().min(1, "Informe uma descrição.").max(140, "Use até 140 caracteres.");
 
 export const financeAmountSchema = z.number().finite().positive("O valor precisa ser maior que zero.").max(9999999999.99);

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight, CalendarClock, CreditCard, FileUp, Plus, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight, CalendarClock, CreditCard, FileUp, Plus, Tags, Wallet } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shell/page-header";
@@ -14,6 +14,7 @@ import { FinanceAccountDialog, FinanceRecurringDialog, FinanceTransactionDialog 
 import { InvoiceCard, RecurringRow, TransactionRow } from "./finance-rows";
 import { FinanceOfxImport } from "./finance-ofx-import";
 import { FinanceCharts } from "./finance-charts";
+import { FinanceCategoryManager } from "./finance-category-manager";
 const monthFormatter = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
 const monthOf = (day: string) => `${day.slice(0, 7)}-01`;
 
@@ -32,6 +33,7 @@ export function FinanceDashboard() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [recurringOpen, setRecurringOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const { data, isPending, isError, refetch } = useFinanceMonth(month);
 
   useEffect(() => {
@@ -80,6 +82,7 @@ export function FinanceDashboard() {
           onNewAccount={() => setAccountOpen(true)}
           onNewRecurring={() => setRecurringOpen(true)}
           onImport={() => setImportOpen(true)}
+          onManageCategories={() => setCategoryOpen(true)}
         />
       )}
 
@@ -89,6 +92,7 @@ export function FinanceDashboard() {
           <FinanceAccountDialog open={accountOpen} onOpenChange={setAccountOpen} />
           <FinanceRecurringDialog open={recurringOpen} onOpenChange={setRecurringOpen} month={month} categories={data.categories} accounts={data.accounts} />
           <FinanceOfxImport open={importOpen} onOpenChange={setImportOpen} categories={data.categories} accounts={data.accounts} />
+          <FinanceCategoryManager open={categoryOpen} onOpenChange={setCategoryOpen} categories={data.categories} />
         </>
       )}
     </>
@@ -102,6 +106,7 @@ function FinanceContent({
   onNewAccount,
   onNewRecurring,
   onImport,
+  onManageCategories,
 }: {
   month: string;
   data: NonNullable<ReturnType<typeof useFinanceMonth>["data"]>;
@@ -109,6 +114,7 @@ function FinanceContent({
   onNewAccount: () => void;
   onNewRecurring: () => void;
   onImport: () => void;
+  onManageCategories: () => void;
 }) {
   const income = data.transactions.filter((row) => row.kind === "income").reduce((sum, row) => sum + Number(row.amount), 0);
   const expenses = data.transactions.filter((row) => row.kind === "expense").reduce((sum, row) => sum + Number(row.amount), 0);
@@ -152,11 +158,12 @@ function FinanceContent({
         <MetricCard label="A pagar" value={pending} icon={CalendarClock} tone="orange" />
       </section>
 
-      <section aria-label="Ações financeiras" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <section aria-label="Ações financeiras" className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         <Button className="h-12" onClick={onNewTransaction}><Plus aria-hidden className="size-4" />Novo lançamento</Button>
         <Button variant="outline" className="h-12" onClick={onNewAccount}><CreditCard aria-hidden className="size-4" />Adicionar conta</Button>
         <Button variant="outline" className="h-12" onClick={onNewRecurring}><CalendarClock aria-hidden className="size-4" />Nova recorrência</Button>
         <Button variant="outline" className="h-12" onClick={onImport}><FileUp aria-hidden className="size-4" />Importar OFX</Button>
+        <Button variant="outline" className="h-12" onClick={onManageCategories}><Tags aria-hidden className="size-4" />Categorias</Button>
       </section>
 
       <FinanceBudget key={month} month={month} budget={data.budget} actualIncome={income} spent={spending.buckets} subSpent={spending.subBuckets} />

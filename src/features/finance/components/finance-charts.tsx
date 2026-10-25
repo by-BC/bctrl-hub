@@ -4,8 +4,6 @@ import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, Tooltip, XAxis, YAxi
 import type { FinanceCategory, FinanceTransaction } from "../api";
 import { BRL } from "../domain/finance";
 
-const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
-
 export function FinanceCharts({ month, transactions, categories }: {
   month: string;
   transactions: FinanceTransaction[];
@@ -14,21 +12,23 @@ export function FinanceCharts({ month, transactions, categories }: {
   const [, monthNumber] = month.split("-").map(Number);
   const days = new Date(Date.UTC(Number(month.slice(0, 4)), monthNumber, 0)).getUTCDate();
   const daily = Array.from({ length: days }, (_, index) => ({ day: index + 1, entradas: 0, saídas: 0 }));
-  const categoryNames = new Map(categories.map((category) => [category.id, category.name]));
+  const categoryById = new Map(categories.map((category) => [category.id, category]));
   const totals = new Map<string, number>();
 
   for (const row of transactions) {
     const date = Number(row.occurred_on.slice(8, 10));
     if (date >= 1 && date <= days) daily[date - 1][row.kind === "income" ? "entradas" : "saídas"] += Number(row.amount);
     if (row.kind === "expense") {
-      const name = categoryNames.get(row.category_id) ?? "Sem categoria";
-      totals.set(name, (totals.get(name) ?? 0) + Number(row.amount));
+      totals.set(row.category_id, (totals.get(row.category_id) ?? 0) + Number(row.amount));
     }
   }
 
-  const topCategories = [...totals.entries()].sort((a, b) => b[1] - a[1]);
-  const pieData = topCategories.slice(0, 5).map(([name, value]) => ({ name, value }));
-  if (topCategories.length > 5) pieData.push({ name: "Outras", value: topCategories.slice(5).reduce((sum, [, value]) => sum + value, 0) });
+  const topCategories = [...totals.entries()].map(([id, value]) => {
+    const category = categoryById.get(id);
+    return { id, name: category?.name ?? "Sem categoria", value, color: category?.color ?? "var(--chart-5)" };
+  }).sort((a, b) => b.value - a.value);
+  const pieData = topCategories.slice(0, 5);
+  if (topCategories.length > 5) pieData.push({ id: "other", name: "Outras", value: topCategories.slice(5).reduce((sum, item) => sum + item.value, 0), color: "var(--chart-5)" });
   const hasDailyData = daily.some((item) => item.entradas || item.saídas);
 
   return <section aria-label="Gráficos financeiros do mês" className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)]">
@@ -52,11 +52,11 @@ export function FinanceCharts({ month, transactions, categories }: {
       {pieData.length ? <>
         <div className="[&_.recharts-surface]:outline-none"><PieChart responsive style={{ width: "100%", height: 220 }}>
           <Pie data={pieData} dataKey="value" nameKey="name" innerRadius="58%" outerRadius="82%" paddingAngle={2} stroke="var(--card)" strokeWidth={2}>
-            {pieData.map((entry, index) => <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />)}
+            {pieData.map((entry) => <Cell key={entry.id} fill={entry.color} />)}
           </Pie>
           <Tooltip formatter={(value) => BRL.format(Number(value))} contentStyle={{ borderRadius: 12, borderColor: "var(--border)", background: "var(--popover)", color: "var(--popover-foreground)" }} />
         </PieChart></div>
-        <ul className="space-y-2" aria-label="Valores por categoria">{pieData.map((item, index) => <li key={item.name} className="flex min-w-0 items-center justify-between gap-3 text-sm"><span className="flex min-w-0 items-center gap-2"><i className="size-2.5 shrink-0 rounded-sm" style={{ background: COLORS[index % COLORS.length] }} /><span className="truncate">{item.name}</span></span><strong className="num shrink-0">{BRL.format(item.value)}</strong></li>)}</ul>
+        <ul className="space-y-2" aria-label="Valores por categoria">{pieData.map((item) => <li key={item.id} className="flex min-w-0 items-center justify-between gap-3 text-sm"><span className="flex min-w-0 items-center gap-2"><i className="size-2.5 shrink-0 rounded-sm" style={{ background: item.color }} /><span className="truncate">{item.name}</span></span><strong className="num shrink-0">{BRL.format(item.value)}</strong></li>)}</ul>
       </> : <p className="grid h-60 place-items-center text-sm text-muted-foreground">Sem despesas para categorizar neste mês.</p>}
     </article>
   </section>;

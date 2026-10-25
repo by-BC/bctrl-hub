@@ -20,6 +20,14 @@ export const ACCOUNT_KIND_LABELS = {
 
 export const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
+const CATEGORY_COLORS = ["#2563eb", "#16a34a", "#ea580c", "#9333ea", "#0891b2", "#db2777", "#ca8a04", "#4f46e5"];
+
+export function defaultFinanceCategoryColor(name: string) {
+  let hash = 0;
+  for (const char of name) hash = (hash * 31 + char.charCodeAt(0)) | 0;
+  return CATEGORY_COLORS[Math.abs(hash) % CATEGORY_COLORS.length];
+}
+
 export function monthEnd(monthStart: string) {
   const [year, month] = monthStart.split("-").map(Number);
   return `${year + (month === 12 ? 1 : 0)}-${String(month === 12 ? 1 : month + 1).padStart(2, "0")}-01`;

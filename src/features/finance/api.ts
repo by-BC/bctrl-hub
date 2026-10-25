@@ -3,6 +3,7 @@ import type { Database, Tables, TablesInsert } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/client";
 import { DataError } from "@/features/routines/api";
 import type { FinanceAccountSave, FinanceBudgetSave, FinanceRecurringSave } from "./schemas/finance";
+import { defaultFinanceCategoryColor } from "./domain/finance";
 
 type Client = SupabaseClient<Database>;
 const db = (): Client => createClient();
@@ -12,7 +13,7 @@ export const financeKeys = {
   month: (month: string) => ["finance", month] as const,
 };
 
-export type FinanceCategory = Tables<"finance_categories">;
+export type FinanceCategory = Tables<"finance_categories"> & { color: string; is_active: boolean };
 export type FinanceAccount = Tables<"finance_accounts">;
 export type FinanceBudget = Tables<"finance_monthly_budgets">;
 export type FinanceRecurringRule = Tables<"finance_recurring_rules">;
@@ -36,8 +37,9 @@ export type FinanceMonthData = {
 
 export async function fetchFinanceMonth(month: string, client: Client = db()): Promise<FinanceMonthData> {
   const end = monthEnd(month);
-  const [categories, accounts, budget, transactions, dueTransactions, recurringOccurrences, recurringRules] = await Promise.all([
+  const [categories, categoryPreferences, accounts, budget, transactions, dueTransactions, recurringOccurrences, recurringRules] = await Promise.all([
     client.from("finance_categories").select("*").order("kind").order("name"),
+    client.from("finance_category_preferences").select("category_id,color,is_active"),
     client.from("finance_accounts").select("*").order("created_at"),
     client.from("finance_monthly_budgets").select("*").eq("month_start", month).maybeSingle(),
     client.from("finance_transactions").select("*").gte("occurred_on", month).lt("occurred_on", end)
@@ -50,6 +52,7 @@ export async function fetchFinanceMonth(month: string, client: Client = db()): P
   ]);
 
   if (categories.error) fail(categories.error, "Não foi possível carregar as categorias financeiras.");
+  if (categoryPreferences.error) fail(categoryPreferences.error, "Não foi possível carregar as preferências das categorias.");
   if (accounts.error) fail(accounts.error, "Não foi possível carregar as contas financeiras.");
   if (budget.error) fail(budget.error, "Não foi possível carregar o orçamento do mês.");
   if (transactions.error) fail(transactions.error, "Não foi possível carregar os lançamentos.");
@@ -69,7 +72,14 @@ export async function fetchFinanceMonth(month: string, client: Client = db()): P
   });
 
   return {
-    categories: categories.data,
+    categories: categories.data.map((category) => {
+      const preference = categoryPreferences.data.find((item) => item.category_id === category.id);
+      return {
+        ...category,
+        color: preference?.color ?? defaultFinanceCategoryColor(category.name),
+        is_active: preference?.is_active ?? true,
+      };
+    }),
     accounts: accounts.data,
     budget: budget.data,
     transactions: monthlyTransactions,
@@ -118,11 +128,63 @@ export async function setFinanceRecurringActive(id: string, active: boolean, cli
 }
 
 export async function createFinanceCategory(
-  row: Pick<FinanceCategory, "id" | "name" | "kind" | "bucket" | "sub_bucket">,
+  row: Pick<FinanceCategory, "id" | "name" | "kind" | "bucket" | "sub_bucket" | "color">,
   client: Client = db(),
 ) {
-  const { error } = await client.from("finance_categories").insert(row);
+  const { color, ...category } = row;
+  const { error } = await client.from("finance_categories").insert(category);
   if (error) fail(error, "Não foi possível criar a categoria.");
+  const { error: preferenceError } = await client.from("finance_category_preferences").upsert(
+    { category_id: row.id, color, is_active: true },
+    { onConflict: "user_id,category_id" },
+  );
+  if (preferenceError) {
+    await client.from("finance_categories").delete().eq("id", row.id);
+    fail(preferenceError, "Não foi possível salvar a cor da categoria.");
+  }
+}
+
+export async function updateFinanceCategory(
+  row: Pick<FinanceCategory, "id" | "name" | "bucket" | "sub_bucket" | "color">,
+  client: Client = db(),
+) {
+  const { id, color, ...category } = row;
+  const { error } = await client.from("finance_categories").update(category).eq("id", id);
+  if (error) fail(error, "Não foi possível atualizar a categoria.");
+  await setFinanceCategoryPreference(id, { color }, client);
+}
+
+export async function setFinanceCategoryPreference(
+  categoryId: string,
+  preference: { color?: string; is_active?: boolean },
+  client: Client = db(),
+) {
+  const { data: current, error: currentError } = await client.from("finance_category_preferences")
+    .select("color,is_active").eq("category_id", categoryId).maybeSingle();
+  if (currentError) fail(currentError, "Não foi possível carregar as preferências da categoria.");
+  let fallbackColor = "#64748b";
+  if (!current) {
+    const { data: category, error: categoryError } = await client.from("finance_categories").select("name").eq("id", categoryId).single();
+    if (categoryError) fail(categoryError, "Não foi possível localizar a categoria.");
+    fallbackColor = defaultFinanceCategoryColor(category.name);
+  }
+  const { error } = await client.from("finance_category_preferences").upsert(
+    {
+      category_id: categoryId,
+      color: preference.color ?? current?.color ?? fallbackColor,
+      is_active: preference.is_active ?? current?.is_active ?? true,
+    },
+    { onConflict: "user_id,category_id" },
+  );
+  if (error) fail(error, "Não foi possível atualizar as preferências da categoria.");
+}
+
+export async function deleteFinanceCategory(id: string, client: Client = db()) {
+  const { error } = await client.from("finance_categories").delete().eq("id", id);
+  if (error?.code === "23503") {
+    throw new DataError("Esta categoria está vinculada a lançamentos ou recorrências. Desative-a para manter o histórico.", error.code);
+  }
+  if (error) fail(error, "Não foi possível excluir a categoria.");
 }
 
 export async function setFinanceTransactionPaid(id: string, isPaid: boolean, client: Client = db()) {

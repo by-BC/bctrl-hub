@@ -66,6 +66,9 @@ import {
 import { deleteTask, setTaskDone, upsertTask, type Task } from "@/features/tasks/api";
 import {
   createFinanceCategory,
+  updateFinanceCategory,
+  setFinanceCategoryPreference,
+  deleteFinanceCategory,
   deleteFinanceTransaction,
   saveFinanceAccount,
   saveFinanceBudget,
@@ -256,8 +259,17 @@ export const WRITES = {
   setFinanceRecurring: write(["finance", "set-recurring"], ({ id, active }: { id: string; active: boolean }) => setFinanceRecurringActive(id, active)),
   createFinanceCategory: write(
     ["finance", "create-category"],
-    (row: { id: string; name: string; kind: "income" | "expense"; bucket: "fixed" | "freedom" | "variable" | null; sub_bucket: "comfort" | "pleasures" | "knowledge" | "goals" | null }) => createFinanceCategory(row),
+    (row: { id: string; name: string; kind: "income" | "expense"; bucket: "fixed" | "freedom" | "variable" | null; sub_bucket: "comfort" | "pleasures" | "knowledge" | "goals" | null; color: string }) => createFinanceCategory(row),
   ),
+  updateFinanceCategory: write(
+    ["finance", "update-category"],
+    (row: { id: string; name: string; bucket: "fixed" | "freedom" | "variable" | null; sub_bucket: "comfort" | "pleasures" | "knowledge" | "goals" | null; color: string }) => updateFinanceCategory(row),
+  ),
+  setFinanceCategoryPreference: write(
+    ["finance", "set-category-preference"],
+    (row: { id: string; color?: string; is_active?: boolean }) => setFinanceCategoryPreference(row.id, { color: row.color, is_active: row.is_active }),
+  ),
+  deleteFinanceCategory: write(["finance", "delete-category"], (id: string) => deleteFinanceCategory(id)),
   setFinancePaid: write(["finance", "set-paid"], ({ id, isPaid }: { id: string; isPaid: boolean }) => setFinanceTransactionPaid(id, isPaid)),
   updateFinanceTransaction: write(["finance", "update-transaction"], (row: { id: string; title: string; category_id: string }) => updateFinanceTransaction(row)),
   setFinanceInvoicePaid: write(["finance", "set-invoice-paid"], setFinanceInvoicePaid),
