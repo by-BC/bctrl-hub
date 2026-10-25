@@ -16,8 +16,8 @@ A instância da Evolution deve estar conectada e acessível antes dos passos 5 e
 
 ## Uso no grupo
 
-- Envie uma foto do prato ou da tabela nutricional. Pode escrever na legenda a refeição e o peso que consumiu, por exemplo `Almoço, 180 g`.
-- Confira a prévia. Para ajustar: `PORCAO 150` (ou `PORCAO 150, 80` se houver dois alimentos), `REFEICAO Almoço`, `CONFIRMAR` ou `CANCELAR`.
-- Os números extraídos de uma tabela precisam estar legíveis. Os números de um prato fotografado são estimativas; confirme o alimento e a quantidade antes de gravar.
+- Envie uma foto do prato ou da tabela nutricional. O agente sugere as gramas de cada alimento visível na foto. Pode escrever na legenda a refeição e o peso que consumiu, por exemplo `Almoço, 180 g`.
+- Confira a prévia: ela identifica quando as gramas foram estimadas pela foto, informadas na legenda ou retiradas da porção do rótulo. Para ajustar: `PORCAO 150` (ou `PORCAO 150, 80` se houver dois alimentos), `REFEICAO Almoço`, `CONFIRMAR` ou `CANCELAR`.
+- As gramas estimadas pela foto são aproximadas e podem variar muito sem referência de escala. A porção do rótulo não confirma quanto você consumiu. Confira os itens e as quantidades antes de enviar `CONFIRMAR`.
 
 O serviço guarda apenas a prévia pendente e IDs recentes de mensagens em `scripts/whatsapp-food/state.json`, ignorado pelo Git. Não guarda as fotos. A prévia expira após aproximadamente 48 horas. Para remover dados locais pendentes, pare o serviço e apague `state.json`.
