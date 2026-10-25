@@ -76,18 +76,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Confira vencimento e dias de fechamento do cartão." }, { status: 400 });
     }
 
-    const [{ data: categories, error: categoryError }, { data: accounts, error: accountError }, { data: prior, error: priorError }] = await Promise.all([
+    const [{ data: categories, error: categoryError }, { data: accounts, error: accountError }] = await Promise.all([
       supabase.from("finance_categories").select("id,name,kind"),
       supabase.from("finance_accounts").select("id,name,kind,closing_day,due_day"),
-      supabase.from("finance_transactions").select("notes").like("notes", "OFX_IMPORT:%"),
     ]);
-    if (categoryError || accountError || priorError) throw new Error("Não foi possível carregar os dados financeiros.");
+    if (categoryError || accountError) throw new Error("Não foi possível carregar os dados financeiros.");
 
-    const existingIds = new Set((accounts ?? []).map((account) => account.id));
-    for (const accountId of [checkingId, cardId].filter(Boolean)) {
-      if (!existingIds.has(accountId)) return NextResponse.json({ error: "Conta selecionada inválida." }, { status: 400 });
+    const accountById = new Map((accounts ?? []).map((account) => [account.id, account]));
+    if (checkingId && accountById.get(checkingId)?.kind !== "checking") return NextResponse.json({ error: "Conta corrente selecionada inválida." }, { status: 400 });
+    if (cardId && accountById.get(cardId)?.kind !== "credit_card") return NextResponse.json({ error: "Cartão selecionado inválido." }, { status: 400 });
+
+    const notes = new Set<string>();
+    for (let offset = 0; ; offset += 1000) {
+      const { data: prior, error: priorError } = await supabase.from("finance_transactions").select("notes")
+        .like("notes", "OFX_IMPORT:%").range(offset, offset + 999);
+      if (priorError) throw new Error("Não foi possível verificar importações anteriores.");
+      for (const row of prior ?? []) if (row.notes) notes.add(row.notes);
+      if (!prior || prior.length < 1000) break;
     }
-    const notes = new Set((prior ?? []).flatMap((row) => row.notes ? [row.notes] : []));
     const seen = new Set<string>();
     const categoryFor = (name: string, kind: string) => categories?.find((item) => item.name === name && item.kind === kind)?.id;
     const inserts: Array<Record<string, unknown>> = [];

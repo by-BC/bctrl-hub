@@ -13,6 +13,7 @@ import { FinanceBudget } from "./finance-budget";
 import { FinanceAccountDialog, FinanceRecurringDialog, FinanceTransactionDialog } from "./finance-dialogs";
 import { InvoiceCard, RecurringRow, TransactionRow } from "./finance-rows";
 import { FinanceOfxImport } from "./finance-ofx-import";
+import { FinanceCharts } from "./finance-charts";
 const monthFormatter = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
 const monthOf = (day: string) => `${day.slice(0, 7)}-01`;
 
@@ -128,6 +129,8 @@ function FinanceContent({
       </section>
 
       <FinanceBudget key={month} month={month} budget={data.budget} actualIncome={income} spent={spending.buckets} subSpent={spending.subBuckets} />
+
+      <FinanceCharts month={month} transactions={data.transactions} categories={data.categories} />
 
       <section aria-label="Ações financeiras" className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <Button className="h-12" onClick={onNewTransaction}><Plus aria-hidden className="size-4" />Novo lançamento</Button>
