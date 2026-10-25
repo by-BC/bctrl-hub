@@ -83,8 +83,8 @@ export function FinanceOfxImport({ open, onOpenChange, categories: _categories, 
     setBusy(true);
     setError(null);
     try {
-      const result = await request("import") as { imported: number; skippedBills: number; skippedDuplicates: number };
-      if (result.imported) toast.success(`${result.imported} lançamentos importados. ${result.skippedBills} pagamento(s) de fatura e ${result.skippedDuplicates} duplicado(s) ignorados.`);
+      const result = await request("import") as { imported: number; skippedBills: number; skippedDuplicates: number; correctedCategories: number };
+      if (result.imported || result.correctedCategories) toast.success(`${result.imported} lançamentos importados; ${result.correctedCategories} categoria(s) corrigida(s). ${result.skippedBills} pagamento(s) de fatura e ${result.skippedDuplicates} duplicado(s) ignorados.`);
       else toast.info("Esses OFX já foram importados; não encontrei novos lançamentos.");
       await queryClient.invalidateQueries({ queryKey: financeKeys.all });
       setFiles([]); setPreview(null); setCardDueOn(""); onOpenChange(false);

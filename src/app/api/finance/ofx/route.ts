@@ -11,10 +11,13 @@ function classify(text: string) {
   const value = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   if (/\bifd\s*\*|ifood/.test(value)) return { title: "iFood", category: "Restaurantes e delivery" };
   if (/uber/.test(value)) return { title: "Uber", category: "Transporte" };
+  // OFX do Pix pode trazer o processador (ex.: PagSeguro Internet), não a loja.
+  if (/transferencia.*pix|pix.*transferencia/.test(value)) return { title: text.slice(0, 140), category: "Outros eventuais" };
   const rules: Array<[RegExp, string]> = [
     [/aluguel|moradia|condominio/, "Moradia (aluguel/financiamento)"],
     [/energia|eletric|agua|gas|conta da casa/, "Contas da casa"],
-    [/internet|celular|telefone|vivo|claro|tim|oi\b/, "Internet e celular"],
+    [/emprestimo|financiamento/, "Parcela mínima de dívidas"],
+    [/internet|celular|telefon|\b(?:vivo|claro|tim|oi)\b/, "Internet e celular"],
     [/supermercado|mercado|atacadao|assai|carrefour|hortifruti|mercearia/, "Supermercado"],
     [/uber|99\b|posto|combustivel|estacionamento|onibus|passagem/, "Transporte"],
     [/farmacia|drogaria|hospital|clinica|consulta|medico|exame|saude/, "Saúde"],
@@ -86,12 +89,12 @@ export async function POST(request: Request) {
     if (checkingId && accountById.get(checkingId)?.kind !== "checking") return NextResponse.json({ error: "Conta corrente selecionada inválida." }, { status: 400 });
     if (cardId && accountById.get(cardId)?.kind !== "credit_card") return NextResponse.json({ error: "Cartão selecionado inválido." }, { status: 400 });
 
-    const notes = new Set<string>();
+    const previousRows: Array<{ id: string; notes: string; category_id: string }> = [];
     for (let offset = 0; ; offset += 1000) {
-      const { data: prior, error: priorError } = await supabase.from("finance_transactions").select("notes")
+      const { data: prior, error: priorError } = await supabase.from("finance_transactions").select("id,notes,category_id")
         .like("notes", "OFX_IMPORT:%").range(offset, offset + 999);
       if (priorError) throw new Error("Não foi possível verificar importações anteriores.");
-      for (const row of prior ?? []) if (row.notes) notes.add(row.notes);
+      for (const row of prior ?? []) if (row.notes) previousRows.push(row as { id: string; notes: string; category_id: string });
       if (!prior || prior.length < 1000) break;
     }
     const seen = new Set<string>();
@@ -99,6 +102,7 @@ export async function POST(request: Request) {
     const inserts: Array<Record<string, unknown>> = [];
     let skippedBills = 0;
     let skippedDuplicates = 0;
+    let correctedCategories = 0;
     let bankAccountId = checkingId || null;
     let activeCardId = cardId || null;
 
@@ -122,12 +126,23 @@ export async function POST(request: Request) {
       if (statement.accountKind === "checking" && isCardBillPayment(transaction)) { skippedBills++; continue; }
       const key = ofxImportKey(statement.accountKind, transaction);
       const prefix = `OFX_IMPORT:${key}:`;
-      if (seen.has(key) || [...notes].some((note) => note.startsWith(prefix))) { skippedDuplicates++; continue; }
+      if (seen.has(key)) { skippedDuplicates++; continue; }
       seen.add(key);
       const kind = transaction.amount < 0 ? "expense" : "income";
       const categoryName = kind === "income" ? "Renda extra" : detail.category;
       const categoryId = categoryFor(categoryName, kind);
       if (!categoryId) return NextResponse.json({ error: `Categoria não encontrada: ${categoryName}.` }, { status: 422 });
+      const oldRows = previousRows.filter((row) => row.notes.startsWith(prefix));
+      if (oldRows.length) {
+        skippedDuplicates++;
+        const needsCorrection = oldRows.filter((row) => row.category_id !== categoryId).map((row) => row.id);
+        if (needsCorrection.length) {
+          const { error } = await supabase.from("finance_transactions").update({ category_id: categoryId }).in("id", needsCorrection);
+          if (error) throw new Error("Falha ao corrigir categoria de importaÃ§Ã£o anterior.");
+          correctedCategories += needsCorrection.length;
+        }
+        continue;
+      }
       const accountId = statement.accountKind === "credit_card" ? activeCardId : bankAccountId;
       const note = `${prefix}${transaction.fitId || "fingerprint"}`;
       const base = { kind, category_id: categoryId, account_id: accountId, title: normalized.title.slice(0, 140), amount: Math.round(Math.abs(transaction.amount) * 100) / 100, occurred_on: transaction.date, due_on: statement.accountKind === "credit_card" ? cardDueOn : transaction.date, is_paid: statement.accountKind === "checking", notes: note };
@@ -141,7 +156,7 @@ export async function POST(request: Request) {
       const { error } = await supabase.from("finance_transactions").insert(inserts as never[]);
       if (error) throw new Error("Não foi possível gravar os lançamentos OFX.");
     }
-    return NextResponse.json({ imported: inserts.length, skippedBills, skippedDuplicates });
+    return NextResponse.json({ imported: inserts.length, skippedBills, skippedDuplicates, correctedCategories });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Não foi possível processar o OFX.";
     return NextResponse.json({ error: message }, { status: message.startsWith("Selecione") ? 400 : 422 });
