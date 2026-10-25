@@ -63,6 +63,12 @@ export async function fetchFinanceMonth(month: string, client: Client = db()): P
   };
 }
 
+export async function fetchFinanceOfxImportReferences(client: Client = db()) {
+  const { data, error } = await client.from("finance_transactions").select("notes").like("notes", "OFX_IMPORT:%");
+  if (error) fail(error, "Não foi possível conferir importações financeiras anteriores.");
+  return (data ?? []).flatMap((row) => row.notes ? [row.notes] : []);
+}
+
 export async function saveFinanceTransactions(rows: FinanceTransactionSave[], client: Client = db()) {
   if (rows.length === 0) return;
   const { error } = await client.from("finance_transactions").upsert(rows, {

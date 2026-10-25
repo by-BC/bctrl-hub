@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight, CalendarClock, CreditCard, Plus, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowLeft, ArrowRight, ArrowUpRight, CalendarClock, CreditCard, FileUp, Plus, Wallet } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shell/page-header";
@@ -12,6 +12,7 @@ import { useFinanceMonth } from "../hooks";
 import { FinanceBudget } from "./finance-budget";
 import { FinanceAccountDialog, FinanceRecurringDialog, FinanceTransactionDialog } from "./finance-dialogs";
 import { InvoiceCard, RecurringRow, TransactionRow } from "./finance-rows";
+import { FinanceOfxImport } from "./finance-ofx-import";
 const monthFormatter = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
 const monthOf = (day: string) => `${day.slice(0, 7)}-01`;
 
@@ -29,6 +30,7 @@ export function FinanceDashboard() {
   const [transactionOpen, setTransactionOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [recurringOpen, setRecurringOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const { data, isPending, isError, refetch } = useFinanceMonth(month);
 
   useEffect(() => {
@@ -76,6 +78,7 @@ export function FinanceDashboard() {
           onNewTransaction={() => setTransactionOpen(true)}
           onNewAccount={() => setAccountOpen(true)}
           onNewRecurring={() => setRecurringOpen(true)}
+          onImport={() => setImportOpen(true)}
         />
       )}
 
@@ -84,6 +87,7 @@ export function FinanceDashboard() {
           <FinanceTransactionDialog open={transactionOpen} onOpenChange={setTransactionOpen} today={todayDate} categories={data.categories} accounts={data.accounts} />
           <FinanceAccountDialog open={accountOpen} onOpenChange={setAccountOpen} />
           <FinanceRecurringDialog open={recurringOpen} onOpenChange={setRecurringOpen} month={month} categories={data.categories} accounts={data.accounts} />
+          <FinanceOfxImport open={importOpen} onOpenChange={setImportOpen} categories={data.categories} accounts={data.accounts} />
         </>
       )}
     </>
@@ -96,12 +100,14 @@ function FinanceContent({
   onNewTransaction,
   onNewAccount,
   onNewRecurring,
+  onImport,
 }: {
   month: string;
   data: NonNullable<ReturnType<typeof useFinanceMonth>["data"]>;
   onNewTransaction: () => void;
   onNewAccount: () => void;
   onNewRecurring: () => void;
+  onImport: () => void;
 }) {
   const income = data.transactions.filter((row) => row.kind === "income").reduce((sum, row) => sum + Number(row.amount), 0);
   const expenses = data.transactions.filter((row) => row.kind === "expense").reduce((sum, row) => sum + Number(row.amount), 0);
@@ -123,10 +129,11 @@ function FinanceContent({
 
       <FinanceBudget key={month} month={month} budget={data.budget} actualIncome={income} spent={spending.buckets} subSpent={spending.subBuckets} />
 
-      <section aria-label="Ações financeiras" className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <section aria-label="Ações financeiras" className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <Button className="h-12" onClick={onNewTransaction}><Plus aria-hidden className="size-4" />Novo lançamento</Button>
         <Button variant="outline" className="h-12" onClick={onNewAccount}><CreditCard aria-hidden className="size-4" />Adicionar conta ou cartão</Button>
         <Button variant="outline" className="h-12" onClick={onNewRecurring}><CalendarClock aria-hidden className="size-4" />Nova recorrência</Button>
+        <Button variant="outline" className="h-12" onClick={onImport}><FileUp aria-hidden className="size-4" />Importar OFX</Button>
       </section>
 
       <section aria-labelledby="finance-accounts-title" className="space-y-3">
