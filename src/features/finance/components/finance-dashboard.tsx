@@ -119,15 +119,20 @@ function FinanceContent({
   const occurrences = useMemo(() => new Set(data.recurringOccurrences.map((row) => `${row.recurring_rule_id}:${row.recurrence_occurrence}`)), [data.recurringOccurrences]);
   const spending = useMemo(() => bucketTotals(data.transactions, categories), [data.transactions, categories]);
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  useEffect(() => { setCategoryFilter("all"); setFromDate(""); setToDate(""); }, [month]);
+  useEffect(() => { setCategoryFilter("all"); setSourceFilter("all"); setFromDate(""); setToDate(""); }, [month]);
   const filteredTransactions = useMemo(() => data.transactions.filter((row) =>
     (categoryFilter === "all" || row.category_id === categoryFilter)
+    && (sourceFilter === "all"
+      || (sourceFilter === "card" && row.account_id && accounts.get(row.account_id)?.kind === "credit_card")
+      || (sourceFilter === "account" && row.account_id && accounts.get(row.account_id)?.kind !== "credit_card")
+      || (sourceFilter === "unlinked" && !row.account_id))
     && (!fromDate || row.due_on >= fromDate)
     && (!toDate || row.due_on <= toDate),
-  ), [data.transactions, categoryFilter, fromDate, toDate]);
-  const hasFilters = categoryFilter !== "all" || Boolean(fromDate || toDate);
+  ), [data.transactions, categoryFilter, sourceFilter, fromDate, toDate, accounts]);
+  const hasFilters = categoryFilter !== "all" || sourceFilter !== "all" || Boolean(fromDate || toDate);
 
   return (
     <div className="space-y-6">
@@ -210,11 +215,12 @@ function FinanceContent({
           </div>
           <span className="num text-sm text-muted-foreground">{filteredTransactions.length}{hasFilters ? ` de ${data.transactions.length}` : ""} itens</span>
         </header>
-        <div className="grid gap-2 rounded-2xl border bg-card p-3 sm:grid-cols-[minmax(12rem,1.4fr)_repeat(2,minmax(9rem,1fr))_auto] sm:items-end">
+        <div className="grid gap-2 rounded-2xl border bg-card p-3 sm:grid-cols-[minmax(11rem,1.4fr)_minmax(9rem,1fr)_repeat(2,minmax(8rem,1fr))_auto] sm:items-end">
+          <label className="block min-w-0 space-y-1 text-xs font-medium text-muted-foreground">Origem<select value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm font-normal text-foreground"><option value="all">Conta e cartão</option><option value="account">Conta</option><option value="card">Cartão de crédito</option><option value="unlinked">Sem vínculo</option></select></label>
           <label className="block min-w-0 space-y-1 text-xs font-medium text-muted-foreground">Categoria<select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm font-normal text-foreground"><option value="all">Todas as categorias</option>{data.categories.filter((item) => data.transactions.some((row) => row.category_id === item.id)).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
           <label className="block min-w-0 space-y-1 text-xs font-medium text-muted-foreground">De<input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm font-normal text-foreground" /></label>
           <label className="block min-w-0 space-y-1 text-xs font-medium text-muted-foreground">Até<input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm font-normal text-foreground" /></label>
-          <Button variant="ghost" className="h-10" disabled={!hasFilters} onClick={() => { setCategoryFilter("all"); setFromDate(""); setToDate(""); }}>Limpar filtros</Button>
+          <Button variant="ghost" className="h-10" disabled={!hasFilters} onClick={() => { setCategoryFilter("all"); setSourceFilter("all"); setFromDate(""); setToDate(""); }}>Limpar filtros</Button>
         </div>
         {data.transactions.length === 0 ? (
           <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">Nenhum lançamento neste mês. Comece pelo planejamento ou registre uma entrada ou saída.</p>
