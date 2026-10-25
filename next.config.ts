@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   // O indicador de dev fica sobre a barra inferior no celular; erros continuam aparecendo.
   devIndicators: false,
   turbopack: {
-    // Existe um package-lock.json em C:\Users\bruno; fixa a raiz no projeto.
+    // Fixa a raiz do Turbopack neste projeto.
     root: process.cwd(),
     rules: {
       "*.css": {

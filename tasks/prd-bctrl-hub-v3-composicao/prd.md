@@ -23,16 +23,16 @@ A v3 traz a **composição corporal** para o app:
 
 ## Histórias de Usuário
 
-Persona: **Bruno** (dono do app), que se pesa na balança de bioimpedância e acompanha a recomposição corporal junto com treino e dieta.
+Persona: **usuário** (dono do app), que se pesa na balança de bioimpedância e acompanha a recomposição corporal junto com treino e dieta.
 
-- Como Bruno, quero **importar meu histórico da balança** para ver minha evolução desde maio.
-- Como Bruno, quero **registrar uma nova medição** copiando os números que a balança mostra, sem precisar preencher as 17 métricas.
-- Como Bruno, quero **ver a evolução de gordura, massa muscular, visceral e massa magra** em gráficos, para saber se estou perdendo gordura e mantendo músculo.
-- Como Bruno, quero **ver todas as métricas de uma medição** num detalhe, quando quiser conferir água, ossos ou idade metabólica.
-- Como Bruno, quero **definir metas de composição** (ex.: 15% de gordura) e ver o progresso e uma estimativa de quando chego lá.
-- Como Bruno, quero que **minhas metas de calorias usem o metabolismo medido** pela balança, e não só a fórmula.
-- Como Bruno, quero que **o peso da balança apareça na Evolução** sem eu precisar registrá-lo duas vezes.
-- Como Bruno, quero **ver no resumo do mês e no card do mês** quanto variaram gordura e músculo.
+- Como usuário, quero **importar meu histórico da balança** para ver minha evolução desde maio.
+- Como usuário, quero **registrar uma nova medição** copiando os números que a balança mostra, sem precisar preencher as 17 métricas.
+- Como usuário, quero **ver a evolução de gordura, massa muscular, visceral e massa magra** em gráficos, para saber se estou perdendo gordura e mantendo músculo.
+- Como usuário, quero **ver todas as métricas de uma medição** num detalhe, quando quiser conferir água, ossos ou idade metabólica.
+- Como usuário, quero **definir metas de composição** (ex.: 15% de gordura) e ver o progresso e uma estimativa de quando chego lá.
+- Como usuário, quero que **minhas metas de calorias usem o metabolismo medido** pela balança, e não só a fórmula.
+- Como usuário, quero que **o peso da balança apareça na Evolução** sem eu precisar registrá-lo duas vezes.
+- Como usuário, quero **ver no resumo do mês e no card do mês** quanto variaram gordura e músculo.
 
 **Casos extremos:**
 - duas medições no mesmo dia (ex.: manhã e noite);

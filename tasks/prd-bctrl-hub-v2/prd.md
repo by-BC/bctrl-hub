@@ -22,19 +22,19 @@ A v2 resolve isso com três frentes: **importação única do Hevy** (catálogo 
 
 ## Histórias de Usuário
 
-Persona: **Bruno**, dono do app (ver PRD v1), que usava o Hevy antes do Bctrl Hub e segue um plano alimentar com opções.
+Persona: **usuário**, dono do app (ver PRD v1), que usava o Hevy antes do Bctrl Hub e segue um plano alimentar com opções.
 
-- Como Bruno, quero **buscar qualquer exercício do catálogo do Hevy** ao montar uma rotina ou durante o treino, para não ter que cadastrá-lo.
-- Como Bruno, quero **filtrar exercícios por músculo e equipamento**, para achar variações (ex.: "Peito + Halter").
-- Como Bruno, quero que **meus treinos antigos do Hevy apareçam nos gráficos e recordes**, para a evolução começar do meu histórico real.
-- Como Bruno, quero **ver um heatmap do ano** em que cada dia mostra o quanto fiquei "no controle", para enxergar minha consistência.
-- Como Bruno, quero **um resumo do mês** (treinos, volume, PRs, dias no controle, adesão, cardio), comparado ao mês anterior.
-- Como Bruno, quero **desbloquear conquistas** (ex.: 4 semanas seguidas de treino), para ter marcos de motivação.
-- Como Bruno, quero **ver os recordes batidos no mês**.
-- Como Bruno, quero **exportar o resumo do mês como story 9:16**, no mesmo padrão visual dos stories de treino.
-- Como Bruno, quero **informar meus dados corporais e objetivo** e receber metas de kcal e macros calculadas, podendo ajustá-las.
-- Como Bruno, quero **ver kcal e macros de cada opção do plano** e o **total do dia versus a meta**.
-- Como Bruno, quero **registrar o que comi fora do plano buscando alimentos na TACO**, para que entre no total do dia.
+- Como usuário, quero **buscar qualquer exercício do catálogo do Hevy** ao montar uma rotina ou durante o treino, para não ter que cadastrá-lo.
+- Como usuário, quero **filtrar exercícios por músculo e equipamento**, para achar variações (ex.: "Peito + Halter").
+- Como usuário, quero que **meus treinos antigos do Hevy apareçam nos gráficos e recordes**, para a evolução começar do meu histórico real.
+- Como usuário, quero **ver um heatmap do ano** em que cada dia mostra o quanto fiquei "no controle", para enxergar minha consistência.
+- Como usuário, quero **um resumo do mês** (treinos, volume, PRs, dias no controle, adesão, cardio), comparado ao mês anterior.
+- Como usuário, quero **desbloquear conquistas** (ex.: 4 semanas seguidas de treino), para ter marcos de motivação.
+- Como usuário, quero **ver os recordes batidos no mês**.
+- Como usuário, quero **exportar o resumo do mês como story 9:16**, no mesmo padrão visual dos stories de treino.
+- Como usuário, quero **informar meus dados corporais e objetivo** e receber metas de kcal e macros calculadas, podendo ajustá-las.
+- Como usuário, quero **ver kcal e macros de cada opção do plano** e o **total do dia versus a meta**.
+- Como usuário, quero **registrar o que comi fora do plano buscando alimentos na TACO**, para que entre no total do dia.
 
 **Casos extremos:** exercício do Hevy sem equivalente exato entre os 26 atuais; exercício personalizado do Hevy; treino do Hevy com carga em outra unidade ou sem carga (peso corporal, cardio); alimento do plano sem correspondência na TACO; mês sem nenhum dado; dia futuro no heatmap; importação interrompida no meio.
 

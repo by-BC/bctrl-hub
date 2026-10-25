@@ -207,7 +207,7 @@ Playwright, 1 worker, usuário descartável, sem offline:
 ### Dependências Técnicas
 
 - V2 concluída: perfil, `month_summary`, card do mês e metas nutricionais.
-- Planilha original em `C:\Users\bruno\Downloads\weight_Bruno_*.xlsx`, para o dry-run real.
+- Planilha original em `C:\Users\SEU_USUARIO\Downloads\weight_usuario_*.xlsx`, para o dry-run real.
 - O dono aplica o SQL privado no remoto.
 - `npx supabase db push` para as migrations, que agentes já executaram nas tasks anteriores.
 

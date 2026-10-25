@@ -104,7 +104,7 @@ describe("profiles (RLS de dono)", () => {
   beforeAll(async () => {
     await must(
       owner.client.from("profiles").insert({
-        display_name: "Bruno",
+        display_name: "Pessoa Teste",
         sex: "m",
         birth_date: "1995-05-10",
         height_cm: 178,
@@ -137,7 +137,7 @@ describe("profiles (RLS de dono)", () => {
     expect(ins.error).not.toBeNull();
 
     const { data } = await owner.client.from("profiles").select("display_name").single();
-    expect(data).toEqual({ display_name: "Bruno" });
+    expect(data).toEqual({ display_name: "Pessoa Teste" });
   });
 
   it("anônimo não lê", async () => {

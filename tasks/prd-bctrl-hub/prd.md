@@ -20,20 +20,20 @@ Não é um produto comercial: não há cadastro público, planos, multiusuário 
 
 ## Histórias de Usuário
 
-Persona única: **Bruno**, praticante de musculação nível iniciante, segue treino Upper/Lower 4x por semana e plano alimentar com opções; usa o celular na academia e o PC para revisar a evolução.
+Persona única: **usuário**, praticante de musculação nível iniciante, segue treino Upper/Lower 4x por semana e plano alimentar com opções; usa o celular na academia e o PC para revisar a evolução.
 
-- Como Bruno, quero **iniciar o treino do dia (ex: Upper 1)** a partir da rotina cadastrada, para não montar a sessão do zero.
-- Como Bruno, quero **ver a carga e as repetições da última vez** em cada série, para saber quanto progredir (pirâmide crescente).
-- Como Bruno, quero que **um timer de descanso de 2 min** inicie ao concluir uma série, para manter o descanso correto sem outro app.
-- Como Bruno, quero **ser avisado quando bater um recorde pessoal**, para acompanhar a progressão.
-- Como Bruno, quero **ver as observações técnicas** da rotina (escápulas retraídas, cadência 2:3) durante o treino.
-- Como Bruno, quero **gerar uma imagem de resumo do treino no formato story do Instagram**, para compartilhar a sessão com a identidade Bctrl.
-- Como Bruno, quero **escolher qual opção do plano comi** em cada refeição e marcá-la como feita, para medir minha adesão à dieta.
-- Como Bruno, quero **registrar minutos de cardio e marcar abdominal e suplementos**, para ver o progresso das metas semanais.
-- Como Bruno, quero **criar hábitos customizados** com frequência própria (ex: ler 3x/semana).
-- Como Bruno, quero **registrar meu peso corporal** e ver a tendência em gráfico.
-- Como Bruno, quero uma **lista de tarefas simples** para criar, concluir e apagar itens.
-- Como Bruno, no PC, quero **ver histórico e gráficos em tela maior** para analisar a evolução.
+- Como usuário, quero **iniciar o treino do dia (ex: Upper 1)** a partir da rotina cadastrada, para não montar a sessão do zero.
+- Como usuário, quero **ver a carga e as repetições da última vez** em cada série, para saber quanto progredir (pirâmide crescente).
+- Como usuário, quero que **um timer de descanso de 2 min** inicie ao concluir uma série, para manter o descanso correto sem outro app.
+- Como usuário, quero **ser avisado quando bater um recorde pessoal**, para acompanhar a progressão.
+- Como usuário, quero **ver as observações técnicas** da rotina (escápulas retraídas, cadência 2:3) durante o treino.
+- Como usuário, quero **gerar uma imagem de resumo do treino no formato story do Instagram**, para compartilhar a sessão com a identidade Bctrl.
+- Como usuário, quero **escolher qual opção do plano comi** em cada refeição e marcá-la como feita, para medir minha adesão à dieta.
+- Como usuário, quero **registrar minutos de cardio e marcar abdominal e suplementos**, para ver o progresso das metas semanais.
+- Como usuário, quero **criar hábitos customizados** com frequência própria (ex: ler 3x/semana).
+- Como usuário, quero **registrar meu peso corporal** e ver a tendência em gráfico.
+- Como usuário, quero uma **lista de tarefas simples** para criar, concluir e apagar itens.
+- Como usuário, no PC, quero **ver histórico e gráficos em tela maior** para analisar a evolução.
 
 **Casos extremos:** sessão interrompida no meio (fechar o navegador/aba); treino feito fora da rotina (exercício extra ou pulado); refeição fora do plano; dia sem treino (pós-treino não aparece); primeira vez num exercício (sem carga anterior).
 

@@ -28,7 +28,7 @@ Script local e único (`scripts/scale/`) que lê o `.xlsx` exportado do app da b
   - dry-run (padrão) gera `scripts/scale/out/report.md` (lidas, importadas, ignoradas com motivo, período, métricas presentes);
   - `--write` gera `supabase/scale.private.sql` (`insert … on conflict (user_id, measured_at) do update`, `source = 'import'`, dono resolvido por e-mail como nos outros SQLs privados)
 - `.gitignore`: `scripts/scale/out/` (`supabase/*.private.sql` já coberto). A planilha real fica fora do repositório; nenhum valor real em fixture ou teste
-- **Parada obrigatória:** depois do dry-run real (arquivo em `C:\Users\bruno\Downloads\weight_Bruno_*.xlsx`), parar para o dono revisar. A aplicação no remoto (`npx supabase db query --linked -f supabase/scale.private.sql`) é feita **pelo dono**
+- **Parada obrigatória:** depois do dry-run real (arquivo em `C:\Users\SEU_USUARIO\Downloads\weight_usuario_*.xlsx`), parar para o dono revisar. A aplicação no remoto (`npx supabase db query --linked -f supabase/scale.private.sql`) é feita **pelo dono**
 </requirements>
 
 ## Subtarefas
@@ -47,7 +47,7 @@ Script local e único (`scripts/scale/`) que lê o `.xlsx` exportado do app da b
 >   - A linha 10 repete a 9 com **valores diferentes**, e fica a 9. Se preferir a 10, apague a 9 de uma cópia da planilha antes do `--write`.
 >
 > **2.6 (dono), depois da revisão:**
-> 1. `npm run import:scale -- "C:\Users\bruno\Downloads\weight_Bruno_1792511326.xlsx" --write`
+> 1. `npm run import:scale -- "C:\Users\SEU_USUARIO\Downloads\weight_usuario_<timestamp>.xlsx" --write`
 > 2. `npx supabase db query --linked -f supabase/scale.private.sql`
 > 3. No remoto, conferir `body_measurements` com 30 linhas e `body_weights` com `source = 'scale'` nos 25 dias.
 
