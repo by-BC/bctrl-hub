@@ -1,0 +1,17 @@
+{
+  "name": "Bctrl Hub",
+  "short_name": "Bctrl",
+  "description": "Treinos, alimentação, hábitos e tarefas.",
+  "start_url": "/treino",
+  "display": "standalone",
+  "background_color": "#1b1c20",
+  "theme_color": "#1b1c20",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

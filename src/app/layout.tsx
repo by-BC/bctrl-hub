@@ -21,6 +21,7 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: { default: "Bctrl Hub", template: "%s · Bctrl Hub" },
   description: "Be in control. Treino, alimentação, hábitos e tarefas.",
+  manifest: "/manifest.webmanifest",
   robots: { index: false, follow: false },
 };
 

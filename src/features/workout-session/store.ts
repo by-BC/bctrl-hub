@@ -67,7 +67,7 @@ export type ActiveWorkout = {
   startedAt: string;
   exercises: SessionExercise[];
   /** Timer por timestamp: continua certo após reload ou com a tela bloqueada. */
-  rest: { endsAt: string; durationSec: number } | null;
+  rest: { endsAt: string; durationSec: number; exerciseName?: string; nextSetNumber?: number } | null;
   status: "active" | "pendingSync";
   finishedAt: string | null;
   sync: SyncState | null;
@@ -377,7 +377,12 @@ export function createActiveWorkoutStore({ storage, skipHydration = true }: Stor
               ...w,
               rest:
                 exercise.restSec > 0
-                  ? { endsAt: new Date(now + exercise.restSec * 1000).toISOString(), durationSec: exercise.restSec }
+                  ? {
+                      endsAt: new Date(now + exercise.restSec * 1000).toISOString(),
+                      durationSec: exercise.restSec,
+                      exerciseName: exercise.name,
+                      nextSetNumber: exercise.sets[setIdx + 1] ? setIdx + 2 : undefined,
+                    }
                   : null,
             }));
             return true;
@@ -416,7 +421,11 @@ export function createActiveWorkoutStore({ storage, skipHydration = true }: Stor
               if (endsAt <= now) return { ...w, rest: null };
               return {
                 ...w,
-                rest: { endsAt: new Date(endsAt).toISOString(), durationSec: Math.max(1, w.rest.durationSec + deltaSec) },
+                rest: {
+                  ...w.rest,
+                  endsAt: new Date(endsAt).toISOString(),
+                  durationSec: Math.max(1, w.rest.durationSec + deltaSec),
+                },
               };
             });
           },
