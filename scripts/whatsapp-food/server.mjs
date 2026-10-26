@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { basename, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+import { FinanceInputError, analyzeFinance, cardDueDate, createFinanceDraft, financePreview, financeQuestion, financeReferences, financeSummary, potentialDuplicates, saveFinance, updateFinanceDraft } from "./finance.mjs";
 
 const required = (name) => {
   const value = process.env[name]?.trim();
@@ -51,6 +52,12 @@ function uuidFrom(value) {
 
 function normalize(value) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+function isFinanceRequest(text, command) {
+  if (text.length > 600 || /^(porcao|refeicao|cadastrar|salvar alimentos|confirmar|cancelar|conta|categoria|valor|data)\b/.test(command)) return false;
+  return /\b(gasto|gastei|gastos|paguei|comprei|recebi|salario|renda|financas|cartao de credito|quanto gastei|como estou|delivery|uber|investi|guardei)\b/.test(command)
+    || /(?:r\$\s*)?\d+[,.]\d{2}\b/.test(command);
 }
 
 function dayInSaoPaulo(when) {
@@ -291,32 +298,98 @@ async function handle(data) {
   await saveState();
 
   if (message?.imageMessage) {
+    if (state.draft && Date.now() - state.draft.createdAt <= 48 * 60 * 60 * 1000) {
+      await reply("Há uma prévia pendente. Envie CONFIRMAR ou CANCELAR antes da próxima foto.");
+      return;
+    }
     const caption = String(message.imageMessage.caption ?? "").slice(0, 500);
     const seconds = Number(data.messageTimestamp);
     const when = Number.isFinite(seconds) && seconds > 0 ? new Date(seconds * 1000) : new Date();
     const [image, plan] = await Promise.all([getImage(data, message), meals()]);
     const analysis = await analyze(image, caption);
     const meal = chooseMeal(plan, caption, when);
-    state.draft = { messageId: id, createdAt: Date.now(), day: dayInSaoPaulo(when), mealId: meal.id, mealName: meal.name, ...analysis };
+    state.draft = { type: "food", messageId: id, createdAt: Date.now(), day: dayInSaoPaulo(when), mealId: meal.id, mealName: meal.name, ...analysis };
     await saveState();
     await reply(preview(state.draft));
     return;
   }
   const command = normalize(text);
-  if (/\b(gasto|gastei|paguei|recebi|salario|renda|financas|cartao de credito)\b/.test(command)) {
-    await reply("O registro financeiro pelo WhatsApp ainda não está ativo. Por enquanto, lance esse valor em Finanças no app.");
-    return;
-  }
   if (command === "cancelar") {
     state.draft = null;
     await saveState();
     await reply("Registro cancelado.");
     return;
   }
+  if (state.draft && Date.now() - state.draft.createdAt > 48 * 60 * 60 * 1000) {
+    state.draft = null;
+    await saveState();
+  }
+  if (state.draft?.type === "finance") {
+    if (command === "confirmar" || command === "confirmar mesmo assim") {
+      const draft = state.draft;
+      if (draft.items.some((item) => !item.categoryId || !item.accountId)) throw new FinanceInputError("Defina categoria e conta de todos os itens antes de confirmar.");
+      if (command !== "confirmar mesmo assim") {
+        const matches = await potentialDuplicates(db, config.userId, draft);
+        if (matches.length) {
+          await reply(`Possível lançamento já registrado para o(s) item(ns) ${matches.join(", ")}. Confira no app. Se for outra compra, envie CONFIRMAR MESMO ASSIM; ou CANCELAR.`);
+          return;
+        }
+      }
+      const rows = await saveFinance(db, config.userId, draft, uuidFrom);
+      const month = (draft.items[0].accountKind === "credit_card"
+        ? cardDueDate(draft.items[0].date, draft.items[0].closingDay, draft.items[0].dueDay)
+        : draft.items[0].date).slice(0, 7);
+      state.draft = null;
+      await saveState();
+      let summary = "Abra Finanças no app para conferir o resumo do mês.";
+      try {
+        const refs = await financeReferences(db, config.userId);
+        summary = await financeSummary(db, config.userId, refs, { month, category: null, term: null });
+      } catch (error) { console.error("[whatsapp-finance] resumo:", error); }
+      await reply(`${rows} lançamento(s) registrado(s) em Finanças.\n${summary}`);
+      return;
+    }
+    if (/^(conta|categoria|valor|data)\b/.test(command)) {
+      const refs = await financeReferences(db, config.userId);
+      if (!updateFinanceDraft(state.draft, text, refs)) throw new FinanceInputError("Use CONTA 1 Conta Nubank, CATEGORIA 1 Transporte, VALOR 1 6,19 ou DATA 1 25/10/2026.");
+      await saveState();
+      await reply(financePreview(state.draft));
+      return;
+    }
+  }
+  if (isFinanceRequest(text, command)) {
+    const seconds = Number(data.messageTimestamp);
+    const when = Number.isFinite(seconds) && seconds > 0 ? new Date(seconds * 1000) : new Date();
+    const today = dayInSaoPaulo(when);
+    const refs = await financeReferences(db, config.userId);
+    const cliPath = process.env.CODEX_CLI_JS || join(process.env.APPDATA || "", "npm", "node_modules", "@openai", "codex", "bin", "codex.js");
+    const result = await analyzeFinance(text, today, refs, cliPath, runCodex);
+    if (result.intent === "question") {
+      await reply(await financeSummary(db, config.userId, refs, financeQuestion(result, refs, today)));
+    } else if (result.intent === "record") {
+      if (state.draft) { await reply("Há uma prévia pendente. Envie CONFIRMAR ou CANCELAR antes de outro lançamento."); return; }
+      state.draft = createFinanceDraft(result, refs, id, today);
+      await saveState();
+      await reply(financePreview(state.draft));
+    } else {
+      await reply(/\b(fatura|transferencia entre contas)\b/.test(command)
+        ? "Pagamento de fatura ou transferência entre suas contas não cria um novo gasto. Confira a fatura em Finanças no app."
+        : "Não identifiquei um gasto, uma renda ou uma pergunta financeira. Informe o valor e o que aconteceu.");
+    }
+    return;
+  }
   if (!state.draft || Date.now() - state.draft.createdAt > 48 * 60 * 60 * 1000) {
     state.draft = null;
     await saveState();
-    if (/^(confirmar|porcao|refeicao|cadastrar|salvar alimentos)/.test(command)) await reply("Envie uma foto nova para começar.");
+    if (/^(confirmar|porcao|refeicao|cadastrar|salvar alimentos|conta|categoria|valor|data)/.test(command)) await reply("Envie uma foto ou um lançamento financeiro para começar.");
+    return;
+  }
+  if (state.draft.type === "finance") {
+    await reply("Prévia financeira pendente. Use os comandos exibidos, CONFIRMAR ou CANCELAR.");
+    return;
+  }
+  if (/^(conta|categoria|valor|data)\b/.test(command)) {
+    await reply("Esse comando ajusta uma prévia de Finanças. Envie um gasto ou renda para começar.");
     return;
   }
   if (command.startsWith("porcao ")) {
@@ -413,8 +486,8 @@ const server = createServer(async (request, response) => {
     response.writeHead(202).end();
     queue = queue.then(() => handle(event.data)).catch(async (error) => {
       console.error("[whatsapp-food]", error);
-      const friendly = error instanceof Error && /^(Não consegui estimar os valores nutricionais|Não identifiquei alimentos suficientes|Foto inválida|Envie uma foto JPG)/.test(error.message)
-        ? error.message : "Não consegui processar essa mensagem. Envie a foto novamente ou confira o serviço.";
+      const friendly = error instanceof FinanceInputError || error instanceof Error && /^(Não consegui estimar os valores nutricionais|Não identifiquei alimentos suficientes|Foto inválida|Envie uma foto JPG)/.test(error.message)
+        ? error.message : "Não consegui processar essa mensagem. Confira os dados e tente novamente.";
       try { await reply(friendly); } catch (replyError) { console.error("[whatsapp-food] resposta:", replyError); }
     });
   } catch (error) {

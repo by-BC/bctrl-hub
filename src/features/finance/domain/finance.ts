@@ -54,8 +54,8 @@ export function lastDayOfMonth(month: string) {
 /** Data de vencimento da primeira fatura e dos próximos meses, respeitando fechamento/vencimento. */
 export function cardInstallmentDueDates(purchaseDate: string, closingDay: number, dueDay: number, count: number) {
   const [year, month, day] = purchaseDate.split("-").map(Number);
-  const closingMonth = day <= closingDay ? month - 1 : month;
-  const dueMonth = closingMonth + 1;
+  const closingMonth = month - 1 + (day > closingDay ? 1 : 0);
+  const dueMonth = closingMonth + (dueDay <= closingDay ? 1 : 0);
   return Array.from({ length: count }, (_, index) => dateInMonth(year, dueMonth + index, dueDay));
 }
 
