@@ -276,14 +276,15 @@ async function fetchMonthRows(db, userId, column, month) {
 }
 
 export async function financeSummary(db, userId, refs, query) {
-  const [occurred, due] = await Promise.all([
-    fetchMonthRows(db, userId, "occurred_on", query.month),
-    fetchMonthRows(db, userId, "due_on", query.month),
-  ]);
+  const isPurchaseQuery = Boolean(query.category || query.term);
+  const occurred = await fetchMonthRows(db, userId, "occurred_on", query.month);
+  const due = isPurchaseQuery ? [] : await fetchMonthRows(db, userId, "due_on", query.month);
   const accounts = new Map(refs.accounts.map((row) => [row.id, row]));
   const categories = new Map(refs.allCategories.map((row) => [row.id, row]));
   const rows = new Map();
-  for (const row of occurred) if (accounts.get(row.account_id)?.kind !== "credit_card") rows.set(row.id, row);
+  for (const row of occurred) {
+    if (isPurchaseQuery || accounts.get(row.account_id)?.kind !== "credit_card") rows.set(row.id, row);
+  }
   for (const row of due) if (accounts.get(row.account_id)?.kind === "credit_card") rows.set(row.id, row);
   const totals = { fixed: 0, variable: 0, freedom: 0 };
   let income = 0;
