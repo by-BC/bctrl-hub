@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { basename, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
-import { FinanceInputError, analyzeFinance, cardDueDate, createFinanceDraft, financePreview, financeQuestion, financeReferences, financeSummary, potentialDuplicates, saveFinance, updateFinanceDraft } from "./finance.mjs";
+import { FinanceInputError, analyzeFinance, cardDueDate, createFinanceDraft, fillDefaultAccounts, financePreview, financeQuestion, financeReferences, financeSummary, mergeMatchingFinanceDraft, potentialDuplicates, saveFinance, updateFinanceDraft } from "./finance.mjs";
 
 const required = (name) => {
   const value = process.env[name]?.trim();
@@ -327,7 +327,20 @@ async function handle(data) {
   if (state.draft?.type === "finance") {
     if (command === "confirmar" || command === "confirmar mesmo assim") {
       const draft = state.draft;
-      if (draft.items.some((item) => !item.categoryId || !item.accountId)) throw new FinanceInputError("Defina categoria e conta de todos os itens antes de confirmar.");
+      if (draft.items.some((item) => !item.accountId)) {
+        const refs = await financeReferences(db, config.userId);
+        if (fillDefaultAccounts(draft, refs)) await saveState();
+      }
+      const missingAccount = draft.items.some((item) => !item.accountId);
+      const missingCategory = draft.items.some((item) => !item.categoryId);
+      if (missingAccount) {
+        await reply(draft.items.length === 1 ? "Falta só escolher o pagamento: responda DÉBITO ou CARTÃO." : "Falta escolher a conta de cada item. Responda DÉBITO 1 ou CARTÃO 2.");
+        return;
+      }
+      if (missingCategory) {
+        await reply(draft.items.length === 1 ? "Falta só a categoria. Responda com uma, por exemplo Transporte." : "Informe a categoria dos itens pendentes antes de confirmar.");
+        return;
+      }
       if (command !== "confirmar mesmo assim") {
         const matches = await potentialDuplicates(db, config.userId, draft);
         if (matches.length) {
@@ -349,11 +362,15 @@ async function handle(data) {
       await reply(`${rows} lançamento(s) registrado(s) em Finanças.\n${summary}`);
       return;
     }
-    if (/^(conta|categoria|valor|data)\b/.test(command)) {
+    const hasMissingDetails = state.draft.items.some((item) => !item.accountId || !item.categoryId);
+    if (/^(conta|categoria|valor|data)\b/.test(command) || hasMissingDetails && !isFinanceRequest(text, command)) {
       const refs = await financeReferences(db, config.userId);
-      if (!updateFinanceDraft(state.draft, text, refs)) throw new FinanceInputError("Use CONTA 1 Conta Nubank, CATEGORIA 1 Transporte, VALOR 1 6,19 ou DATA 1 25/10/2026.");
-      await saveState();
-      await reply(financePreview(state.draft));
+      if (updateFinanceDraft(state.draft, text, refs)) {
+        await saveState();
+        await reply(financePreview(state.draft));
+      } else if (/^(conta|categoria|valor|data)\b/.test(command)) {
+        throw new FinanceInputError("Responda DÉBITO ou CARTÃO para escolher a conta, ou informe o nome da categoria.");
+      }
       return;
     }
   }
@@ -367,8 +384,16 @@ async function handle(data) {
     if (result.intent === "question") {
       await reply(await financeSummary(db, config.userId, refs, financeQuestion(result, refs, today)));
     } else if (result.intent === "record") {
-      if (state.draft) { await reply("Há uma prévia pendente. Envie CONFIRMAR ou CANCELAR antes de outro lançamento."); return; }
-      state.draft = createFinanceDraft(result, refs, id, today);
+      const incoming = createFinanceDraft(result, refs, id, today, text);
+      if (state.draft?.type === "finance") {
+        if (!mergeMatchingFinanceDraft(state.draft, incoming)) {
+          await reply("Há outro lançamento na prévia. Confirme ou cancele antes de começar um novo.");
+          return;
+        }
+      } else if (state.draft) {
+        await reply("Há uma prévia pendente. Envie CONFIRMAR ou CANCELAR antes de outro lançamento.");
+        return;
+      } else state.draft = incoming;
       await saveState();
       await reply(financePreview(state.draft));
     } else {
@@ -485,6 +510,10 @@ const server = createServer(async (request, response) => {
     if (String(event.event).toLowerCase().replaceAll("_", ".") !== "messages.upsert" || event.instance !== config.instance || !event.data) { response.writeHead(204).end(); return; }
     response.writeHead(202).end();
     queue = queue.then(() => handle(event.data)).catch(async (error) => {
+      if (error instanceof FinanceInputError) {
+        try { await reply(error.message); } catch (replyError) { console.error("[whatsapp-food] resposta:", replyError); }
+        return;
+      }
       console.error("[whatsapp-food]", error);
       const friendly = error instanceof FinanceInputError || error instanceof Error && /^(Não consegui estimar os valores nutricionais|Não identifiquei alimentos suficientes|Foto inválida|Envie uma foto JPG)/.test(error.message)
         ? error.message : "Não consegui processar essa mensagem. Confira os dados e tente novamente.";

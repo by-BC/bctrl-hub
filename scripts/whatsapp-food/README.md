@@ -24,8 +24,8 @@ A instância da Evolution deve estar conectada e acessível antes dos passos 5 e
 
 ### Finanças
 
-- Envie um gasto ou renda em texto, por exemplo `Gastei R$ 6,19 com Uber no débito` ou `Recebi R$ 200 de freela na Conta Nubank`. Vários lançamentos na mesma mensagem geram itens separados. O agente usa as categorias ativas do app; a prévia mostra valor, categoria, conta e data.
-- Se você não informar a conta ou o cartão, preencha com `CONTA 1 Conta Nubank` ou `CONTA 1 Nubank` antes de confirmar. Também é possível corrigir `CATEGORIA 1 Transporte`, `VALOR 1 6,19` e `DATA 1 25/10/2026`. `CONFIRMAR` grava os lançamentos; `CANCELAR` descarta. A prévia substitui a anterior somente depois de confirmar ou cancelar.
+- Envie um gasto ou renda em texto, por exemplo `Gastei R$ 6,19 com Uber` ou `Recebi R$ 200 de freela na Conta Nubank`. Se você não disser que foi no cartão, o agente usa sua única conta corrente automaticamente. Escreva `no cartão` ou `no crédito` quando quiser lançar na fatura. Vários lançamentos na mesma mensagem geram itens separados. O agente usa as categorias ativas do app; a prévia mostra valor, categoria, conta e data.
+- Confira a prévia e responda `CONFIRMAR` para gravar ou `CANCELAR` para descartar. Se a categoria não for identificada, diga o nome dela, por exemplo `Transporte`. Também é possível corrigir `CATEGORIA 1 Transporte`, `VALOR 1 6,19` e `DATA 1 25/10/2026`. A prévia anterior só é substituída depois de confirmar ou cancelar.
 - Compras no cartão ficam pendentes na fatura calculada a partir do fechamento e vencimento cadastrados. Se informar parcelas, o valor total é dividido entre as faturas. Gastos de conta ou débito ficam pagos. Lançamentos semelhantes já existentes geram um aviso; `CONFIRMAR MESMO ASSIM` permite uma compra distinta com os mesmos dados.
 - Pergunte `Como estou este mês?` ou `Quanto gastei com delivery em outubro?` para consultar os lançamentos em Finanças. Os percentuais de Necessidades, Desejos e Poupança usam a renda registrada no mês; sem renda, o assistente mostra os valores e pede esse registro. O grupo não edita planilhas: os dados vão para o Supabase do app.
 

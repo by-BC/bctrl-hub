@@ -75,6 +75,20 @@ function outputSchema(refs) {
   };
 }
 
+function inferAccount(accountName, sourceText, refs) {
+  const textHint = norm(sourceText);
+  const cardHint = /\b(cartao|credito|parcelad|\d+\s*x)\b/.test(textHint);
+  const debitHint = /\b(debito|dinheiro|conta corrente)\b/.test(textHint);
+  const cardAccounts = refs.accounts.filter((row) => row.kind === "credit_card");
+  const regularAccounts = refs.accounts.filter((row) => row.kind !== "credit_card");
+  const namedAccount = refs.accounts.find((row) => row.name === accountName);
+  const namedChecking = /\bconta\b/.test(textHint) ? regularAccounts.find((row) => textHint.includes(norm(row.name))) : null;
+  if (namedChecking) return namedChecking;
+  if (cardHint) return cardAccounts.length === 1 ? cardAccounts[0] : namedAccount?.kind === "credit_card" ? namedAccount : null;
+  if (debitHint) return regularAccounts.length === 1 ? regularAccounts[0] : namedAccount?.kind !== "credit_card" ? namedAccount : null;
+  return regularAccounts.length === 1 ? regularAccounts[0] : refs.accounts.length === 1 ? refs.accounts[0] : null;
+}
+
 export async function analyzeFinance(text, today, refs, cliPath, runCodex) {
   await access(cliPath);
   const directory = await mkdtemp(join(tmpdir(), "bctrl-finance-"));
@@ -105,12 +119,12 @@ export async function analyzeFinance(text, today, refs, cliPath, runCodex) {
   }
 }
 
-export function createFinanceDraft(result, refs, messageId, today) {
+export function createFinanceDraft(result, refs, messageId, today, sourceText = "") {
   if (result.intent !== "record" || !Array.isArray(result.items) || result.items.length < 1 || result.items.length > 12) throw new FinanceInputError("Não identifiquei lançamentos válidos. Envie até 12 gastos ou rendas com valores.");
   const items = result.items.map((item) => {
     if (!["income", "expense"].includes(item.kind)) throw new FinanceInputError("Informe se o lançamento é gasto ou renda.");
     const category = refs.categories.find((row) => row.name === item.category && row.kind === item.kind);
-    const account = refs.accounts.find((row) => row.name === item.account);
+    const account = inferAccount(item.account, sourceText, refs);
     const amount = Number(item.amount);
     const date = item.date ?? today;
     const installments = item.installments;
@@ -126,7 +140,19 @@ export function createFinanceDraft(result, refs, messageId, today) {
       amount: Math.round(amount * 100) / 100, date, installments,
     };
   });
-  return { type: "finance", messageId, createdAt: Date.now(), items, note: String(result.note || "").slice(0, 160) };
+  return { type: "finance", messageId, createdAt: Date.now(), sourceText: String(sourceText || "").slice(0, 500), items, note: String(result.note || "").slice(0, 160) };
+}
+
+export function fillDefaultAccounts(draft, refs) {
+  let changed = false;
+  for (const item of draft.items) {
+    if (item.accountId) continue;
+    const account = inferAccount(null, draft.sourceText ?? "", refs);
+    if (!account) continue;
+    Object.assign(item, { accountId: account.id, accountName: account.name, accountKind: account.kind, closingDay: account.closing_day, dueDay: account.due_day });
+    changed = true;
+  }
+  return changed;
 }
 
 export function financePreview(draft) {
@@ -135,35 +161,62 @@ export function financePreview(draft) {
     return "*" + (index + 1) + ". " + item.title + "* · " + brl.format(item.amount) + (item.installments > 1 ? " em " + item.installments + "x" : "") +
       "\n   " + item.date.split("-").reverse().join("/") + " · " + (item.categoryName ?? "categoria pendente") + " · " + (item.accountName ?? "conta pendente") + due;
   });
-  const missing = [
-    draft.items.some((item) => !item.categoryId) && "categoria",
-    draft.items.some((item) => !item.accountId) && "conta",
-  ].filter(Boolean);
+  const missingCategory = draft.items.some((item) => !item.categoryId);
+  const missingAccount = draft.items.some((item) => !item.accountId);
+  let nextStep = "Se estiver certo, responda CONFIRMAR. Para descartar, CANCELAR.";
+  if (missingAccount && draft.items.length === 1) nextStep = "Qual foi? Responda DÉBITO ou CARTÃO. Pode escrever Conta Nubank ou Nubank também.";
+  else if (missingAccount) nextStep = "Informe a conta de cada item, por exemplo DÉBITO 1 ou CARTÃO 2.";
+  else if (missingCategory && draft.items.length === 1) nextStep = "Qual categoria devo usar? Diga o nome, por exemplo Transporte.";
+  else if (missingCategory) nextStep = "Informe a categoria de cada item, por exemplo CATEGORIA 1 Transporte.";
   return [
     "*Prévia de Finanças*",
     lines.join("\n\n"),
-    missing.length ? "Defina " + missing.join(" e ") + " antes de confirmar." : "Nenhum lançamento foi gravado ainda.",
+    nextStep,
     draft.note ? "*Observação:* " + draft.note : null,
-    "*Comandos*\nCONTA 1 Conta Nubank\nCATEGORIA 1 Transporte\nVALOR 1 6,19\nDATA 1 25/10/2026\nCONFIRMAR · gravar\nCANCELAR · descartar",
   ].filter(Boolean).join("\n\n");
 }
 
+function accountForPhrase(value, refs) {
+  const normalized = norm(value).replace(/^(no|na|em|conta)\s+/, "");
+  const exact = refs.accounts.find((row) => norm(row.name) === norm(value));
+  if (exact) return exact;
+  if (["cartao", "credito", "cartao de credito", "no cartao", "no credito"].includes(normalized)) {
+    const cards = refs.accounts.filter((row) => row.kind === "credit_card");
+    return cards.length === 1 ? cards[0] : null;
+  }
+  if (["debito", "conta corrente", "no debito"].includes(normalized) || normalized.startsWith("conta ")) {
+    const checking = refs.accounts.filter((row) => ["checking", "cash"].includes(row.kind));
+    const named = checking.find((row) => norm(row.name) === normalized || norm(row.name).includes(normalized));
+    return named ?? (checking.length === 1 ? checking[0] : null);
+  }
+  const byName = refs.accounts.filter((row) => norm(row.name).includes(normalized) || normalized.includes(norm(row.name)));
+  return byName.length === 1 ? byName[0] : null;
+}
+
 export function updateFinanceDraft(draft, text, refs) {
-  const match = /^(CONTA|CATEGORIA|VALOR|DATA)\s+(\d+)\s+(.+)$/i.exec(text.trim());
-  if (!match) return false;
-  const index = Number(match[2]) - 1;
-  if (index < 0 || index >= draft.items.length) throw new FinanceInputError("Escolha um número de item presente na prévia.");
+  const match = /^(CONTA|CATEGORIA|VALOR|DATA)\s+(\d+)(?:\s+(.+))?$/i.exec(text.trim());
+  let action;
+  let index;
+  let value;
+  if (match) {
+    action = norm(match[1]);
+    index = Number(match[2]) - 1;
+    value = match[3]?.trim() ?? "";
+    if (index < 0 || index >= draft.items.length) throw new FinanceInputError("Escolha um número de item presente na prévia.");
+  } else if (draft.items.length === 1 && !draft.items[0].accountId) {
+    action = "conta";
+    index = 0;
+    value = text.trim();
+  } else if (draft.items.length === 1 && !draft.items[0].categoryId) {
+    action = "categoria";
+    index = 0;
+    value = text.trim();
+  } else return false;
   const item = draft.items[index];
-  const value = match[3].trim();
-  const action = norm(match[1]);
+  if (!value) throw new FinanceInputError(action === "conta" ? "Responda DÉBITO ou CARTÃO para escolher a conta." : "Diga o nome da categoria, por exemplo Transporte.");
   if (action === "conta") {
-    const normalized = norm(value);
-    let account = refs.accounts.find((row) => norm(row.name) === normalized);
-    if (!account && ["cartao", "cartao de credito", "debito", "conta corrente"].includes(normalized)) {
-      const kind = normalized.startsWith("cartao") ? "credit_card" : "checking";
-      const candidates = refs.accounts.filter((row) => row.kind === kind);
-      if (candidates.length === 1) account = candidates[0];
-    }
+    if (norm(value).startsWith("confirmar")) throw new FinanceInputError("Responda DÉBITO ou CARTÃO para escolher a conta; depois confirme o lançamento.");
+    const account = accountForPhrase(value, refs);
     if (!account) throw new FinanceInputError("Conta não encontrada. Use o nome cadastrado em Finanças.");
     if (item.installments > 1 && account.kind !== "credit_card") throw new FinanceInputError("Um lançamento parcelado precisa de cartão de crédito.");
     Object.assign(item, { accountId: account.id, accountName: account.name, accountKind: account.kind, closingDay: account.closing_day, dueDay: account.due_day });
@@ -180,6 +233,24 @@ export function updateFinanceDraft(draft, text, refs) {
     if (!validDate(date)) throw new FinanceInputError("Data inválida. Use DATA 1 25/10/2026.");
     item.date = date;
   }
+  return true;
+}
+
+export function mergeMatchingFinanceDraft(current, incoming) {
+  if (current.items.length !== incoming.items.length) return false;
+  const sameItems = current.items.every((item, index) => {
+    const next = incoming.items[index];
+    return item.amount === next.amount && item.date === next.date &&
+      (norm(item.title).includes(norm(next.title)) || norm(next.title).includes(norm(item.title)));
+  });
+  if (!sameItems) return false;
+  current.items.forEach((item, index) => {
+    const next = incoming.items[index];
+    if (next.accountId) Object.assign(item, { accountId: next.accountId, accountName: next.accountName, accountKind: next.accountKind, closingDay: next.closingDay, dueDay: next.dueDay });
+    if (next.categoryId) Object.assign(item, { categoryId: next.categoryId, categoryName: next.categoryName, bucket: next.bucket });
+    if (next.description) item.description = next.description;
+  });
+  current.createdAt = Date.now();
   return true;
 }
 
