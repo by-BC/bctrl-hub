@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { scheduleRestPush } from "@/lib/workout-push";
 import { SYNC_TOAST_ID, useNow, useWorkoutHydrated, useWorkoutSync } from "./hooks";
 import { useActiveWorkout } from "./store";
 
@@ -32,8 +33,25 @@ export function WorkoutSessionProvider() {
 function RestNotificationWatcher() {
   const hydrated = useWorkoutHydrated();
   const rest = useActiveWorkout((s) => (hydrated ? s.workout?.rest ?? null : null));
+  const workoutId = useActiveWorkout((s) => (hydrated ? s.workout?.id ?? null : null));
+  const restEndsAt = rest?.endsAt;
+  const restExerciseName = rest?.exerciseName;
+  const restNextSetNumber = rest?.nextSetNumber;
   const now = useNow();
   const finished = rest !== null && now !== null && Date.parse(rest.endsAt) <= now;
+
+  useEffect(() => {
+    if (!hydrated || !workoutId || !restEndsAt) return;
+    if (localStorage.getItem("bctrl.workout-rest-notifications") !== "enabled") return;
+
+    void scheduleRestPush(workoutId, {
+      endsAt: restEndsAt,
+      exerciseName: restExerciseName,
+      nextSetNumber: restNextSetNumber,
+    }).catch((error: unknown) => {
+      console.error("[bctrl] Não foi possível agendar o aviso push.", error);
+    });
+  }, [hydrated, workoutId, restEndsAt, restExerciseName, restNextSetNumber]);
 
   useEffect(() => {
     if (!finished || !rest) return;
@@ -43,28 +61,6 @@ function RestNotificationWatcher() {
       localStorage.setItem("bctrl.workout-rest-last-notified", rest.endsAt);
       if (Date.now() - Date.parse(rest.endsAt) < 3_000 && "vibrate" in navigator) {
         navigator.vibrate([200, 100, 200]);
-      }
-
-      if (
-        localStorage.getItem("bctrl.workout-rest-notifications") === "enabled" &&
-        "Notification" in window &&
-        Notification.permission === "granted" &&
-        "serviceWorker" in navigator
-      ) {
-        void navigator.serviceWorker.ready
-          .then((registration) =>
-            registration.showNotification("Descanso concluído", {
-              body: `${rest.exerciseName ?? "Seu exercício"}${rest.nextSetNumber ? ` · Série ${rest.nextSetNumber} pronta` : " pronto para continuar"}`,
-              icon: "/icon.svg",
-              badge: "/icon.svg",
-              tag: "bctrl-workout-rest",
-              data: { url: "/treino/sessao" },
-            }),
-          )
-          .catch((error: unknown) => {
-            console.error("[bctrl] Não foi possível exibir o aviso do descanso.", error);
-            toast.error("O descanso terminou, mas o navegador não exibiu o aviso.");
-          });
       }
     }
 

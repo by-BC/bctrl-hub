@@ -3,6 +3,7 @@
 import { Flag, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { cancelRestPush } from "@/lib/workout-push";
 import { NumUnit } from "@/components/num-unit";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +50,11 @@ export function FinishSheet({ workout, open, onOpenChange, onFinished }: FinishS
     setSaving(true);
     const prs = prHighlights(workout);
     try {
+      if (workout.rest) {
+        void cancelRestPush(workout.id).catch((error: unknown) => {
+          console.error("[bctrl] Não foi possível cancelar o aviso push ao finalizar.", error);
+        });
+      }
       const result = await finish();
       if (result.status === "pending") {
         if (result.retryable) {

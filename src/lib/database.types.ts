@@ -433,6 +433,18 @@ isOneToOne: false
       referencedColumns: ["id","user_id"]
     }
                   ]
+                },"workout_push_subscriptions": {
+                  Row: { "auth": string,"created_at": string,"endpoint": string,"id": string,"p256dh": string,"updated_at": string,"user_id": string }
+                  ComputedFields: never
+                  Insert: { "auth": string,"created_at"?: string,"endpoint": string,"id"?: string,"p256dh": string,"updated_at"?: string,"user_id"?: string }
+                  Update: { "auth"?: string,"created_at"?: string,"endpoint"?: string,"id"?: string,"p256dh"?: string,"updated_at"?: string,"user_id"?: string }
+                  Relationships: []
+                },"workout_rest_push_jobs": {
+                  Row: { "attempt_count": number,"created_at": string,"ends_at": string,"exercise_name": string,"id": string,"locked_until": string | null,"next_attempt_at": string,"next_set_number": number | null,"status": string,"user_id": string,"workout_id": string }
+                  ComputedFields: never
+                  Insert: { "attempt_count"?: number,"created_at"?: string,"ends_at": string,"exercise_name": string,"id"?: string,"locked_until"?: string | null,"next_attempt_at": string,"next_set_number"?: number | null,"status"?: string,"user_id"?: string,"workout_id": string }
+                  Update: { "attempt_count"?: number,"created_at"?: string,"ends_at"?: string,"exercise_name"?: string,"id"?: string,"locked_until"?: string | null,"next_attempt_at"?: string,"next_set_number"?: number | null,"status"?: string,"user_id"?: string,"workout_id"?: string }
+                  Relationships: []
                 },"workout_sets": {
                   Row: {
                     "created_at": string,"distance_m": number | null,"duration_s": number | null,"id": string,"position": number,"pr_kinds": (string)[],"reps": number | null,"set_type": string,"user_id": string,"weight_kg": number | null,"workout_exercise_id": string
@@ -521,6 +533,7 @@ isOneToOne: false
                 }
           }
           Functions: {
+            "claim_due_workout_rest_push_jobs": { Args: { "p_limit"?: number }; Returns: { "attempt_count": number,"created_at": string,"ends_at": string,"exercise_name": string,"id": string,"locked_until": string | null,"next_attempt_at": string,"next_set_number": number | null,"status": string,"user_id": string,"workout_id": string }[] },
             "daily_scores":
 { Args: { "p_from": string,"p_to": string }; Returns: {
               "best_session_kg": number,"day": string,"diet": boolean,"habits": boolean,"meals_done": number,"meals_planned": number,"prs": number,"score": number,"tasks": boolean,"trained": boolean,"volume_kg": number,"workouts": number
@@ -529,6 +542,7 @@ isOneToOne: false
 "finish_workout":
 { Args: { "payload": Json }; Returns: string
                            },
+"get_workout_rest_push_config": { Args: { "p_cron_token": string }; Returns: Json },
 "month_summary":
 { Args: { "p_month": string }; Returns: Json
                            },

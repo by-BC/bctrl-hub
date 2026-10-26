@@ -46,6 +46,12 @@ Para configurar o assistente opcional de alimentação e finanças pelo WhatsApp
 - **Composição corporal** (`/evolucao/composicao`): histórico e registro das 17 métricas da balança, gráficos, metas com projeção, TMB medida e proteína por massa magra. O peso da medição alimenta a Evolução sem duplicar o dia; Perfil e card do mês mostram as variações de peso, gordura e músculo.
 - **Stories por módulo**: Treino tem quatro modelos personalizáveis para a sessão concluída (`/treino/historico/[id]/story`), com foto de fundo ou PNG transparente e seleção de dados/legenda. No Perfil, a central `/perfil/stories` reúne o story diário e os quatro layouts gerais para qualquer treino salvo (`/perfil/stories/[id]`); o card do mês fica no resumo mensal (`/perfil/mes/AAAA-MM/story`). Imagens geradas no aparelho e compartilhadas pelo menu nativo ou baixadas em PNG.
 
+## Avisos push de descanso
+
+O timer agenda um Web Push por série concluída. O Supabase verifica os descansos a cada 10 segundos e a Edge Function envia o aviso mesmo quando o app está fechado. No iPhone, abra o Bctrl instalado na Tela de Início, permita notificações e ative **Aviso no celular ao fim do descanso** durante um descanso. O aviso inclui exercício e série seguinte; tocar nele abre a sessão.
+
+As assinaturas de aparelhos e os avisos pendentes têm RLS por usuário. A chave privada VAPID e o token do agendador ficam no Vault do Supabase; somente a chave pública fica no código. A Edge Function usada pelo agendador está em `supabase/functions/workout-rest-push-dispatch/`.
+
 ## Dados privados (fora do Git)
 
 O repositório é público. Nada pessoal é versionado:

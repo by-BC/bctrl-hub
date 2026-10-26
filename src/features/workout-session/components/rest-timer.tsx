@@ -1,11 +1,17 @@
 "use client";
 
-import { Bell, Timer } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Bell, BellOff, Timer } from "lucide-react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { formatClock } from "@/lib/format";
+import { applicationServerKeyBytes, cancelRestPush, scheduleRestPush, WORKOUT_PUSH_VAPID_PUBLIC_KEY } from "@/lib/workout-push";
 import { useNow } from "../hooks";
 import { useActiveWorkout } from "../store";
+
+const subscribeNotificationSupport = () => () => {};
+const getNotificationSupport = () =>
+  typeof window !== "undefined" && "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
+const getServerNotificationSupport = () => null;
 
 /**
  * Descanso entre séries, fixo na parte de baixo (acima da barra de navegação no celular).
@@ -13,26 +19,32 @@ import { useActiveWorkout } from "../store";
  */
 export function RestTimer() {
   const rest = useActiveWorkout((s) => s.workout?.rest ?? null);
+  const workoutId = useActiveWorkout((s) => s.workout?.id ?? null);
   const now = useNow();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [notificationsAvailable, setNotificationsAvailable] = useState<boolean | null>(null);
+  const notificationsAvailable = useSyncExternalStore(
+    subscribeNotificationSupport,
+    getNotificationSupport,
+    getServerNotificationSupport,
+  );
 
   const remainingMs = rest && now !== null ? Date.parse(rest.endsAt) - now : null;
   const finished = remainingMs !== null && remainingMs <= 0;
 
   useEffect(() => {
-    const supported = "Notification" in window && "serviceWorker" in navigator;
-    setNotificationsAvailable(supported);
-    setNotificationsEnabled(
-      supported &&
-        localStorage.getItem("bctrl.workout-rest-notifications") === "enabled" &&
-        Notification.permission === "granted",
-    );
-  }, []);
+    if (notificationsAvailable !== true) return;
+
+    let active = true;
+    void navigator.serviceWorker.getRegistration("/").then(async (registration) => {
+      const subscription = await registration?.pushManager.getSubscription();
+      if (active) setNotificationsEnabled(Boolean(subscription && Notification.permission === "granted"));
+    });
+    return () => { active = false; };
+  }, [notificationsAvailable]);
 
   async function enableNotifications() {
-    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-      toast.error("Este navegador não oferece notificações para o app.");
+    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      toast.error("Este modo do navegador não oferece Web Push.");
       return;
     }
     try {
@@ -41,14 +53,55 @@ export function RestTimer() {
         toast.error(permission === "denied" ? "Permita notificações do Bctrl nas configurações do navegador." : "A permissão de notificação não foi concedida.");
         return;
       }
-      await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+      const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
       await navigator.serviceWorker.ready;
+      const subscription = (await registration.pushManager.getSubscription()) ??
+        await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: applicationServerKeyBytes(WORKOUT_PUSH_VAPID_PUBLIC_KEY),
+        });
+      const serialized = subscription.toJSON();
+      if (!serialized.keys?.p256dh || !serialized.keys.auth) {
+        throw new Error("O navegador não forneceu as chaves da assinatura push.");
+      }
+
+      const response = await fetch("/api/workout-push/subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endpoint: subscription.endpoint, keys: serialized.keys }),
+      });
+      if (!response.ok) throw new Error("Não foi possível registrar este aparelho no servidor.");
+
       localStorage.setItem("bctrl.workout-rest-notifications", "enabled");
       setNotificationsEnabled(true);
-      toast.success("Avisos do descanso ativados neste aparelho.");
+      if (workoutId && rest) await scheduleRestPush(workoutId, rest);
+      toast.success("Avisos push do descanso ativados neste aparelho.");
     } catch (error) {
       console.error("[bctrl] Não foi possível ativar avisos do descanso.", error);
-      toast.error("Não consegui ativar os avisos. Confira a conexão e tente novamente.");
+      toast.error("Não consegui ativar o push. Confira a conexão e tente novamente.");
+    }
+  }
+
+  async function disableNotifications() {
+    try {
+      const registration = await navigator.serviceWorker.getRegistration("/");
+      const subscription = await registration?.pushManager.getSubscription();
+      if (subscription) {
+        const response = await fetch("/api/workout-push/subscription", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint: subscription.endpoint }),
+        });
+        if (!response.ok) throw new Error("Não foi possível remover a assinatura deste aparelho.");
+        await subscription.unsubscribe();
+      }
+      if (workoutId) await cancelRestPush(workoutId);
+      localStorage.removeItem("bctrl.workout-rest-notifications");
+      setNotificationsEnabled(false);
+      toast.success("Avisos desativados neste aparelho.");
+    } catch (error) {
+      console.error("[bctrl] Não foi possível desativar avisos push.", error);
+      toast.error("Não consegui desativar os avisos. Tente novamente com conexão.");
     }
   }
 
@@ -57,6 +110,15 @@ export function RestTimer() {
   const remainingSec = remainingMs / 1000;
   const progress = Math.min(1, Math.max(0, remainingSec / rest.durationSec));
   const { adjustRest, skipRest } = useActiveWorkout.getState();
+
+  function skipCurrentRest() {
+    if (workoutId) {
+      void cancelRestPush(workoutId).catch((error: unknown) => {
+        console.error("[bctrl] Não foi possível cancelar o aviso push.", error);
+      });
+    }
+    skipRest();
+  }
 
   return (
     <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 px-3 pb-2 lg:inset-x-auto lg:right-10 lg:bottom-6 lg:w-[24rem] lg:px-0 lg:pb-0">
@@ -78,7 +140,7 @@ export function RestTimer() {
           <TimerButton label="Mais 15 segundos" onClick={() => adjustRest(15)}>
             +15
           </TimerButton>
-          <TimerButton label="Pular descanso" onClick={() => skipRest()}>
+          <TimerButton label="Pular descanso" onClick={skipCurrentRest}>
             Pular
           </TimerButton>
         </div>
@@ -92,9 +154,19 @@ export function RestTimer() {
             Ativar aviso no celular ao fim do descanso
           </button>
         )}
+        {notificationsAvailable === true && notificationsEnabled && (
+          <button
+            type="button"
+            onClick={() => void disableNotifications()}
+            className="flex min-h-10 w-full items-center justify-center gap-2 border-t border-highlight-foreground/15 px-3 text-sm font-medium hover:bg-highlight-foreground/10"
+          >
+            <BellOff aria-hidden className="size-4" />
+            Desativar aviso neste aparelho
+          </button>
+        )}
         {notificationsAvailable === false && (
           <p className="border-t border-highlight-foreground/15 px-3 py-2 text-center text-xs">
-            Este modo do navegador não permite avisos no celular.
+            Abra o Bctrl pela versão instalada na Tela de Início para ativar avisos push.
           </p>
         )}
         <div aria-hidden className="h-1.5 bg-highlight-foreground/15">
