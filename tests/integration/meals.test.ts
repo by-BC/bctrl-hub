@@ -18,7 +18,7 @@ async function exec(op: PromiseLike<{ error: unknown }>) {
   if (error) throw new Error(JSON.stringify(error));
 }
 
-const DAY = "2026-10-14"; // quarta; semana de 2026-10-12
+const DAY = "2026-10-14"; // quarta; semana de 2026-10-11
 
 describe("refeições: registro idempotente e plano", () => {
   let owner: TestUser;
@@ -98,7 +98,7 @@ describe("refeições: registro idempotente e plano", () => {
   });
 
   it("fora do plano grava a nota e não conta como feita na semana", async () => {
-    const before = await fetchWeekSummary("2026-10-12", db);
+    const before = await fetchWeekSummary("2026-10-11", db);
     expect(before.meals.done).toBe(1); // café no plano (pós-treino só em dia de treino)
 
     const [current] = await fetchMealLogs(DAY, db);
@@ -106,7 +106,7 @@ describe("refeições: registro idempotente e plano", () => {
     const logs = await fetchMealLogs(DAY, db);
     expect(logs).toEqual([expect.objectContaining({ off_plan: true, option_id: null, note: "Pizza" })]);
 
-    const after = await fetchWeekSummary("2026-10-12", db);
+    const after = await fetchWeekSummary("2026-10-11", db);
     expect(after.meals.done).toBe(0);
     expect(after.meals.planned).toBe(7); // 1 refeição diária × 7 dias, sem treino
   });
@@ -121,7 +121,7 @@ describe("refeições: registro idempotente e plano", () => {
       }),
     );
     expect(await fetchHasFinishedWorkout(DAY, db)).toBe(true);
-    expect((await fetchWeekSummary("2026-10-12", db)).meals.planned).toBe(8);
+    expect((await fetchWeekSummary("2026-10-11", db)).meals.planned).toBe(8);
   });
 
   it("editar a opção reflete na leitura do plano", async () => {

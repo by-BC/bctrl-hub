@@ -148,7 +148,7 @@ export const ACHIEVEMENTS: readonly Achievement[] = [
   {
     key: "training_weeks_4",
     title: "Quatro semanas firmes",
-    rule: `Treine em pelo menos ${WEEKLY_WORKOUT_TARGET} dias por semana, 4 semanas seguidas (segunda a domingo).`,
+    rule: `Treine em pelo menos ${WEEKLY_WORKOUT_TARGET} dias por semana, 4 semanas seguidas (domingo a sábado).`,
     evaluate: trainingWeeks,
   },
   {

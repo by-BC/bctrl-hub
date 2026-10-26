@@ -40,7 +40,7 @@ export const HEATMAP_HEIGHT = FONT + 8 + 7 * (BLOCK + GAP) - GAP + 2;
 
 const LABELS = {
   months: ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"],
-  // Índice 0 = domingo (convenção da biblioteca); a semana começa na segunda (`weekStart`).
+  // Índice 0 = domingo, primeiro dia da semana no app e na biblioteca.
   weekdays: ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"],
 };
 
@@ -77,8 +77,8 @@ function tipPosition(wrap: Element, target: Element): { x: number; y: number } {
 }
 
 /**
- * Heatmap "dia no controle" dos últimos 12 meses (`react-activity-calendar`): semana de segunda
- * a domingo, nível = pontuação (0–4) em `data-level`. Passar o mouse, tocar ou focar um dia
+ * Heatmap "dia no controle" dos últimos 12 meses (`react-activity-calendar`): semana de domingo
+ * a sábado, nível = pontuação (0–4) em `data-level`. Passar o mouse, tocar ou focar um dia
  * mostra a data, a pontuação e os critérios. Teclado: um só ponto de Tab (o dia em foco) e
  * setas para andar (← → semana, ↑ ↓ dia). Alternativa textual: resumo e tabela por mês.
  */
@@ -250,7 +250,7 @@ function HeatmapBody({ days, today }: { days: HeatDay[]; today: string }) {
       >
         <ActivityCalendar
           data={days}
-          weekStart={1}
+          weekStart={0}
           blockSize={BLOCK}
           blockMargin={GAP}
           blockRadius={2}

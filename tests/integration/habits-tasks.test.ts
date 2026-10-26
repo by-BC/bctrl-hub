@@ -19,7 +19,7 @@ import { habitProgress } from "@/features/habits/domain/habits";
 import { weekDays } from "@/lib/domain/week";
 import { createTestUser, deleteTestUser, type TestUser } from "../support/test-users";
 
-const WEEK = "2026-10-12"; // segunda; domingo = 2026-10-18
+const WEEK = "2026-10-11"; // domingo; sábado = 2026-10-17
 const [FROM, TO] = [WEEK, weekDays(WEEK)[6]];
 
 async function exec(op: PromiseLike<{ error: unknown }>) {
@@ -69,7 +69,7 @@ describe("hábitos: registros, totais de cardio e hábitos do sistema", () => {
     const logs = [
       log(cardio, "2026-10-12", { value: 30, cardio_type: "treadmill", distance_km: 4, kcal: 250 }),
       log(cardio, "2026-10-15", { value: 25, cardio_type: "bike", distance_km: 8.5 }),
-      log(cardio, "2026-10-18", { value: 40, cardio_type: "run", distance_km: 6.2, kcal: 420 }), // domingo
+      log(cardio, "2026-10-17", { value: 40, cardio_type: "run", distance_km: 6.2, kcal: 420 }), // sábado
       log(cardio, "2026-10-19", { value: 60, cardio_type: "walk", kcal: 200 }), // semana seguinte
     ];
     for (const l of logs) await upsertHabitLog(l, db);
@@ -87,13 +87,13 @@ describe("hábitos: registros, totais de cardio e hábitos do sistema", () => {
   });
 
   it("check conta dias distintos; desfazer remove o registro", async () => {
-    const monday = log(abs, "2026-10-12");
-    await upsertHabitLog(monday, db);
+    const sunday = log(abs, "2026-10-11");
+    await upsertHabitLog(sunday, db);
     await upsertHabitLog(log(abs, "2026-10-12"), db); // segundo toque no mesmo dia
     await upsertHabitLog(log(abs, "2026-10-14"), db);
     expect((await fetchWeekSummary(WEEK, db)).abs).toMatchObject({ done: 2, target: 3 });
 
-    await deleteHabitLogs([monday.id], db);
+    await deleteHabitLogs([sunday.id], db);
     const left = (await fetchHabitLogs(FROM, TO, db)).filter((l) => l.habit_id === abs);
     expect(left).toHaveLength(2);
     expect(habitProgress({ kind: "check", period: "week", target: 3 }, left, WEEK).done).toBe(2);

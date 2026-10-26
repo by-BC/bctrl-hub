@@ -164,7 +164,7 @@ beforeAll(async () => {
   await task("2026-09-01T02:30:00Z"); // 31/08 23h30 em São Paulo
   await habit(ids.abs, "2026-08-31");
 
-  // ── Semana de 07/09 (segunda) a 13/09 (domingo) ──
+  // ── Intervalo de sete dias: 07/09 a 13/09 ──
   // Seg 07: treino (importado do Hevy) + 5/5 refeições + hábitos + tarefa → 4.
   await workout("2026-09-07", [[40, 10, "warmup"], [100, 10, "normal", ["weight", "e1rm"]]], { hevy: true });
   await meals("2026-09-07", [ids.cafe, ids.almoco, ids.jantar, ids.lanche, ids.pos]);

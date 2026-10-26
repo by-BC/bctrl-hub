@@ -12,7 +12,7 @@ import { hexWeekView } from "../hex-week";
 const HEX_SIZE = "size-36 sm:size-44 lg:size-64";
 
 /**
- * Hex Week: a semana (segunda a domingo) no símbolo do Bctrl Hub. Uma chamada ao
+ * Hex Week: a semana (domingo a sábado) no símbolo do Bctrl Hub. Uma chamada ao
  * `week_summary`; as ações rápidas do painel invalidam `weekKeys` e o hex se atualiza.
  * Celular: hex ao lado da legenda; desktop: hex grande em destaque com a legenda abaixo.
  */

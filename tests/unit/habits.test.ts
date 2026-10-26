@@ -3,7 +3,7 @@ import { cardioLabel, groupByWeek, habitProgress, streak, weekTarget, type Habit
 import { weekStart } from "@/lib/domain/week";
 import { cardioLogFormSchema, habitFormSchema, taskTitleSchema } from "@/features/habits/schemas/habit";
 
-const WEEK = "2026-10-19"; // segunda; domingo = 2026-10-25
+const WEEK = "2026-10-18"; // domingo; sábado = 2026-10-24
 
 const cardio = { kind: "cardio", period: "week", target: 150 } as const;
 const abs = { kind: "check", period: "week", target: 3 } as const;
@@ -20,7 +20,7 @@ describe("habitProgress", () => {
         log("2026-10-19", 30, { distance_km: 4, kcal: 250 }),
         log("2026-10-22", 20, { distance_km: 2.5, kcal: null }),
         log("2026-10-26", 45, { distance_km: 7, kcal: 500 }), // semana seguinte
-        log("2026-10-18", 60), // semana anterior
+        log("2026-10-17", 60), // semana anterior
       ],
       WEEK,
     );
@@ -38,7 +38,7 @@ describe("habitProgress", () => {
   it("check semanal: conta dias distintos (2 marcas no mesmo dia valem 1)", () => {
     const p = habitProgress(abs, [log("2026-10-19"), log("2026-10-19"), log("2026-10-21")], WEEK);
     expect(p).toMatchObject({ done: 2, target: 3, met: false });
-    expect(habitProgress(abs, [log("2026-10-19"), log("2026-10-21"), log("2026-10-25")], WEEK).met).toBe(true);
+    expect(habitProgress(abs, [log("2026-10-19"), log("2026-10-21"), log("2026-10-24")], WEEK).met).toBe(true);
   });
 
   it("check diário: meta da semana é 7 dias", () => {
@@ -53,16 +53,16 @@ describe("habitProgress", () => {
     expect(p.byDay["2026-10-20"]).toBe(0.3);
   });
 
-  it("um log às 23h30 de domingo (dia já em São Paulo) conta na semana que termina no domingo", () => {
-    expect(habitProgress(cardio, [log("2026-10-25", 30)], WEEK).done).toBe(30);
-    expect(habitProgress(cardio, [log("2026-10-25", 30)], "2026-10-26").done).toBe(0);
+  it("domingo inicia uma semana nova", () => {
+    expect(habitProgress(cardio, [log("2026-10-18", 30)], WEEK).done).toBe(30);
+    expect(habitProgress(cardio, [log("2026-10-18", 30)], "2026-10-25").done).toBe(0);
   });
 });
 
 describe("streak", () => {
   const byWeek = (logs: HabitLogLike[]) => groupByWeek(logs, weekStart);
-  const absWeek = (monday: string) => {
-    const d = (n: number) => new Date(Date.parse(`${monday}T12:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
+  const absWeek = (sunday: string) => {
+    const d = (n: number) => new Date(Date.parse(`${sunday}T12:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
     return [log(d(0)), log(d(2)), log(d(4))];
   };
 

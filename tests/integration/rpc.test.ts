@@ -201,7 +201,7 @@ describe("finish_workout", () => {
 
 describe("week_summary", () => {
   let user: TestUser;
-  const WEEK = "2026-10-12"; // segunda-feira
+  const WEEK = "2026-10-11"; // domingo
 
   beforeAll(async () => {
     user = await createTestUser("week");
@@ -210,7 +210,7 @@ describe("week_summary", () => {
 
     const finished = (day: string) =>
       payload([exercise], { day, started_at: `${day}T10:00:00Z`, finished_at: `${day}T11:00:00Z` });
-    for (const day of ["2026-10-13", "2026-10-15", "2026-10-19", "2026-10-11"]) {
+    for (const day of ["2026-10-13", "2026-10-15", "2026-10-18", "2026-10-10"]) {
       const { error } = await c.rpc("finish_workout", { payload: finished(day) });
       if (error) throw error;
     }
@@ -235,7 +235,7 @@ describe("week_summary", () => {
       { habit_id: abs, day: "2026-10-14", value: 1 },
       { habit_id: supplements, day: "2026-10-12", value: 1 },
       { habit_id: supplements, day: "2026-10-13", value: 1 },
-      { habit_id: supplements, day: "2026-10-18", value: 1 },
+      { habit_id: supplements, day: "2026-10-17", value: 1 },
       { habit_id: reading, day: "2026-10-13", value: 25 },
       { habit_id: reading, day: "2026-10-17", value: 15 },
     ], { defaultToNull: false }));
@@ -269,8 +269,8 @@ describe("week_summary", () => {
     const { data, error } = await user.client.rpc("week_summary", { p_week_start: WEEK });
     expect(error).toBeNull();
     expect(data).toMatchObject({
-      week_start: "2026-10-12",
-      week_end: "2026-10-18",
+      week_start: "2026-10-11",
+      week_end: "2026-10-17",
       workouts: { done: 2, target: 4 },
       cardio: { minutes: 50, distance_km: 4, kcal: 250, sessions: 2, target: 150 },
       abs: { done: 2, target: 3 },
@@ -278,8 +278,8 @@ describe("week_summary", () => {
       meals: { planned: 16, done: 6, pct: 38 },
     });
     expect(data.days).toHaveLength(7);
-    expect(data.days[1]).toEqual({ day: "2026-10-13", trained: true, meals_planned: 3, meals_done: 2 });
-    expect(data.days[2]).toEqual({ day: "2026-10-14", trained: false, meals_planned: 2, meals_done: 1 });
+    expect(data.days[2]).toEqual({ day: "2026-10-13", trained: true, meals_planned: 3, meals_done: 2 });
+    expect(data.days[3]).toEqual({ day: "2026-10-14", trained: false, meals_planned: 2, meals_done: 1 });
     expect(data.habits).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: "Ler", system_key: null, total: 40, target: 60 }),
@@ -290,7 +290,7 @@ describe("week_summary", () => {
   });
 
   it("semana vazia devolve zeros", async () => {
-    const { data, error } = await user.client.rpc("week_summary", { p_week_start: "2026-01-05" });
+    const { data, error } = await user.client.rpc("week_summary", { p_week_start: "2026-01-04" });
     expect(error).toBeNull();
     expect(data).toMatchObject({
       workouts: { done: 0 },
@@ -299,8 +299,8 @@ describe("week_summary", () => {
     });
   });
 
-  it("rejeita data que não é segunda-feira", async () => {
-    const { error } = await user.client.rpc("week_summary", { p_week_start: "2026-10-13" });
+  it("rejeita data que não é domingo", async () => {
+    const { error } = await user.client.rpc("week_summary", { p_week_start: "2026-10-12" });
     expect(error).not.toBeNull();
   });
 

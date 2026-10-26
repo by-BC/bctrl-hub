@@ -138,15 +138,15 @@ describe("formatMealTime", () => {
 });
 
 describe("weekStart", () => {
-  it("segunda é o início; domingo pertence à semana anterior", () => {
-    expect(weekStart("2026-10-19")).toBe("2026-10-19"); // segunda
-    expect(weekStart("2026-10-22")).toBe("2026-10-19"); // quinta
-    expect(weekStart("2026-10-25")).toBe("2026-10-19"); // domingo
-    expect(weekStart("2026-10-26")).toBe("2026-10-26"); // segunda seguinte
+  it("domingo é o início; sábado pertence à mesma semana", () => {
+    expect(weekStart("2026-10-18")).toBe("2026-10-18"); // domingo
+    expect(weekStart("2026-10-22")).toBe("2026-10-18"); // quinta
+    expect(weekStart("2026-10-24")).toBe("2026-10-18"); // sábado
+    expect(weekStart("2026-10-25")).toBe("2026-10-25"); // domingo seguinte
   });
 
   it("atravessa mês e ano", () => {
-    expect(weekStart("2026-11-01")).toBe("2026-10-26");
-    expect(weekStart("2027-01-01")).toBe("2026-12-28");
+    expect(weekStart("2026-11-01")).toBe("2026-11-01");
+    expect(weekStart("2027-01-01")).toBe("2026-12-27");
   });
 });

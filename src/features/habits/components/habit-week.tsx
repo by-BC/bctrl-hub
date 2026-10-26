@@ -61,7 +61,7 @@ export function unitOf(habit: Pick<Habit, "kind" | "unit">) {
 const weekdayFormatter = new Intl.DateTimeFormat("pt-BR", { weekday: "short", timeZone: "UTC" });
 const weekdayShort = (day: string) => weekdayFormatter.format(new Date(`${day}T12:00:00Z`)).replace(".", "");
 
-/** Conteúdo de /habitos: progresso da semana (segunda a domingo) de cada hábito e o streak. */
+/** Conteúdo de /habitos: progresso da semana (domingo a sábado) de cada hábito e o streak. */
 export function HabitWeek() {
   const today = useToday();
   const [creating, setCreating] = useState(false);
@@ -396,7 +396,7 @@ function TodayLine({ habit, progress, today }: { habit: Habit; progress: HabitPr
   );
 }
 
-/** Os 7 dias (segunda → domingo) com ícone de feito/pendente. Só leitura. */
+/** Os 7 dias (domingo → sábado) com ícone de feito/pendente. Só leitura. */
 function DayStrip({ habit, progress, today }: { habit: Habit; progress: HabitProgress; today: string }) {
   const days = Object.keys(progress.byDay);
   return (

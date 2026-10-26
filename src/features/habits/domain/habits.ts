@@ -100,7 +100,7 @@ export function dayMet(habit: HabitLike, progress: HabitProgress, day: string): 
   return (progress.byDay[day] ?? 0) >= dayTarget(habit);
 }
 
-/** Agrupa registros pela segunda-feira da semana de cada um. */
+/** Agrupa registros pelo domingo da semana de cada um. */
 export function groupByWeek<T extends { day: string }>(logs: readonly T[], weekOf: (day: string) => string) {
   const byWeek = new Map<string, T[]>();
   for (const log of logs) {

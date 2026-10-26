@@ -83,15 +83,14 @@ describe("buildMonthCardData", () => {
     expect(buildMonthCardData(input({ summary: summary({ month: "2026-09-01" }) })).partial).toBe(false);
   });
 
-  it("calendário de segunda a domingo, com vazios fora do mês", () => {
+  it("calendário de domingo a sábado, com vazios fora do mês", () => {
     const { weeks } = buildMonthCardData(input());
     // Outubro de 2026: dia 1 numa quinta, dia 31 num sábado → 5 semanas.
     expect(weeks).toHaveLength(5);
     expect(weeks.every((w) => w.length === 7)).toBe(true);
-    expect(weeks[0].slice(0, 3)).toEqual([null, null, null]);
-    expect(weeks[0][3]).toEqual({ date: "2026-10-01", day: 1, level: 4 });
-    expect(weeks[4][5]?.date).toBe("2026-10-31");
-    expect(weeks[4][6]).toBeNull();
+    expect(weeks[0].slice(0, 4)).toEqual([null, null, null, null]);
+    expect(weeks[0][4]).toEqual({ date: "2026-10-01", day: 1, level: 4 });
+    expect(weeks[4][6]?.date).toBe("2026-10-31");
     expect(weeks.flat().filter(Boolean)).toHaveLength(31);
   });
 

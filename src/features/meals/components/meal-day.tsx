@@ -219,7 +219,7 @@ function DayAdherence({ adherence }: { adherence: Adherence }) {
   );
 }
 
-/** Semana (segunda a domingo) pelo `week_summary`: conta o pós-treino só nos dias com treino finalizado. */
+/** Semana (domingo a sábado) pelo `week_summary`: conta o pós-treino só nos dias com treino finalizado. */
 function WeekAdherence({ day }: { day: string }) {
   const { data, isError } = useWeekSummary(weekStart(day));
   if (isError) {

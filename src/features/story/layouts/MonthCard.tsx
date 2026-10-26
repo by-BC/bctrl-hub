@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Card do mês (RF17), no tom grafite do Hex Week: o nome do mês em Sora itálico gigante, o
- * mês como calendário de hexágonos da marca (segunda a domingo, cor = pontuação do dia 0–4 na
+ * mês como calendário de hexágonos da marca (domingo a sábado, cor = pontuação do dia 0–4 na
  * mesma escala sequencial do heatmap do Perfil, com o número do dia dentro para não depender
  * da cor), "dias no controle" como número principal ao lado, depois treinos, volume, PRs e
  * adesão, e as conquistas desbloqueadas no mês. Tudo entre as faixas de 250 px.
@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
  * `filter` (falha no Safari dentro do `foreignObject`).
  */
 
-const WEEKDAYS = ["S", "T", "Q", "Q", "S", "S", "D"];
+const WEEKDAYS = ["D", "S", "T", "Q", "Q", "S", "S"];
 /** Hexágono "em pé" da marca, recortado ao próprio contorno (150 × 172). */
 const HEX_POINTS = "100,14 175,57 175,143 100,186 25,143 25,57";
 const HEX_VIEWBOX = "25 14 150 172";

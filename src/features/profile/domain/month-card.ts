@@ -76,7 +76,7 @@ export type MonthCardData = {
   adherence: { pct: number; done: number; planned: number } | null;
   /** Variação dentro do mês; `null` quando não houve medição. */
   composition: { bodyFatPct: number | null; skeletalMuscleKg: number | null } | null;
-  /** Semanas de segunda a domingo; `null` = dia de outro mês (célula vazia). */
+  /** Semanas de domingo a sábado; `null` = dia de outro mês (célula vazia). */
   weeks: (MonthCardDay | null)[][];
   /** Conquistas desbloqueadas no mês, na ordem em que aconteceram. */
   achievements: { key: string; title: string; unlockedOn: string }[];
@@ -96,7 +96,7 @@ export function parseMonthParam(param: string): string | null {
 /** "2026-10-01" → "2026-10". */
 export const monthParam = (month: string) => month.slice(0, 7);
 
-/** Semanas (segunda a domingo) que cobrem o mês, com `null` fora dele. */
+/** Semanas (domingo a sábado) que cobrem o mês, com `null` fora dele. */
 function calendar(month: string, levelOf: (day: string) => ScoreValue | null): (MonthCardDay | null)[][] {
   const first = monthStart(month);
   const last = monthEnd(month);

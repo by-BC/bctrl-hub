@@ -6,10 +6,10 @@ import type { Database } from "@/lib/database.types";
 import { createTestUser, deleteTestUser, type TestUser } from "../support/test-users";
 
 /**
- * Painel Hoje: uma semana semeada (segunda 12/10 a domingo 18/10) e os números que o
+ * Painel Hoje: uma semana semeada (domingo 11/10 a sábado 17/10) e os números que o
  * Hex Week mostra, calculados a partir do `week_summary` do banco.
  */
-const WEEK = "2026-10-12";
+const WEEK = "2026-10-11";
 
 async function exec(op: PromiseLike<{ error: unknown }>) {
   const { error } = await op;
@@ -82,7 +82,7 @@ describe("week_summary → Hex Week", () => {
         habitLog(habit.supplements, "2026-10-12"),
         habitLog(habit.supplements, "2026-10-13"),
         habitLog(habit.supplements, "2026-10-14"),
-        habitLog(habit.supplements, "2026-10-11"), // semana anterior
+        habitLog(habit.supplements, "2026-10-10"), // semana anterior
       ]),
     );
   });
@@ -110,7 +110,7 @@ describe("week_summary → Hex Week", () => {
   });
 
   it("semana sem registros: tudo em 0 e o painel mostra o estado vazio", async () => {
-    const view = hexWeekView(await fetchWeekSummary("2026-11-02", db));
+    const view = hexWeekView(await fetchWeekSummary("2026-11-01", db));
     expect([view.workouts.progress, view.meals.progress, view.habits.progress]).toEqual([0, 0, 0]);
     expect(view.workouts.value).toBe("0/4");
     expect(view.empty).toBe(true);

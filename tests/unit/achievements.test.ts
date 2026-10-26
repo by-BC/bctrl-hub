@@ -114,19 +114,19 @@ describe("primeiro PR", () => {
 });
 
 describe("4 semanas seguidas com a meta de treino (4 dias com treino na semana)", () => {
-  /** 4 dias de treino na semana que começa em `monday` (seg, ter, qua, qui). */
-  const week4 = (monday: string) => [0, 1, 2, 3].map((i) => workout(addDays(monday, i)));
+  /** 4 dias de treino na semana que começa em `sunday` (dom, seg, ter, qua). */
+  const week4 = (sunday: string) => [0, 1, 2, 3].map((i) => workout(addDays(sunday, i)));
 
   it("progresso parcial: a sequência atual conta a última semana fechada; a semana em curso não quebra", () => {
     const days = [
-      ...week4("2026-09-07"),
-      ...week4("2026-09-14"),
+      ...week4("2026-09-06"),
+      ...week4("2026-09-13"),
       // 4 treinos em 3 dias: a meta é de dias com treino, então não bate.
       workout("2026-09-21", 2),
       workout("2026-09-22"),
       workout("2026-09-23"),
-      ...week4("2026-09-28"),
-      ...week4("2026-10-05"),
+      ...week4("2026-09-27"),
+      ...week4("2026-10-04"),
       workout("2026-10-12"), // semana em curso (hoje é quarta, 14/10)
     ];
     expect(evaluate("training_weeks_4", { days, today: "2026-10-14" })).toEqual({
@@ -138,14 +138,14 @@ describe("4 semanas seguidas com a meta de treino (4 dias com treino na semana)"
   });
 
   it("a semana em curso que já bateu a meta soma na sequência", () => {
-    const days = [...week4("2026-09-28"), ...week4("2026-10-05"), ...week4("2026-10-12")];
+    const days = [...week4("2026-09-27"), ...week4("2026-10-04"), ...week4("2026-10-11")];
     expect(evaluate("training_weeks_4", { days, today: "2026-10-16" })).toMatchObject({ unlockedOn: null, current: 3 });
   });
 
   it("desbloqueia no 4º dia de treino da 4ª semana seguida (histórico do Hevy de 2024)", () => {
-    const days = [...week4("2024-04-01"), ...week4("2024-04-08"), ...week4("2024-04-15"), ...week4("2024-04-22")];
+    const days = [...week4("2024-03-31"), ...week4("2024-04-07"), ...week4("2024-04-14"), ...week4("2024-04-21")];
     expect(evaluate("training_weeks_4", { days, today: "2026-10-20" })).toEqual({
-      unlockedOn: "2024-04-25",
+      unlockedOn: "2024-04-24",
       progress: 1,
       current: 4,
       target: 4,

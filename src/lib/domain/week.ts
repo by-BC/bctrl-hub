@@ -1,5 +1,5 @@
 /**
- * Dia, semana e mês do app: semana de segunda a domingo em America/Sao_Paulo.
+ * Dia, semana e mês do app: semana de domingo a sábado em America/Sao_Paulo.
  * Toda conta de "dia" e "semana" (hábitos, refeições, resumo) passa por aqui. Sem I/O.
  */
 
@@ -19,20 +19,20 @@ export function dayKey(instant: Date | string): string {
   return dayInSaoPaulo(instant);
 }
 
-/** Segunda-feira da semana do dia (o próprio dia, se já for segunda). */
+/** Domingo da semana do dia (o próprio dia, se já for domingo). */
 export function weekStart(day: string): string {
   const time = toTime(day);
-  const isoWeekday = ((new Date(time).getUTCDay() + 6) % 7) + 1; // 1 = segunda … 7 = domingo
-  return toDay(time - (isoWeekday - 1) * DAY_MS);
+  const weekday = new Date(time).getUTCDay(); // 0 = domingo … 6 = sábado
+  return toDay(time - weekday * DAY_MS);
 }
 
-/** Os 7 dias da semana que começa em `start` (segunda → domingo). */
+/** Os 7 dias da semana que começa em `start` (domingo → sábado). */
 export function weekDays(start: string): string[] {
-  const monday = toTime(weekStart(start));
-  return Array.from({ length: 7 }, (_, i) => toDay(monday + i * DAY_MS));
+  const sunday = toTime(weekStart(start));
+  return Array.from({ length: 7 }, (_, i) => toDay(sunday + i * DAY_MS));
 }
 
-/** Segunda-feira `delta` semanas antes (negativo) ou depois (positivo). */
+/** Domingo `delta` semanas antes (negativo) ou depois (positivo). */
 export function addWeeks(start: string, delta: number): string {
   return toDay(toTime(weekStart(start)) + delta * 7 * DAY_MS);
 }
