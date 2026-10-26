@@ -35,11 +35,13 @@ O `test:all` precisa do Supabase local no ar. O E2E roda com 1 worker e inclui:
 Os testes que gravam dados usam usuários descartáveis (`tests/e2e/disposable-user.ts`), apagados ao fim.
 
 Veja [docs/architecture.md](docs/architecture.md) para a organização dos módulos e as regras de dependência.
+Para configurar o assistente opcional de alimentação e finanças pelo WhatsApp, siga [`scripts/whatsapp-food/README.md`](scripts/whatsapp-food/README.md).
 
 ## O que o app faz
 
 - **Treino**: rotinas, sessão com timer e fila própria, histórico, evolução por exercício, catálogo de exercícios (`/treino/exercicios`) com mídia por link e instruções próprias, tipos de série (carga, peso corporal, duração, distância).
 - **Comida**: plano alimentar com macros pela **TACO** (597 alimentos, NEPA/Unicamp), seleção dos alimentos realmente consumidos em cada refeição, refeição "fora do plano" e **consumido × meta**.
+- **Finanças**: registro de receitas e despesas, categorias configuráveis, contas e cartões, compras parceladas e acompanhamento mensal. O assistente opcional do WhatsApp recebe gastos e receitas em texto, mostra uma prévia e só grava após confirmação; sem indicação de cartão, usa a única conta corrente cadastrada.
 - **Perfil** (`/perfil`): heatmap de "dias no controle" (pontuação 0–4 por dia), resumo do mês, recordes e conquistas. Dados corporais e metas em `/perfil/dados`: Mifflin-St Jeor × fator de atividade, ajuste pelo objetivo, proteína em g/kg; cada meta aceita ajuste manual e pode ser diferente em dia de treino.
 - **Composição corporal** (`/evolucao/composicao`): histórico e registro das 17 métricas da balança, gráficos, metas com projeção, TMB medida e proteína por massa magra. O peso da medição alimenta a Evolução sem duplicar o dia; Perfil e card do mês mostram as variações de peso, gordura e músculo.
 - **Stories por módulo**: Treino tem quatro modelos personalizáveis para a sessão concluída (`/treino/historico/[id]/story`), com foto de fundo ou PNG transparente e seleção de dados/legenda. No Perfil, a central `/perfil/stories` reúne o story diário e os quatro layouts gerais para qualquer treino salvo (`/perfil/stories/[id]`); o card do mês fica no resumo mensal (`/perfil/mes/AAAA-MM/story`). Imagens geradas no aparelho e compartilhadas pelo menu nativo ou baixadas em PNG.
