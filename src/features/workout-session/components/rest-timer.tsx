@@ -2,6 +2,7 @@
 
 import { Bell, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { formatClock } from "@/lib/format";
 import { useNow } from "../hooks";
 import { useActiveWorkout } from "../store";
@@ -14,45 +15,41 @@ export function RestTimer() {
   const rest = useActiveWorkout((s) => s.workout?.rest ?? null);
   const now = useNow();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationsAvailable, setNotificationsAvailable] = useState<boolean | null>(null);
 
   const remainingMs = rest && now !== null ? Date.parse(rest.endsAt) - now : null;
   const finished = remainingMs !== null && remainingMs <= 0;
 
   useEffect(() => {
-    setNotificationsEnabled(localStorage.getItem("bctrl.workout-rest-notifications") === "enabled");
+    const supported = "Notification" in window && "serviceWorker" in navigator;
+    setNotificationsAvailable(supported);
+    setNotificationsEnabled(
+      supported &&
+        localStorage.getItem("bctrl.workout-rest-notifications") === "enabled" &&
+        Notification.permission === "granted",
+    );
   }, []);
 
-  useEffect(() => {
-    if (!finished || !rest) return;
-    // Só vibra se acabou agora (não ao reabrir o app muito depois).
-    if (Date.now() - Date.parse(rest.endsAt) < 3_000 && typeof navigator !== "undefined" && "vibrate" in navigator) {
-      navigator.vibrate([200, 100, 200]);
-    }
-    if (
-      localStorage.getItem("bctrl.workout-rest-notifications") === "enabled" &&
-      "serviceWorker" in navigator &&
-      Notification.permission === "granted"
-    ) {
-      void navigator.serviceWorker.ready.then((registration) =>
-        registration.showNotification("Descanso concluído", {
-          body: `${rest.exerciseName ?? "Seu exercício"}${rest.nextSetNumber ? ` · Série ${rest.nextSetNumber} pronta` : " pronto para continuar"}`,
-          icon: "/icon.svg",
-          badge: "/icon.svg",
-          tag: "bctrl-workout-rest",
-          data: { url: "/treino/sessao" },
-        }),
-      );
-    }
-    useActiveWorkout.getState().skipRest();
-  }, [finished, rest]);
-
   async function enableNotifications() {
-    if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") return;
-    await navigator.serviceWorker.register("/sw.js");
-    localStorage.setItem("bctrl.workout-rest-notifications", "enabled");
-    setNotificationsEnabled(true);
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+      toast.error("Este navegador não oferece notificações para o app.");
+      return;
+    }
+    try {
+      const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+      if (permission !== "granted") {
+        toast.error(permission === "denied" ? "Permita notificações do Bctrl nas configurações do navegador." : "A permissão de notificação não foi concedida.");
+        return;
+      }
+      await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+      await navigator.serviceWorker.ready;
+      localStorage.setItem("bctrl.workout-rest-notifications", "enabled");
+      setNotificationsEnabled(true);
+      toast.success("Avisos do descanso ativados neste aparelho.");
+    } catch (error) {
+      console.error("[bctrl] Não foi possível ativar avisos do descanso.", error);
+      toast.error("Não consegui ativar os avisos. Confira a conexão e tente novamente.");
+    }
   }
 
   if (!rest || remainingMs === null || finished) return null;
@@ -85,7 +82,7 @@ export function RestTimer() {
             Pular
           </TimerButton>
         </div>
-        {!notificationsEnabled && typeof window !== "undefined" && "Notification" in window && (
+        {notificationsAvailable === true && !notificationsEnabled && (
           <button
             type="button"
             onClick={() => void enableNotifications()}
@@ -94,6 +91,11 @@ export function RestTimer() {
             <Bell aria-hidden className="size-4" />
             Ativar aviso no celular ao fim do descanso
           </button>
+        )}
+        {notificationsAvailable === false && (
+          <p className="border-t border-highlight-foreground/15 px-3 py-2 text-center text-xs">
+            Este modo do navegador não permite avisos no celular.
+          </p>
         )}
         <div aria-hidden className="h-1.5 bg-highlight-foreground/15">
           <div

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { SYNC_TOAST_ID, useWorkoutHydrated, useWorkoutSync } from "./hooks";
+import { SYNC_TOAST_ID, useNow, useWorkoutHydrated, useWorkoutSync } from "./hooks";
 import { useActiveWorkout } from "./store";
 
 /** Espera entre tentativas: 2 s, 4 s, 8 s… até 1 min. */
@@ -20,7 +20,58 @@ export function WorkoutSessionProvider() {
     void useActiveWorkout.persist.rehydrate();
   }, []);
 
-  return <PendingSync />;
+  return (
+    <>
+      <PendingSync />
+      <RestNotificationWatcher />
+    </>
+  );
+}
+
+/** Observa o timer no layout do app para que navegar para outra tela não cancele o aviso. */
+function RestNotificationWatcher() {
+  const hydrated = useWorkoutHydrated();
+  const rest = useActiveWorkout((s) => (hydrated ? s.workout?.rest ?? null : null));
+  const now = useNow();
+  const finished = rest !== null && now !== null && Date.parse(rest.endsAt) <= now;
+
+  useEffect(() => {
+    if (!finished || !rest) return;
+
+    const wasNotified = localStorage.getItem("bctrl.workout-rest-last-notified") === rest.endsAt;
+    if (!wasNotified) {
+      localStorage.setItem("bctrl.workout-rest-last-notified", rest.endsAt);
+      if (Date.now() - Date.parse(rest.endsAt) < 3_000 && "vibrate" in navigator) {
+        navigator.vibrate([200, 100, 200]);
+      }
+
+      if (
+        localStorage.getItem("bctrl.workout-rest-notifications") === "enabled" &&
+        "Notification" in window &&
+        Notification.permission === "granted" &&
+        "serviceWorker" in navigator
+      ) {
+        void navigator.serviceWorker.ready
+          .then((registration) =>
+            registration.showNotification("Descanso concluído", {
+              body: `${rest.exerciseName ?? "Seu exercício"}${rest.nextSetNumber ? ` · Série ${rest.nextSetNumber} pronta` : " pronto para continuar"}`,
+              icon: "/icon.svg",
+              badge: "/icon.svg",
+              tag: "bctrl-workout-rest",
+              data: { url: "/treino/sessao" },
+            }),
+          )
+          .catch((error: unknown) => {
+            console.error("[bctrl] Não foi possível exibir o aviso do descanso.", error);
+            toast.error("O descanso terminou, mas o navegador não exibiu o aviso.");
+          });
+      }
+    }
+
+    useActiveWorkout.getState().skipRest();
+  }, [finished, rest]);
+
+  return null;
 }
 
 function PendingSync() {
