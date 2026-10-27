@@ -20,8 +20,15 @@ test("navega entre as seções e marca a ativa", async ({ page, isMobile }) => {
     await expect(nav.getByRole("link", { name: label })).toHaveAttribute("aria-current", "page");
   }
 
-  // Evolução fica na lateral do desktop
-  if (!isMobile) {
+  if (isMobile) {
+    await nav.getByRole("button", { name: "Mais seções" }).click();
+    const more = page.getByRole("dialog", { name: "Mais seções" });
+    await expect(more.getByRole("link", { name: "Finanças" })).toBeVisible();
+    await more.getByRole("link", { name: "Evolução" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Evolução" })).toBeVisible();
+    await nav.getByRole("button", { name: "Mais seções" }).click();
+    await expect(more.getByRole("link", { name: "Evolução" })).toHaveAttribute("aria-current", "page");
+  } else {
     await nav.getByRole("link", { name: "Evolução" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Evolução" })).toBeVisible();
   }

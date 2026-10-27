@@ -103,7 +103,7 @@ function NewTaskForm() {
         inputRef.current?.focus();
       }}
     >
-      <label htmlFor={ids.input} className="sr-only">
+      <label htmlFor={ids.input} className="mb-2 block text-sm font-medium">
         Nova tarefa
       </label>
       <div className="flex gap-2">
@@ -127,6 +127,9 @@ function NewTaskForm() {
           <Plus aria-hidden />
         </Button>
       </div>
+      <p role="status" className="mt-1 min-h-5 text-xs text-muted-foreground">
+        {save.isPending ? "Salvando tarefa…" : ""}
+      </p>
       {error && (
         <p id={ids.error} role="alert" className="mt-2 text-sm text-destructive">
           {error}

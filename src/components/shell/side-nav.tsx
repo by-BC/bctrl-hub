@@ -44,6 +44,11 @@ function SideNavLinks({ pathname }: { pathname: string | null }) {
           const active = pathname !== null && isActivePath(pathname, href);
           return (
             <li key={href}>
+              {href === "/financas" && (
+                <p className="px-3 pb-2 pt-5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  Acompanhar
+                </p>
+              )}
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}

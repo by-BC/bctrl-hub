@@ -24,9 +24,9 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/comida", label: "Comida", icon: UtensilsCrossed, mobile: true },
   { href: "/habitos", label: "Hábitos", icon: Repeat, mobile: true },
   { href: "/tarefas", label: "Tarefas", icon: ListChecks, mobile: true },
-  { href: "/financas", label: "Finanças", icon: WalletCards, mobile: true },
+  { href: "/financas", label: "Finanças", icon: WalletCards, mobile: false },
   { href: "/evolucao", label: "Evolução", icon: ChartLine, mobile: false },
-  // No celular, o Perfil fica no cabeçalho (MobileHeader), sem tirar item da barra inferior.
+  // No celular, o Perfil fica no cabeçalho e no menu Mais.
   { href: "/perfil", label: "Perfil", icon: UserRound, mobile: false },
 ];
 
